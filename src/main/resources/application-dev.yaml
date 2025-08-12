@@ -1,0 +1,74 @@
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE   # ???? ?????
+
+frontend:
+  origin: http://localhost:5173
+
+cookie:
+  domain: ""          # 미설정이면 생략
+  same-site: "Lax"
+  secure: false
+  http-only: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+jwt:
+  key: ${JWT_SECRET_KEY}
+  access-token-expire-millis: 300000 # 1000 * 60 * 5= 5 minutes
+  refresh-token-expire-millis: 3600000 # 1000 * 60 * 60 = 1 hour
+
+spring:
+  application:
+    name: planet-backend
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_REST_API_KEY}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            client-authentication-method: client_secret_post # kakao? ?? ?? ?? ?? ???? post??. (?? ???? ?? ??? ??? ????.)
+            authorization-grant-type: authorization_code
+            scope: # kakao ?? ?? ?? ?? ??? ID ?
+              - profile_nickname
+              - profile_image
+              - account_email
+            client-name: kakao
+
+        # kakao provider ??
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id # ?? ?? ?? ? ???? ??? ????? ?? ??.
+
+  datasource:
+    # ??
+    url: jdbc:h2:file:./h2-data/demo;MODE=MySQL;AUTO_SERVER=TRUE
+    # ???
+    #    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: ${RDBMS_USERNAME}
+    password: ${RDBMS_PASSWORD}
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true   # (??) ?? ?? ?? - ??? ?? ???
+
+  data:
+    redis:
+      host: localhost
+      port: 6379

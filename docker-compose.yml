@@ -1,0 +1,20 @@
+services:
+  spring-security-backend:
+    image: harbor.jaeyoung2.duckdns.org/templates/spring-security-backend:latest
+    container_name: spring-security-backend
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    env_file:
+      - ../.env.spring-security-backend
+    expose:
+      - "8080"
+    networks:
+      - spring_security_network
+    cpus: 1
+    mem_limit: 2g
+
+networks:
+  spring_security_network:
+    external: true
+  harbor_harbor:
+    external: true

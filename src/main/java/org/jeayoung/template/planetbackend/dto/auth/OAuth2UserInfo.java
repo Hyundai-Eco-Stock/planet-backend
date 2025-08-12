@@ -4,7 +4,7 @@ import java.util.Map;
 import lombok.Builder;
 import org.jeayoung.template.planetbackend.constant.AuthenticationError;
 import org.jeayoung.template.planetbackend.constant.Role;
-import org.jeayoung.template.planetbackend.entity.Member;
+import org.jeayoung.template.planetbackend.domain.Member;
 import org.jeayoung.template.planetbackend.error.AuthException;
 
 @Builder

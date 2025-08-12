@@ -1,4 +1,4 @@
-package org.jeayoung.template.planetbackend.entity;
+package org.jeayoung.template.planetbackend.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

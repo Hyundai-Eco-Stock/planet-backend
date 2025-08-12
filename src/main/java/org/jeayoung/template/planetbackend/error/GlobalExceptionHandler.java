@@ -11,6 +11,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TokenException.class)
     public ResponseEntity<Map<String, Object>> handleTokenException(TokenException e) {
+
         Map<String, Object> body = new HashMap<>();
         body.put("errorCode", e.getError().name());
         body.put("message", e.getError().getValue());

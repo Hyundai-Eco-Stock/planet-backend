@@ -6,7 +6,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jeayoung.template.planetbackend.constant.AuthenticationError;
 import org.jeayoung.template.planetbackend.dto.member.request.SignUpRequest;
-import org.jeayoung.template.planetbackend.entity.Member;
+import org.jeayoung.template.planetbackend.domain.Member;
 import org.jeayoung.template.planetbackend.error.AuthException;
 import org.jeayoung.template.planetbackend.provider.TokenProvider;
 import org.jeayoung.template.planetbackend.repository.MemberRepository;

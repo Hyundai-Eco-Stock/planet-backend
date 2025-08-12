@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeayoung.template.planetbackend.constant.AuthenticationError;
 import org.jeayoung.template.planetbackend.constant.Role;
 import org.jeayoung.template.planetbackend.dto.auth.PrincipalDetails;
-import org.jeayoung.template.planetbackend.entity.Member;
+import org.jeayoung.template.planetbackend.domain.Member;
 import org.jeayoung.template.planetbackend.error.TokenException;
 import org.jeayoung.template.planetbackend.service.RefreshTokenService;
 import org.jeayoung.template.planetbackend.util.CookieUtil;

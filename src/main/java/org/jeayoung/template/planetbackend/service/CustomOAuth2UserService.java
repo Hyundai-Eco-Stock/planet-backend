@@ -4,7 +4,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.jeayoung.template.planetbackend.dto.auth.OAuth2UserInfo;
 import org.jeayoung.template.planetbackend.dto.auth.PrincipalDetails;
-import org.jeayoung.template.planetbackend.entity.Member;
+import org.jeayoung.template.planetbackend.domain.Member;
 import org.jeayoung.template.planetbackend.repository.MemberRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;

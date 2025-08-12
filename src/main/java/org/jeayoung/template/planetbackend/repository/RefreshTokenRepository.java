@@ -62,7 +62,7 @@ public class RefreshTokenRepository {
     }
 
     /**
-     * memberId 기준 삭제 (역매핑 포함)
+     * memberId 기준 삭제 (유저의 모든 기기에서 로그아웃) (역매핑 포함)
      */
     public void delete(long memberId) {
 
@@ -84,7 +84,7 @@ public class RefreshTokenRepository {
     }
 
     /**
-     * refreshToken으로 삭제 (역매핑 포함)
+     * refreshToken으로 삭제 (해당 기기만 로그아웃)(역매핑 포함)
      */
     public void deleteByToken(String refreshToken) {
 

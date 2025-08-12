@@ -3,7 +3,6 @@ package org.jeayoung.template.planetbackend.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -15,6 +14,7 @@ import org.jeayoung.template.planetbackend.constant.TokenKey;
 import org.jeayoung.template.planetbackend.error.TokenException;
 import org.jeayoung.template.planetbackend.provider.TokenProvider;
 import org.jeayoung.template.planetbackend.service.RefreshTokenService;
+import org.jeayoung.template.planetbackend.util.CookieUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -30,8 +30,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(TokenAuthenticationFilter.class);
 
-    private static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
-
     private final TokenProvider tokenProvider;
 
     private final RefreshTokenService refreshTokenService;
@@ -40,6 +38,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+
         return request.getRequestURI().equals("/auth/access-token/regenerate");
     }
 
@@ -84,7 +83,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 2. Access Token이 유효하지 않을 경우, Refresh Token 유효성 검사
-            String refreshToken = resolveRefreshTokenFromCookie(request);
+            String refreshToken = CookieUtil.resolveRefreshTokenFromCookie(request);
 
             try {
                 tokenProvider.validateToken(refreshToken);
@@ -157,21 +156,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         return header.substring(prefix.length());
     }
 
-    private String resolveRefreshTokenFromCookie(HttpServletRequest request) {
+    private void setErrorResponse(HttpServletResponse response, AuthenticationError error)
+        throws IOException {
 
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        for (Cookie c : cookies) {
-            if (REFRESH_TOKEN_COOKIE_NAME.equals(c.getName())) {
-                return c.getValue();
-            }
-        }
-        return null;
-    }
-
-    private void setErrorResponse(HttpServletResponse response, AuthenticationError error) throws IOException {
         response.setStatus(error.getHttpStatus().value());
         response.setHeader(TokenKey.X_ERROR_CODE.getValue(), error.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

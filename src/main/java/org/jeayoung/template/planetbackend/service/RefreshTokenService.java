@@ -30,4 +30,8 @@ public class RefreshTokenService {
         return repository.existsByToken(refreshToken);
     }
 
+    public void delete(String refreshToken) {
+
+        repository.deleteByToken(refreshToken);
+    }
 }

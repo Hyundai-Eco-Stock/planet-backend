@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts.SIG;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -16,10 +17,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeayoung.template.planetbackend.constant.AuthenticationError;
 import org.jeayoung.template.planetbackend.constant.Role;
-import org.jeayoung.template.planetbackend.dto.PrincipalDetails;
+import org.jeayoung.template.planetbackend.dto.auth.PrincipalDetails;
 import org.jeayoung.template.planetbackend.entity.Member;
 import org.jeayoung.template.planetbackend.error.TokenException;
 import org.jeayoung.template.planetbackend.service.RefreshTokenService;
+import org.jeayoung.template.planetbackend.util.CookieUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -175,6 +177,13 @@ public class TokenProvider {
         return generatedToken;
     }
 
+    public void invalidateRefreshToken(HttpServletRequest request) {
+
+        String refreshToken = CookieUtil.resolveRefreshTokenFromCookie(request);
+
+        refreshTokenService.delete(refreshToken);
+    }
+
     public Authentication getAuthentication(String token) {
 
 //        log.info("Getting authentication for token: {}", token);
@@ -246,4 +255,5 @@ public class TokenProvider {
             throw new TokenException(AuthenticationError.TOKEN_NOT_VALID);
         }
     }
+
 }

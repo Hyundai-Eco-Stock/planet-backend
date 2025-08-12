@@ -1,4 +1,4 @@
-package org.jeayoung.template.planetbackend.dto;
+package org.jeayoung.template.planetbackend.dto.auth;
 
 import java.util.Collection;
 import java.util.Collections;

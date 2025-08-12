@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.jeayoung.template.planetbackend.constant.Role;
 
 @Entity
@@ -29,6 +30,7 @@ public class Member {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    @Setter
     @Column(name = "pwd_hash")
     private String pwdHash;
 
@@ -41,6 +43,10 @@ public class Member {
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    public void updateProfile(String profileUrl) {
+
+    }
 
     // 기타 정보들...
 }

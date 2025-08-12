@@ -5,14 +5,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jeayoung.template.planetbackend.dto.PrincipalDetails;
+import org.jeayoung.template.planetbackend.dto.auth.PrincipalDetails;
 import org.jeayoung.template.planetbackend.provider.TokenProvider;
+import org.jeayoung.template.planetbackend.util.CookieUtil;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseCookie.ResponseCookieBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -78,24 +76,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .build(true)
                 .toUriString();
         }
-
-        ResponseCookieBuilder cookieBuilder = ResponseCookie
-            .from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-            .path("/")
-            .maxAge(Duration.ofDays(30))
-            .sameSite(cookieProps.sameSite());
-
-        if (cookieProps.httpOnly()) {
-            cookieBuilder = cookieBuilder.httpOnly(true);
-        }
-        if (cookieProps.secure()) {
-            cookieBuilder = cookieBuilder.secure(true);
-        }
-        if (cookieProps.domain() != null && !cookieProps.domain().isBlank()) {
-            cookieBuilder = cookieBuilder.domain(cookieProps.domain());
-        }
-
-        response.addHeader("Set-Cookie", cookieBuilder.build().toString());
+        CookieUtil.addRefreshTokenCookie(response, refreshToken, cookieProps);
         response.sendRedirect(redirectUrl);
 
 

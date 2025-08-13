@@ -7,9 +7,9 @@ pipeline {
     }
 
     environment {
-        SERVICE_NAME = 'spring-security-backend'
+        SERVICE_NAME = 'planet-backend'
         HARBOR_URL = 'https://localhost:8443'
-        HARBOR_REPO = 'localhost:8443/templates'
+        HARBOR_REPO = 'localhost:8443/planet'
     }
 
     stages {

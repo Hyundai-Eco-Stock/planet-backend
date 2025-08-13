@@ -2,7 +2,7 @@ package org.phoenix.planet.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.phoenix.planet.service.CustomOAuth2UserService;
+import org.phoenix.planet.service.auth.CustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

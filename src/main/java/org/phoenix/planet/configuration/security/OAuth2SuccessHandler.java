@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.provider.TokenProvider;
-import org.phoenix.planet.util.CookieUtil;
+import org.phoenix.planet.util.cookie.CookieUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;

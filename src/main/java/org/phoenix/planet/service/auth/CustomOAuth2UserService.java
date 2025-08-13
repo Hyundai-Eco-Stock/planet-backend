@@ -1,4 +1,4 @@
-package org.phoenix.planet.service;
+package org.phoenix.planet.service.auth;
 
 import java.util.Map;
 import java.util.Optional;

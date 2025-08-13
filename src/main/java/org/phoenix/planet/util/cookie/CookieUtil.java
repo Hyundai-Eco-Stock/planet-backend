@@ -1,4 +1,4 @@
-package org.phoenix.planet.util;
+package org.phoenix.planet.util.cookie;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

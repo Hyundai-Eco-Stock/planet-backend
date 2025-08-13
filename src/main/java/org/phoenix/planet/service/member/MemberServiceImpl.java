@@ -1,4 +1,4 @@
-package org.phoenix.planet.service;
+package org.phoenix.planet.service.member;
 
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.dto.member.request.SignUpRequest;

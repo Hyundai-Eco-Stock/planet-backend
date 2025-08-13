@@ -24,14 +24,10 @@ public class AuthServiceImpl implements AuthService {
     public void signUp(long loginMemberId, SignUpRequest request,
         MultipartFile profileImage) {
 
-        // 1) 요청한 회원 정보 찾기
-//        Member member = memberMapper.findById(loginMemberId)
-//            .orElseThrow(() -> new AuthException(AuthenticationError.NOT_EXIST_MEMBER_ID));
-
-        // 2) 패스워드 해시
+        // 패스워드 해시화
         String pwdHash = passwordEncoder.encode(request.password());
 
-        // 3) 프로필 저장 (예시: 로컬 디스크. 실제로는 S3/MinIO 등 사용 권장)
+        // 프로필 저장
         String profileUrl = null;
         if (profileImage != null && !profileImage.isEmpty()) {
             try {
@@ -47,10 +43,7 @@ public class AuthServiceImpl implements AuthService {
             }
         }
 
-        // 4) 멤버 정보 수정
-//        member.updateProfile(profileUrl);
-//        member.setPwdHash(pwdHash);
-
+        // 멤버 정보 수정
         memberMapper.updateProfileUrl(loginMemberId, profileUrl);
         memberMapper.updatePwdHash(loginMemberId, pwdHash);
     }

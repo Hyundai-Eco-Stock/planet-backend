@@ -3,7 +3,7 @@ package org.phoenix.planet.dto.auth;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import org.phoenix.planet.domain.Member;
+import org.phoenix.planet.dto.member.Member;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

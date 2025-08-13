@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
-import org.phoenix.planet.domain.Member;
+import org.phoenix.planet.dto.member.Member;
 import org.phoenix.planet.error.TokenException;
 import org.phoenix.planet.service.RefreshTokenService;
 import org.phoenix.planet.util.CookieUtil;

@@ -4,12 +4,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
-import org.phoenix.planet.domain.Member;
-import org.phoenix.planet.error.AuthException;
+import org.phoenix.planet.mapper.MemberMapper;
 import org.phoenix.planet.provider.TokenProvider;
-import org.phoenix.planet.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,17 +17,16 @@ import org.springframework.web.multipart.MultipartFile;
 public class AuthServiceImpl implements AuthService {
 
     private final PasswordEncoder passwordEncoder;
-    private final MemberRepository memberRepository;
+    private final MemberMapper memberMapper;
     private final TokenProvider tokenProvider;
-    // private final RedisService redisService; // refresh 블랙리스트/화이트리스트 운영 시
 
     @Override
     public void signUp(long loginMemberId, SignUpRequest request,
         MultipartFile profileImage) {
 
         // 1) 요청한 회원 정보 찾기
-        Member member = memberRepository.findById(loginMemberId)
-            .orElseThrow(() -> new AuthException(AuthenticationError.NOT_EXIST_MEMBER_ID));
+//        Member member = memberMapper.findById(loginMemberId)
+//            .orElseThrow(() -> new AuthException(AuthenticationError.NOT_EXIST_MEMBER_ID));
 
         // 2) 패스워드 해시
         String pwdHash = passwordEncoder.encode(request.password());
@@ -52,10 +48,11 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 4) 멤버 정보 수정
-        member.updateProfile(profileUrl);
-        member.setPwdHash(pwdHash);
+//        member.updateProfile(profileUrl);
+//        member.setPwdHash(pwdHash);
 
-        memberRepository.save(member);
+        memberMapper.updateProfileUrl(loginMemberId, profileUrl);
+        memberMapper.updatePwdHash(loginMemberId, pwdHash);
     }
 
     private String getExtension(String filename) {

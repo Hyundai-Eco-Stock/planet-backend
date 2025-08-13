@@ -4,7 +4,7 @@ import java.util.Map;
 import lombok.Builder;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.Role;
-import org.phoenix.planet.domain.Member;
+import org.phoenix.planet.dto.member.Member;
 import org.phoenix.planet.error.AuthException;
 
 @Builder
@@ -44,11 +44,11 @@ public record OAuth2UserInfo(
             .build();
     }
 
-    public Member toEntity() {
+    public Member toDto() {
 
         return Member.builder()
             .email(email)
-            .profile(profile)
+            .profileUrl(profile)
             .name(name)
             .role(Role.USER)
             .build();

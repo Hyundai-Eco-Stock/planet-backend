@@ -1,4 +1,4 @@
-package org.phoenix.planet.configuration;
+package org.phoenix.planet.configuration.file;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,6 @@
 package org.phoenix.planet;
 
-import org.phoenix.planet.configuration.CookieProperties;
+import org.phoenix.planet.configuration.security.CookieProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

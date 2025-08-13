@@ -1,4 +1,4 @@
-package org.phoenix.planet.configuration;
+package org.phoenix.planet.configuration.security;
 
 
 import jakarta.servlet.http.HttpServletRequest;

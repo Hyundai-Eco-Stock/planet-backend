@@ -1,4 +1,4 @@
-package org.phoenix.planet.configuration;// CookieProperties.java
+package org.phoenix.planet.configuration.security;// CookieProperties.java
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

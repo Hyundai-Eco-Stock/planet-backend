@@ -1,4 +1,4 @@
-package org.phoenix.planet.configuration;
+package org.phoenix.planet.configuration.file;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

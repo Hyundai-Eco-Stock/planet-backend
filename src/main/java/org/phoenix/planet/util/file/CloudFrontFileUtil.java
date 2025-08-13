@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
-import org.phoenix.planet.configuration.CloudFrontProperties;
+import org.phoenix.planet.configuration.file.CloudFrontProperties;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -5,7 +5,6 @@
 
 <mapper namespace="org.phoenix.planet.mapper.MemberMapper">
     
-    <!-- ResultMap: 컬럼명 ↔ DTO 필드명 매핑 -->
     <resultMap id="MemberResultMap" type="org.phoenix.planet.dto.member.Member">
         <id column="member_id" property="id"/>
         <result column="email" property="email"/>
@@ -16,7 +15,6 @@
         <result column="address" property="address"/>
         <result column="detail_address" property="detailAddress"/>
         
-        <!-- Enum: 문자열 저장 기준 (ex. 'ADMIN', 'USER' / 'M','F') -->
         <result column="ROLE" property="role"
             javaType="org.phoenix.planet.constant.Role"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
@@ -24,16 +22,13 @@
             javaType="org.phoenix.planet.constant.Sex"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
         
-        <!-- Oracle DATE ↔ Java LocalDateTime -->
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
             javaType="java.time.LocalDateTime"/>
         <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"
             javaType="java.time.LocalDateTime"/>
     </resultMap>
     
-    <!-- INSERT: Oracle 시퀀스 사용 (MEMBER_SEQ 가정) -->
     <insert id="insert" parameterType="org.phoenix.planet.dto.member.Member">
-        <!-- PK 미리 생성해서 DTO.id에 주입 -->
         <selectKey keyProperty="id" resultType="long" order="BEFORE">
             SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
         </selectKey>
@@ -55,7 +50,7 @@
         #{email,        jdbcType=VARCHAR},
         #{name,         jdbcType=VARCHAR},
         #{profileUrl,   jdbcType=VARCHAR},
-        #{pwdHash,      jdbcType=VARCHAR},  <!-- 여기! -->
+        #{pwdHash,      jdbcType=VARCHAR},
         #{provider,     jdbcType=VARCHAR},
         #{address,      jdbcType=VARCHAR},
         #{detailAddress,jdbcType=VARCHAR},

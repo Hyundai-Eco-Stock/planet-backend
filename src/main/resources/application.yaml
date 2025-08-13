@@ -2,19 +2,13 @@ server:
   port: 8080
 
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: update # 처음에는 update, 배포 전에는 validate 또는 none 권장
-    show-sql: true # SQL 로그 출력 여부
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: true # 보기 좋게 포맷팅
-        jdbc:
-          lob:
-            non_contextual_creation: true
-
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 12MB
+
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+  type-aliases-package: org.phoenix.planet
+  configuration:
+    map-underscore-to-camel-case: true

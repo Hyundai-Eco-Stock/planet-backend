@@ -14,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -30,6 +31,7 @@ public class SecurityConfig {
     private final CorsConfigurationSource corsConfigurationSource;
     private final ObjectMapper objectMapper;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final UrlRewriteFilter urlRewriteFilter;
 
 
     @Bean
@@ -85,6 +87,7 @@ public class SecurityConfig {
             )
 
             // JWT 관련 설정
+            .addFilterBefore(urlRewriteFilter, OAuth2AuthorizationRequestRedirectFilter.class)
             .addFilterBefore(tokenAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class)
 

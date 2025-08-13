@@ -38,8 +38,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        path = path.replaceFirst("/api", "");
 
-        return request.getRequestURI().equals("/auth/access-token/regenerate");
+        return path.equals("/auth/access-token/regenerate") || path.startsWith("/oauth2/authorization");
     }
 
     @Override

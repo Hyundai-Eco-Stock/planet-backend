@@ -21,8 +21,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    private static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
-
     @Value("${frontend.origin}")
     private String frontendOrigin;
 

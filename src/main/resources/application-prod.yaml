@@ -68,6 +68,6 @@ spring:
 
   data:
     redis:
-      host: spring-security-template-redis
+      host: ${REDIS_HOST}
       port: 6379
       password: ${REDIS_PASSWORD}

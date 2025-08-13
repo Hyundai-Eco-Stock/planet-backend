@@ -3,7 +3,7 @@ package org.phoenix.planet.mapper;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.phoenix.planet.dto.member.Member;
+import org.phoenix.planet.dto.member.raw.Member;
 
 @Mapper
 public interface MemberMapper {

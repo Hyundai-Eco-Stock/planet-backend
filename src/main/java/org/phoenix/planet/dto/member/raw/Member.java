@@ -1,4 +1,4 @@
-package org.phoenix.planet.dto.member;
+package org.phoenix.planet.dto.member.raw;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -22,7 +22,7 @@ public class Member {
     private String name;
 
     private String profileUrl;
-    
+
     @Setter
     private String pwdHash;
 

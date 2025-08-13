@@ -32,16 +32,28 @@ public class S3FileUtil {
     private String PRODUCT_IMG_PATH;
 
 
-    /// 멤버 프로필 이미지 단일  업로드
+    /**
+     * 멤버 프로필 이미지 단일 업로드
+     *
+     * @param file
+     * @param memberId
+     * @return 저장된 파일 경로 (db에 저장할 것)
+     */
     public String uploadMemberProfile(MultipartFile file, long memberId) {
 
         return upload(file, MEMBER_PROFILE_IMG_PATH + memberId + "/");
     }
 
-    /// 공고 파일 목록 다중 업로드
-    public List<String> uploadProductImageFile(List<MultipartFile> fileList, long productId) {
+    /**
+     * 상품 이미지 파일 목록 다중 업로드
+     *
+     * @param file
+     * @param productId
+     * @return 저장된 파일 경로 (db에 저장할 것)
+     */
+    public String uploadProductImageFile(MultipartFile file, long productId) {
 
-        return uploadFiles(fileList, PRODUCT_IMG_PATH + productId + "/");
+        return upload(file, PRODUCT_IMG_PATH + productId + "/");
     }
 
     /**

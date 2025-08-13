@@ -5,7 +5,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.dto.auth.OAuth2UserInfo;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
-import org.phoenix.planet.dto.member.Member;
+import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.mapper.MemberMapper;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;

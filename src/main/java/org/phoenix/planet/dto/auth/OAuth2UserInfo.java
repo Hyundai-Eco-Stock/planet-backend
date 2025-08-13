@@ -4,8 +4,8 @@ import java.util.Map;
 import lombok.Builder;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.Role;
-import org.phoenix.planet.dto.member.Member;
-import org.phoenix.planet.error.AuthException;
+import org.phoenix.planet.dto.member.raw.Member;
+import org.phoenix.planet.error.auth.AuthException;
 
 @Builder
 public record OAuth2UserInfo(

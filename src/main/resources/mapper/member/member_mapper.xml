@@ -5,7 +5,7 @@
 
 <mapper namespace="org.phoenix.planet.mapper.MemberMapper">
     
-    <resultMap id="MemberResultMap" type="org.phoenix.planet.dto.member.Member">
+    <resultMap id="MemberResultMap" type="org.phoenix.planet.dto.member.raw.Member">
         <id column="member_id" property="id"/>
         <result column="email" property="email"/>
         <result column="name" property="name"/>
@@ -28,7 +28,7 @@
             javaType="java.time.LocalDateTime"/>
     </resultMap>
     
-    <insert id="insert" parameterType="org.phoenix.planet.dto.member.Member">
+    <insert id="insert" parameterType="org.phoenix.planet.dto.member.raw.Member">
         <selectKey keyProperty="id" resultType="long" order="BEFORE">
             SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
         </selectKey>

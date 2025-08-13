@@ -12,7 +12,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
-import org.phoenix.planet.error.TokenException;
+import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.provider.TokenProvider;
 import org.phoenix.planet.service.RefreshTokenService;
 import org.phoenix.planet.util.CookieUtil;

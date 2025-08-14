@@ -254,6 +254,7 @@ public class TokenProvider {
             log.error("Unexpected exception during token parsing: {}", e.getMessage(), e);
             throw new TokenException(AuthenticationError.TOKEN_NOT_VALID);
         }
+        // TODO: io.jsonwebtoken.security.SignatureException 추가하기
     }
 
 }

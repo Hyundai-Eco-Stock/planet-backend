@@ -15,17 +15,17 @@ public class EcoProductListResponse {
 
     private long productId;
 
-    private long categoryId;
+    private Long categoryId;
 
     private String categoryName;
 
-    private long brandId;
+    private Long brandId;
 
     private String name;
 
     private int price;
 
-    private long quantity;
+    private int quantity;
 
     private int salePercent;
 }

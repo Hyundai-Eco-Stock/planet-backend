@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.ProductCategoryMapper">
+    
+    <!-- ResultMap -->
+    <resultMap id="ProductCategoryResultMap"
+        type="org.phoenix.planet.dto.product.raw.ProductCategory">
+        <id column="category_id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
+            javaType="java.time.LocalDateTime"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"
+            javaType="java.time.LocalDateTime"/>
+    </resultMap>
+    
+    <!-- Create -->
+    <insert id="insert" parameterType="org.phoenix.planet.dto.product.raw.ProductCategory">
+        <selectKey keyProperty="id" resultType="long" order="BEFORE">
+            SELECT SEQ_PRODUCT_CATEGORY.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO PRODUCT_CATEGORY (
+        category_id,
+        name,
+        created_at,
+        updated_at
+        ) VALUES (
+        #{id},
+        #{name, jdbcType=VARCHAR},
+        SYSDATE,
+        SYSDATE
+        )
+    </insert>
+    
+    <!-- Update (이름만 바뀌는 경우가 대부분이라도 전체 컬럼 기준으로 구현) -->
+    <update id="update" parameterType="org.phoenix.planet.dto.product.raw.ProductCategory">
+        UPDATE PRODUCT_CATEGORY
+        SET
+        name = #{name, jdbcType=VARCHAR},
+        updated_at = SYSDATE
+        WHERE category_id = #{id}
+    </update>
+    
+    <!-- Delete -->
+    <delete id="delete" parameterType="long">
+        DELETE FROM PRODUCT_CATEGORY
+        WHERE category_id = #{categoryId}
+    </delete>
+    
+    <!-- Read: 단건 -->
+    <select id="findById" parameterType="long" resultMap="ProductCategoryResultMap">
+        SELECT
+        category_id,
+        name,
+        created_at,
+        updated_at
+        FROM PRODUCT_CATEGORY
+        WHERE category_id = #{categoryId}
+    </select>
+    
+    <!-- Read: 전체 -->
+    <select id="findAll" resultMap="ProductCategoryResultMap">
+        SELECT
+        category_id,
+        name,
+        created_at,
+        updated_at
+        FROM PRODUCT_CATEGORY
+        ORDER BY category_id DESC
+    </select>
+    
+    <!-- 선택: 이름으로 조회 (unique 제약은 없지만, 필요시 사용) -->
+    <select id="findByName" parameterType="string" resultMap="ProductCategoryResultMap">
+        SELECT
+        category_id,
+        name,
+        created_at,
+        updated_at
+        FROM PRODUCT_CATEGORY
+        WHERE name = #{name}
+    </select>
+
+</mapper>

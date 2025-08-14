@@ -56,7 +56,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         if (principalDetails.member().getPwdHash() == null) {
             redirectUrl = UriComponentsBuilder
                 .fromUriString(frontendOrigin)
-                .path("/signup")
+                .path("/signup/oauth")
                 .queryParam("accessToken", accessToken)
                 .queryParam("email", encodedEmail)
                 .queryParam("name", encodedName)

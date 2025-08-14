@@ -66,14 +66,14 @@
         UPDATE MEMBER
         SET profile_url = #{profileUrl},
         updated_at = SYSDATE
-        WHERE member_id = #{id}
+        WHERE member_id = #{memberId}
     </update>
     
     <update id="updatePwdHash" parameterType="map">
         UPDATE MEMBER
         SET pwd_hash = #{pwdHash},
         updated_at = SYSDATE
-        WHERE member_id = #{id}
+        WHERE member_id = #{memberId}
     </update>
     
     <select id="findById" parameterType="long" resultMap="MemberResultMap">
@@ -91,7 +91,7 @@
         created_at,
         updated_at
         FROM MEMBER
-        WHERE member_id = #{id}
+        WHERE member_id = #{memberId}
     </select>
     
     <select id="findByEmail" parameterType="string" resultMap="MemberResultMap">

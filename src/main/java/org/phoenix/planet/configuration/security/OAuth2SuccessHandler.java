@@ -40,7 +40,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = tokenProvider.generateAccessToken(authentication);
         String refreshToken = tokenProvider.generateRefreshToken(authentication);
 
-        log.info("Generated Refresh Token: {}", refreshToken);
+        log.info("발급된 Access Token: {}", accessToken);
 
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
 
@@ -48,7 +48,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             StandardCharsets.UTF_8);
         String encodedName = URLEncoder.encode(principalDetails.member().getName(),
             StandardCharsets.UTF_8);
-        String encodedProfile = URLEncoder.encode(principalDetails.member().getProfileUrl(),
+        String encodedProfileUrl = URLEncoder.encode(principalDetails.member().getProfileUrl(),
             StandardCharsets.UTF_8);
 
         String redirectUrl;
@@ -60,10 +60,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .queryParam("accessToken", accessToken)
                 .queryParam("email", encodedEmail)
                 .queryParam("name", encodedName)
-                .queryParam("profile", encodedProfile)
+                .queryParam("profileUrl", encodedProfileUrl)
                 .build(true)
                 .toUriString();
-
         } else {
             redirectUrl = UriComponentsBuilder
                 .fromUriString(frontendOrigin)
@@ -71,7 +70,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .queryParam("accessToken", accessToken)
                 .queryParam("email", encodedEmail)
                 .queryParam("name", encodedName)
-                .queryParam("profile", encodedProfile)
+                .queryParam("profileUrl", encodedProfileUrl)
                 .build(true)
                 .toUriString();
         }

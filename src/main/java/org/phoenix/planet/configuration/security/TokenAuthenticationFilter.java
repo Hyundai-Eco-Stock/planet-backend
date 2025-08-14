@@ -43,8 +43,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         path = path.replaceFirst("/api", "");
 
-        return path.equals("/auth/access-token/regenerate") || path.startsWith(
-            "/oauth2/authorization");
+        return path.equals("/auth/access-token/regenerate")
+            || path.startsWith("/oauth2/authorization");
     }
 
     @Override

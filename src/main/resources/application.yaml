@@ -30,6 +30,6 @@ s3:
     name: ${S3_BUCKET_NAME}
 
 cloudfront:
-  distribution-domain: d3j62hm9xnqci3.cloudfront.net
-  key-pair-id: K1CXY699RY3FDX
+  distribution-domain: ${CLOUDFRONT_DISTRIBUTION_DOMAIN}
+  key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID}
   private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH}

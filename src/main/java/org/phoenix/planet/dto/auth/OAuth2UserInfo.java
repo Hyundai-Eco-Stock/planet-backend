@@ -7,6 +7,7 @@ import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.error.auth.AuthException;
 
+// TODO: provider_uid 가져오기?
 @Builder
 public record OAuth2UserInfo(
     String name,

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.configuration.security.CookieProperties;
 import org.phoenix.planet.constant.AuthenticationError;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -43,7 +45,6 @@ public class AuthController {
     ) {
 
         memberService.signUp(loginMemberId, request, profileImage);
-
         return ResponseEntity.ok().build();
     }
 

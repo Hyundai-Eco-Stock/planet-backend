@@ -4,14 +4,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.LoginMemberId;
-import org.phoenix.planet.configuration.CookieProperties;
+import org.phoenix.planet.configuration.security.CookieProperties;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.provider.TokenProvider;
-import org.phoenix.planet.service.AuthService;
-import org.phoenix.planet.util.CookieUtil;
+import org.phoenix.planet.service.member.MemberService;
+import org.phoenix.planet.util.cookie.CookieUtil;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,13 +21,14 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final TokenProvider tokenProvider;
-    private final AuthService authService;
+    private final MemberService memberService;
 
     // 향후엔 없앨게.. (cookie 유틸이 @component scan 해야 되지 않나)
     private final CookieProperties cookieProps;
@@ -42,8 +44,7 @@ public class AuthController {
         @LoginMemberId long loginMemberId
     ) {
 
-        authService.signUp(loginMemberId, request, profileImage);
-
+        memberService.signUp(loginMemberId, request, profileImage);
         return ResponseEntity.ok().build();
     }
 

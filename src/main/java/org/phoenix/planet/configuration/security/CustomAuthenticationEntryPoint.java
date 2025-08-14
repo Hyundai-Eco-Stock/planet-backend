@@ -1,4 +1,4 @@
-package org.phoenix.planet.configuration;
+package org.phoenix.planet.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
-import org.phoenix.planet.error.TokenException;
+import org.phoenix.planet.error.auth.TokenException;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;

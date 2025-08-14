@@ -12,3 +12,24 @@ mybatis:
   type-aliases-package: org.phoenix.planet
   configuration:
     map-underscore-to-camel-case: true
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+
+    region:
+      static: ap-northeast-2
+
+s3:
+  upload-path:
+    member-profile: release/member-profile/
+    product-img: release/product-img/
+  upload-bucket:
+    name: ${S3_BUCKET_NAME}
+
+cloudfront:
+  distribution-domain: ${CLOUDFRONT_DISTRIBUTION_DOMAIN}
+  key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID}
+  private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH}

@@ -1,22 +1,21 @@
-package org.phoenix.planet.configuration;
+package org.phoenix.planet.configuration.security;
 
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.provider.TokenProvider;
-import org.phoenix.planet.util.CookieUtil;
+import org.phoenix.planet.util.cookie.CookieUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component
@@ -32,49 +31,48 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication authentication
+        HttpServletRequest request,
+        HttpServletResponse response,
+        Authentication authentication
     ) throws IOException {
 
         // accessToken, refreshToken 발급
         String accessToken = tokenProvider.generateAccessToken(authentication);
         String refreshToken = tokenProvider.generateRefreshToken(authentication);
 
-        log.info("Generated Refresh Token: {}", refreshToken);
+        log.info("발급된 Access Token: {}", accessToken);
 
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
 
         String encodedEmail = URLEncoder.encode(principalDetails.member().getEmail(),
-                StandardCharsets.UTF_8);
+            StandardCharsets.UTF_8);
         String encodedName = URLEncoder.encode(principalDetails.member().getName(),
-                StandardCharsets.UTF_8);
-        String encodedProfile = URLEncoder.encode(principalDetails.member().getProfile(),
-                StandardCharsets.UTF_8);
+            StandardCharsets.UTF_8);
+        String encodedProfileUrl = URLEncoder.encode(principalDetails.member().getProfileUrl(),
+            StandardCharsets.UTF_8);
 
         String redirectUrl;
         log.info("pwdHash: {}", principalDetails.member().getPwdHash());
         if (principalDetails.member().getPwdHash() == null) {
             redirectUrl = UriComponentsBuilder
-                    .fromUriString(frontendOrigin)
-                    .path("/signup")
-                    .queryParam("accessToken", accessToken)
-                    .queryParam("email", encodedEmail)
-                    .queryParam("name", encodedName)
-                    .queryParam("profile", encodedProfile)
-                    .build(true)
-                    .toUriString();
-
+                .fromUriString(frontendOrigin)
+                .path("/signup")
+                .queryParam("accessToken", accessToken)
+                .queryParam("email", encodedEmail)
+                .queryParam("name", encodedName)
+                .queryParam("profileUrl", encodedProfileUrl)
+                .build(true)
+                .toUriString();
         } else {
             redirectUrl = UriComponentsBuilder
-                    .fromUriString(frontendOrigin)
-                    .path("/login/success")
-                    .queryParam("accessToken", accessToken)
-                    .queryParam("email", encodedEmail)
-                    .queryParam("name", encodedName)
-                    .queryParam("profile", encodedProfile)
-                    .build(true)
-                    .toUriString();
+                .fromUriString(frontendOrigin)
+                .path("/login/success")
+                .queryParam("accessToken", accessToken)
+                .queryParam("email", encodedEmail)
+                .queryParam("name", encodedName)
+                .queryParam("profileUrl", encodedProfileUrl)
+                .build(true)
+                .toUriString();
         }
         CookieUtil.addRefreshTokenCookie(response, refreshToken, cookieProps);
         response.sendRedirect(redirectUrl);

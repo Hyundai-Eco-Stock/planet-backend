@@ -1,4 +1,4 @@
-package org.phoenix.planet.configuration;
+package org.phoenix.planet.configuration.security;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,13 +6,16 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
-import org.phoenix.planet.error.TokenException;
+import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.provider.TokenProvider;
-import org.phoenix.planet.service.RefreshTokenService;
-import org.phoenix.planet.util.CookieUtil;
+import org.phoenix.planet.service.auth.RefreshTokenService;
+import org.phoenix.planet.util.cookie.CookieUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -20,10 +23,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 
 @Component
@@ -40,17 +39,19 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+
         String path = request.getRequestURI();
         path = path.replaceFirst("/api", "");
 
-        return path.equals("/auth/access-token/regenerate") || path.startsWith("/oauth2/authorization");
+        return path.equals("/auth/access-token/regenerate")
+            || path.startsWith("/oauth2/authorization");
     }
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain
     ) throws ServletException, IOException {
 
 //        log.info("--- Incoming Request Headers ---");
@@ -76,7 +77,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         } catch (TokenException e) {
             log.warn("Access Token validation failed. Checking Refresh Token. Error: {}",
-                    e.getError());
+                e.getError());
 
             // Determine the specific access token error
             AuthenticationError accessTokenError;
@@ -94,13 +95,13 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 // Access, Refresh 토큰 모두 유효하지 않으면 예외 발생 (refresh token redis 에 저장되어있는지도 확인)
                 if (!refreshTokenService.validateExist(refreshToken)) {
                     log.warn(
-                            "Refresh Token does not exist in Redis. Setting REFRESH_TOKEN_EXPIRED.");
+                        "Refresh Token does not exist in Redis. Setting REFRESH_TOKEN_EXPIRED.");
                     setErrorResponse(response, AuthenticationError.REFRESH_TOKEN_EXPIRED);
                     return;
                 }
 
                 log.warn(
-                        "Refresh Token is valid. Access Token needs regeneration. Setting ACCESS_TOKEN_EXPIRED to trigger client regeneration.");
+                    "Refresh Token is valid. Access Token needs regeneration. Setting ACCESS_TOKEN_EXPIRED to trigger client regeneration.");
                 // 3. Access Token은 만료되었지만 Refresh Token은 유효한 경우
                 // 클라이언트가 토큰 재발급을 요청하도록 유도하기 위해 동일한 예외를 발생시킵니다.
                 // 클라이언트 측 (apiClient.js)에서는 이 응답을 받아 /auth/access-token/regenerate 를 호출합니다.
@@ -109,8 +110,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
             } catch (TokenException refreshException) {
                 log.warn(
-                        "Refresh Token is also invalid or missing. Setting specific refresh token error: {}",
-                        refreshException.getError());
+                    "Refresh Token is also invalid or missing. Setting specific refresh token error: {}",
+                    refreshException.getError());
                 // Determine the specific refresh token error
                 AuthenticationError refreshTokenError;
                 if (refreshException.getError() == AuthenticationError.TOKEN_EXPIRED) {
@@ -161,7 +162,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void setErrorResponse(HttpServletResponse response, AuthenticationError error)
-            throws IOException {
+        throws IOException {
 
         response.setStatus(error.getHttpStatus().value());
         response.setHeader(TokenKey.X_ERROR_CODE.getValue(), error.name());

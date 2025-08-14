@@ -1,4 +1,4 @@
-package org.phoenix.planet.error;
+package org.phoenix.planet.error.auth;
 
 
 import lombok.Getter;

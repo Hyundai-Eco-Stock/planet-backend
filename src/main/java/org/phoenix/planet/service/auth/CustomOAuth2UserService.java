@@ -1,11 +1,14 @@
-package org.phoenix.planet.service;
+package org.phoenix.planet.service.auth;
 
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.auth.OAuth2UserInfo;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
-import org.phoenix.planet.domain.Member;
-import org.phoenix.planet.repository.MemberRepository;
+import org.phoenix.planet.dto.member.raw.Member;
+import org.phoenix.planet.mapper.MemberMapper;
+import org.phoenix.planet.util.file.CloudFrontFileUtil;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -13,11 +16,13 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final MemberRepository memberRepository;
+    private final CloudFrontFileUtil cloudFrontFileUtil;
+    private final MemberMapper memberMapper;
 
     @Transactional
     @Override
@@ -36,16 +41,23 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfo.of(registrationId, oAuth2UserAttributes);
 
         // 5. 회원가입 및 로그인
-        Member member = getOrSave(oAuth2UserInfo);
+        Optional<Member> memberOpt = memberMapper.findByEmail(oAuth2UserInfo.email());
+        Member member;
+        if (memberOpt.isPresent()) {
+            log.info("멤버 있음");
+            member = memberOpt.get();
+            if (!member.getProfileUrl().startsWith("https://")) {
+                member.updateProfile(
+                    cloudFrontFileUtil.generateSignedUrl(member.getProfileUrl(), 60));
+            }
+        } else {
+            log.info("멤버 없음");
+            member = oAuth2UserInfo.toDto();
+            memberMapper.insert(member);
+        }
 
         // 6. OAuth2User로 반환
         return new PrincipalDetails(member, oAuth2UserAttributes, userNameAttributeName);
     }
 
-    private Member getOrSave(OAuth2UserInfo oAuth2UserInfo) {
-
-        Member member = memberRepository.findByEmail(oAuth2UserInfo.email())
-            .orElseGet(oAuth2UserInfo::toEntity);
-        return memberRepository.save(member);
-    }
 }

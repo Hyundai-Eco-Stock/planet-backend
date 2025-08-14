@@ -1,10 +1,10 @@
-package org.phoenix.planet.util;
+package org.phoenix.planet.util.cookie;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
-import org.phoenix.planet.configuration.CookieProperties;
+import org.phoenix.planet.configuration.security.CookieProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseCookie.ResponseCookieBuilder;

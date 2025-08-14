@@ -16,10 +16,12 @@ public class RefreshTokenRepository {
 
     private final Duration expiration = Duration.ofDays(30);
 
-    // ── Public APIs ─────────────────────────────────────────────────────────────
 
     /**
      * 저장(기존 토큰 있으면 역매핑까지 정리 후 교체)
+     *
+     * @param memberId
+     * @param refreshToken
      */
     public void save(long memberId, String refreshToken) {
 
@@ -62,7 +64,7 @@ public class RefreshTokenRepository {
     }
 
     /**
-     * memberId 기준 삭제 (유저의 모든 기기에서 로그아웃) (역매핑 포함)
+     * memberId 기준 삭제 (유저의 모든 기기에서 로그아웃 / 역매핑 포함)
      */
     public void delete(long memberId) {
 
@@ -84,7 +86,7 @@ public class RefreshTokenRepository {
     }
 
     /**
-     * refreshToken으로 삭제 (해당 기기만 로그아웃)(역매핑 포함)
+     * refresh Token 으로 삭제 (해당 기기만 로그아웃 / 역매핑 포함)
      */
     public void deleteByToken(String refreshToken) {
 

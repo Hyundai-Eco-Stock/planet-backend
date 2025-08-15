@@ -1,4 +1,4 @@
-package org.phoenix.planet.provider;
+package org.phoenix.planet.service.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -19,10 +19,11 @@ import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.raw.Member;
+import org.phoenix.planet.dto.member.request.LoginRequest;
 import org.phoenix.planet.error.auth.TokenException;
-import org.phoenix.planet.service.auth.RefreshTokenService;
 import org.phoenix.planet.util.cookie.CookieUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,7 +34,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class TokenProvider {
+public class AuthServiceImpl implements AuthService {
 
     @Value("${jwt.key}")
     private String key;
@@ -50,6 +51,8 @@ public class TokenProvider {
     private final String KEY_MEMBER_ID = "memberId";
 
     private final RefreshTokenService refreshTokenService;
+    private final AuthenticationManager authenticationManager;
+
 
     @PostConstruct
     private void setSecretKey() {
@@ -58,12 +61,6 @@ public class TokenProvider {
         log.info("JWT Secret Key initialized.");
     }
 
-    /**
-     * refresh 토큰을 이용하여 Access 토큰 재발급
-     *
-     * @param refreshToken
-     * @return
-     */
     public String regenerateAccessToken(String refreshToken) {
 
         try {
@@ -82,23 +79,11 @@ public class TokenProvider {
         return generateAccessToken(getAuthentication(refreshToken));
     }
 
-    /**
-     * Access 토큰 발급
-     *
-     * @param authentication
-     * @return
-     */
     public String generateAccessToken(Authentication authentication) {
 
         return generateToken(authentication, ACCESS_TOKEN_EXPIRE_TIME);
     }
 
-    /**
-     * Refresh 토큰 발급 & Redis에 저장
-     *
-     * @param authentication
-     * @return
-     */
     public String generateRefreshToken(Authentication authentication) {
         // refresh 토큰 생성
         String refreshToken = generateToken(authentication, REFRESH_TOKEN_EXPIRE_TIME);
@@ -108,12 +93,6 @@ public class TokenProvider {
         return refreshToken;
     }
 
-    /**
-     * 토큰 만료기간이 아직 도달하지 않았는지 여부 확인
-     *
-     * @param token
-     * @return
-     */
     public void validateToken(String token) {
 
 //        log.info("Validating token: {}", token);
@@ -146,13 +125,6 @@ public class TokenProvider {
         }
     }
 
-    /**
-     * refresh/access 토큰 생성
-     *
-     * @param authentication
-     * @param expireTime
-     * @return
-     */
     private String generateToken(Authentication authentication, long expireTime) {
 
         Date now = new Date();
@@ -172,8 +144,6 @@ public class TokenProvider {
             .signWith(secretKey, SIG.HS512)
             .compact();
 
-//        log.info("Generated token for subject: {}, issuedAt: {}, expiresAt: {}",
-//            authentication.getName(), now, expiredDate);
         return generatedToken;
     }
 
@@ -186,14 +156,9 @@ public class TokenProvider {
 
     public Authentication getAuthentication(String token) {
 
-//        log.info("Getting authentication for token: {}", token);
         Claims claims = parseClaims(token);
         List<SimpleGrantedAuthority> authorities = getAuthorities(claims);
 
-//        log.info("Claims: subject={}, role={}", claims.getSubject(), claims.get(KEY_ROLE));
-//        log.info("Authorities: {}", authorities);
-
-        // Member 객체 생성 (DB 조회 없이)
         Long memberId = claims.get(KEY_MEMBER_ID, Long.class);
         String email = claims.getSubject();
         String roleString = claims.get(KEY_ROLE, String.class);
@@ -213,6 +178,15 @@ public class TokenProvider {
             token, authorities);
         log.info("Authentication object created: {}", authentication);
         return authentication;
+    }
+
+    @Override
+    public Authentication login(LoginRequest loginRequest) {
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+            loginRequest.email(),
+            loginRequest.password());
+        return authenticationManager.authenticate(authentication);
     }
 
     /**

@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
-import org.phoenix.planet.provider.TokenProvider;
+import org.phoenix.planet.service.auth.AuthService;
 import org.phoenix.planet.util.cookie.CookieUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -25,7 +25,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     @Value("${frontend.origin}")
     private String frontendOrigin;
 
-    private final TokenProvider tokenProvider;
+    private final AuthService authService;
 
     private final CookieProperties cookieProps;
 
@@ -37,8 +37,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     ) throws IOException {
 
         // accessToken, refreshToken 발급
-        String accessToken = tokenProvider.generateAccessToken(authentication);
-        String refreshToken = tokenProvider.generateRefreshToken(authentication);
+        String accessToken = authService.generateAccessToken(authentication);
+        String refreshToken = authService.generateRefreshToken(authentication);
 
         log.info("발급된 Access Token: {}", accessToken);
 

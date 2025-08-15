@@ -12,6 +12,8 @@ services:
       - planet_network
     cpus: 1
     mem_limit: 2g
+    volumes: # 호스트 경로 → 컨테이너 경로
+      - ../pk-APKA56ROHWDOECDQQLPK.pem:/app/secrets/pk-APKA56ROHWDOECDQQLPK.pem:ro
 
 networks:
   planet_network:

@@ -1,9 +1,11 @@
 package org.phoenix.planet.mapper;
 
+import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.dto.member.raw.Member;
+import org.phoenix.planet.dto.member.response.MemberListResponse;
 
 @Mapper
 public interface MemberMapper {
@@ -11,6 +13,8 @@ public interface MemberMapper {
     Optional<Member> findById(@Param("memberId") long memberId);
 
     Optional<Member> findByEmail(@Param("email") String email);
+
+    List<MemberListResponse> findAll();
 
     void insert(Member member);
 

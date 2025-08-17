@@ -111,5 +111,15 @@
         FROM MEMBER
         WHERE email = #{email}
     </select>
+    
+    <select id="findAll" resultType="org.phoenix.planet.dto.member.response.MemberListResponse">
+        SELECT
+        member_id,
+        email,
+        name,
+        "SEX"
+        FROM MEMBER
+        WHERE role = 'USER'
+    </select>
 
 </mapper>

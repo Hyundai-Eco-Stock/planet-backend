@@ -1,7 +1,9 @@
 package org.phoenix.planet.service.member;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
+import org.phoenix.planet.dto.member.response.MemberListResponse;
 import org.phoenix.planet.mapper.MemberMapper;
 import org.phoenix.planet.util.file.S3FileUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,5 +35,11 @@ public class MemberServiceImpl implements MemberService {
 
         // 멤버 정보 수정
         memberMapper.updatePwdHash(loginMemberId, pwdHash);
+    }
+
+    @Override
+    public List<MemberListResponse> searchAllMembers() {
+
+        return memberMapper.findAll();
     }
 }

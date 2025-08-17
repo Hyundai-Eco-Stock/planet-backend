@@ -4,7 +4,7 @@
 /h2-data/**
 **.db
 # SQL문
-**.sql
+#**.sql
 .env
 
 

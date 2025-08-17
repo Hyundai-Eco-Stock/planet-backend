@@ -176,7 +176,7 @@ public class AuthServiceImpl implements AuthService {
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails,
             token, authorities);
-        log.info("Authentication object created: {}", authentication);
+//        log.info("Authentication object created: {}", authentication);
         return authentication;
     }
 

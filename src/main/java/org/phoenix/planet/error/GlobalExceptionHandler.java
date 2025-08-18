@@ -3,6 +3,7 @@ package org.phoenix.planet.error;
 import java.util.HashMap;
 import java.util.Map;
 import org.phoenix.planet.error.auth.TokenException;
+import org.phoenix.planet.error.order.OrderException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -46,6 +47,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(body);
+    }
+
+    /**
+     * 주문 관련 예외 처리
+     */
+    @ExceptionHandler(OrderException.class)
+    public ResponseEntity<Map<String, Object>> handleOrderException(OrderException e) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", e.getError().name());
+        body.put("message", e.getError().getValue());
+
+        return ResponseEntity
+                .status(e.getError().getHttpStatus())
+                .header("X-Error-Code", e.getError().name())
+                .body(body);
     }
 
 }

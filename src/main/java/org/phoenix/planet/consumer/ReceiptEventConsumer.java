@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.phoenix.planet.dto.receipt.PaperBagReceiptCreateRequest;
-import org.phoenix.planet.issuer.EcoStockIssuer;
+import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -16,16 +16,16 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ReceiptEventConsumer {
 
-    private final EcoStockIssuer ecoStockIssuer;
+    private final EcoStockIssueService ecoStockIssueService;
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = "eco.receipt-detected")
+    @KafkaListener(topics = "eco.paper-bag-no-use-receipt-detected")
     public void onMessage(String message) throws JsonProcessingException {
 
         PaperBagReceiptCreateRequest event = objectMapper.readValue(message,
             PaperBagReceiptCreateRequest.class);
         log.info("Successfully deserialized event: {}", event);
-        ecoStockIssuer.issueFromReceipt(event);
+        ecoStockIssueService.publish(event.memberId(), 4L, 1);
     }
 
     @DltHandler

@@ -12,10 +12,12 @@ import org.springframework.stereotype.Service;
 public class ReceiptHistoryServiceImpl implements ReceiptHistoryService {
 
     private final ReceiptEventProducer receiptEventProducer;
+//    private final ReceiptHistoryMapper receiptHistoryMapper;
 
     @Override
     public void createNoUseReceipt(PaperBagReceiptCreateRequest request) {
 
+//        receiptHistoryMapper.createNoUseReceipt(request);
         receiptEventProducer.publish("eco.paper-bag-no-use-receipt-detected", null, request);
     }
 }

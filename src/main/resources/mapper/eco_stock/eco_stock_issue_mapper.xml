@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.EcoStockIssueMapper">
+    
+    <insert id="insert">
+        <selectKey keyProperty="stockIssueId" resultType="long" order="BEFORE">
+            SELECT SEQ_STOCK_ISSUE.NEXTVAL FROM DUAL
+        </selectKey>
+        
+        INSERT INTO stock_issue (
+        stock_issue_id,
+        start_price, -- TODO: 향후 start_price join 해서 넣기
+        status,
+        source_type,
+        member_id,
+        eco_stock_id
+        ) VALUES (
+        #{stockIssueId},
+        0,
+        'ISSUED',
+        'ETC',
+        #{memberId},
+        #{ecoStockId}
+        )
+    </insert>
+</mapper>

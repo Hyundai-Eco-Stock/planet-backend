@@ -41,8 +41,10 @@ pipeline {
         ]) {
           sh '''
             echo "[INFO] Loading environment variables from .env file..."
+            
+            # Use . instead of source for sh compatibility
             set -a  # automatically export all variables
-            source "$ENV_FILE"
+            . "$ENV_FILE"
             set +a
             
             echo "[INFO] Environment variables loaded:"

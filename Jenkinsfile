@@ -23,20 +23,20 @@ pipeline {
     stage('Setup') {
       steps {
         script {
-          // Check if packages are already installed
-          def packagesInstalled = sh(
-            script: 'dpkg -l | grep -E "(awscli|curl|python3-pip)" | wc -l',
+          // Check if AWS CLI is available
+          def awsInstalled = sh(
+            script: 'which aws || echo "notfound"',
             returnStdout: true
           ).trim()
           
-          if (packagesInstalled.toInteger() < 3) {
+          if (awsInstalled.contains('notfound')) {
             echo "[INFO] Installing required packages..."
             sh '''
               apt-get update -qq
               apt-get install -y curl unzip python3 python3-pip awscli
             '''
           } else {
-            echo "[INFO] Packages already installed, skipping..."
+            echo "[INFO] AWS CLI already available, skipping package installation..."
           }
         }
         

@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'openjdk:21-jdk-slim'
+      image 'cimg/openjdk:21.0'
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }

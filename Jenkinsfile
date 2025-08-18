@@ -25,11 +25,11 @@ pipeline {
         sh '''
           echo "[INFO] Installing required packages..."
           apt-get update -qq
-          apt-get install -y curl unzip python3 python3-pip docker.io awscli
+          apt-get install -y curl unzip python3 python3-pip awscli
           
           echo "[INFO] Tool versions:"
           java -version
-          docker --version
+          which docker && docker --version || echo "Docker not available"
           aws --version
         '''
       }

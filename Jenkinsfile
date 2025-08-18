@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'cimg/openjdk:21.0'
+      image 'cimg/openjdk:21.0-aws'  // AWS CLI가 미리 설치된 이미지
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
@@ -24,31 +24,21 @@ pipeline {
   }
   
   stages {
-    stage('Checkout & Setup') {
+    stage('Checkout & Build') {
       parallel {
         stage('Checkout') {
           steps {
             checkout scm
           }
         }
-        stage('Setup Tools') {
+        stage('Verify Tools') {
           steps {
-            script {
-              def awsInstalled = sh(
-                script: 'command -v aws >/dev/null 2>&1 && echo "found" || echo "notfound"',
-                returnStdout: true
-              ).trim()
-              
-              if (awsInstalled == 'notfound') {
-                echo "[INFO] Installing AWS CLI..."
-                sh '''
-                  apt-get update -qq
-                  apt-get install -y --no-install-recommends awscli
-                '''
-              } else {
-                echo "[INFO] AWS CLI already available"
-              }
-            }
+            sh '''
+              echo "[INFO] Tool versions:"
+              java -version
+              docker --version
+              aws --version
+            '''
           }
         }
       }
@@ -86,7 +76,7 @@ pipeline {
               docker login --username AWS --password-stdin 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com
             
             echo "[INFO] Building & pushing Docker image..."
-            docker build -t "$ECR_REPO:$IMAGE_TAG" . --no-cache=true
+            docker build -t "$ECR_REPO:$IMAGE_TAG" . --no-cache=false
             docker push "$ECR_REPO:$IMAGE_TAG"
             
             echo "[INFO] ✅ Image pushed successfully!"

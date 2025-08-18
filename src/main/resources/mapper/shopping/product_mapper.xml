@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.ProductMapper">
+    
+    <resultMap id="ProductResultMap" type="org.phoenix.planet.dto.product.raw.Product">
+        <id column="product_id" property="id"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="brand_id" property="brandId"/>
+        <result column="name" property="name"/>
+        <result column="price" property="price"/>
+        <result column="quantity" property="quantity"/>
+        <result column="eco_deal_status" property="ecoDealStatus"/>
+        <result column="sale_percent" property="salePercent"/>
+        <result column="created_at" property="createdAt" jdbcType="DATE"
+            javaType="java.time.LocalDateTime"/>
+        <result column="updated_at" property="updatedAt" jdbcType="DATE"
+            javaType="java.time.LocalDateTime"/>
+    </resultMap>
+    
+    <!-- Insert -->
+    <insert id="insert" parameterType="org.phoenix.planet.dto.product.raw.Product">
+        <selectKey keyProperty="id" resultType="long" order="BEFORE">
+            SELECT SEQ_PRODUCT.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO PRODUCT (
+        product_id,
+        category_id,
+        brand_id,
+        name,
+        price,
+        quantity,
+        eco_deal_status,
+        sale_percent,
+        created_at,
+        updated_at
+        ) VALUES (
+        #{id},
+        #{categoryId, jdbcType=NUMERIC},
+        #{brandId, jdbcType=NUMERIC},
+        #{name, jdbcType=VARCHAR},
+        #{price, jdbcType=NUMERIC},
+        #{quantity, jdbcType=NUMERIC},
+        #{ecoDealStatus, jdbcType=VARCHAR},
+        #{salePercent, jdbcType=NUMERIC},
+        SYSDATE,
+        SYSDATE
+        )
+    </insert>
+    
+    <!-- Update -->
+    <update id="update" parameterType="org.phoenix.planet.dto.product.raw.Product">
+        UPDATE PRODUCT
+        SET
+        category_id = #{categoryId, jdbcType=NUMERIC},
+        brand_id = #{brandId, jdbcType=NUMERIC},
+        name = #{name, jdbcType=VARCHAR},
+        price = #{price, jdbcType=NUMERIC},
+        quantity = #{quantity, jdbcType=NUMERIC},
+        eco_deal_status = #{ecoDealStatus, jdbcType=VARCHAR},
+        sale_percent = #{salePercent, jdbcType=NUMERIC},
+        updated_at = SYSDATE
+        WHERE product_id = #{id}
+    </update>
+    
+    <!-- Delete -->
+    <delete id="delete" parameterType="long">
+        DELETE FROM PRODUCT
+        WHERE product_id = #{productId}
+    </delete>
+    
+    <!-- Find by ID -->
+    <select id="findById" parameterType="long" resultMap="ProductResultMap">
+        SELECT
+        product_id,
+        category_id,
+        brand_id,
+        name,
+        price,
+        quantity,
+        eco_deal_status,
+        sale_percent,
+        created_at,
+        updated_at
+        FROM PRODUCT
+        WHERE product_id = #{productId}
+    </select>
+    
+    <!-- Find All -->
+    <select id="findAll" resultMap="ProductResultMap">
+        SELECT
+        product_id,
+        category_id,
+        brand_id,
+        name,
+        price,
+        quantity,
+        eco_deal_status,
+        sale_percent,
+        created_at,
+        updated_at
+        FROM PRODUCT
+        ORDER BY product_id DESC
+    </select>
+    <select id="findTodayAllEcoProducts"
+        resultType="org.phoenix.planet.dto.product.response.EcoProductListResponse">
+        SELECT
+        p.product_id AS productId,
+        p.category_id AS categoryId,
+        c.name AS categoryName,
+        p.brand_id AS brandId,
+        p.name AS name,
+        p.price AS price,
+        p.quantity AS quantity,
+        p.sale_percent AS salePercent
+        FROM product p
+        LEFT JOIN product_category c
+        ON c.category_id = p.category_id
+        WHERE p.eco_deal_status IS NOT NULL
+        AND TRUNC(p.created_at) = TRUNC(SYSDATE)
+        ORDER BY p.created_at DESC
+    </select>
+
+</mapper>

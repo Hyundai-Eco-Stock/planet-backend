@@ -22,9 +22,9 @@
             javaType="org.phoenix.planet.constant.Sex"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
         
-        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
+        <result column="created_at" property="createdAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
-        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"
+        <result column="updated_at" property="updatedAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
     </resultMap>
     
@@ -110,6 +110,16 @@
         updated_at
         FROM MEMBER
         WHERE email = #{email}
+    </select>
+    
+    <select id="findAll" resultType="org.phoenix.planet.dto.member.response.MemberListResponse">
+        SELECT
+        member_id,
+        email,
+        name,
+        "SEX"
+        FROM MEMBER
+        WHERE role = 'USER'
     </select>
 
 </mapper>

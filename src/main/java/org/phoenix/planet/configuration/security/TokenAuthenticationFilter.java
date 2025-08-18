@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
 import org.phoenix.planet.error.auth.TokenException;
-import org.phoenix.planet.provider.TokenProvider;
+import org.phoenix.planet.service.auth.AuthService;
 import org.phoenix.planet.service.auth.RefreshTokenService;
 import org.phoenix.planet.util.cookie.CookieUtil;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(TokenAuthenticationFilter.class);
 
-    private final TokenProvider tokenProvider;
+    private final AuthService authService;
 
     private final RefreshTokenService refreshTokenService;
 
@@ -44,6 +44,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         path = path.replaceFirst("/api", "");
 
         return path.equals("/auth/access-token/regenerate")
+            || path.equals("/auth/login")
             || path.startsWith("/oauth2/authorization");
     }
 
@@ -54,14 +55,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         FilterChain filterChain
     ) throws ServletException, IOException {
 
-//        log.info("--- Incoming Request Headers ---");
-//        request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
-//            request.getHeaders(headerName).asIterator().forEachRemaining(headerValue -> {
-//                log.info("{}: {}", headerName, headerValue);
-//            });
-//        });
-//        log.info("--------------------------------");
-
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
@@ -71,7 +64,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // 1. Access Token 유효성 검사
-            tokenProvider.validateToken(accessToken);
+            authService.validateToken(accessToken);
             setAuthentication(accessToken);
             filterChain.doFilter(request, response);
             return;
@@ -91,7 +84,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             String refreshToken = CookieUtil.resolveRefreshTokenFromCookie(request);
 
             try {
-                tokenProvider.validateToken(refreshToken);
+                authService.validateToken(refreshToken);
                 // Access, Refresh 토큰 모두 유효하지 않으면 예외 발생 (refresh token redis 에 저장되어있는지도 확인)
                 if (!refreshTokenService.validateExist(refreshToken)) {
                     log.warn(
@@ -100,8 +93,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                log.warn(
-                    "Refresh Token is valid. Access Token needs regeneration. Setting ACCESS_TOKEN_EXPIRED to trigger client regeneration.");
+                log.warn("Refresh Token is valid. Access Token needs regeneration.");
                 // 3. Access Token은 만료되었지만 Refresh Token은 유효한 경우
                 // 클라이언트가 토큰 재발급을 요청하도록 유도하기 위해 동일한 예외를 발생시킵니다.
                 // 클라이언트 측 (apiClient.js)에서는 이 응답을 받아 /auth/access-token/regenerate 를 호출합니다.
@@ -133,11 +125,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
      */
     private void setAuthentication(String accessToken) {
 
-        Authentication authentication = tokenProvider.getAuthentication(accessToken);
-//        log.info("Authentication object from TokenProvider: {}", authentication);
+        Authentication authentication = authService.getAuthentication(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-//        log.info("SecurityContextHolder updated. Current authentication: {}",
-//            SecurityContextHolder.getContext().getAuthentication());
     }
 
     /**
@@ -149,8 +138,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private String resolveAccessToken(HttpServletRequest request) {
 
         String header = request.getHeader("Authorization");
-//        log.info("Header 'Authorization' value: [{}]", header);
-//        log.info("Header string length: {}", header != null ? header.length() : 0);
         if (header == null || header.length() == 0) {
             return null;
         }

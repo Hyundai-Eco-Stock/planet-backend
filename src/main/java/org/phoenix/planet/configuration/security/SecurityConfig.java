@@ -1,11 +1,13 @@
 package org.phoenix.planet.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.service.auth.CustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,19 +22,32 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 
 @Configuration
-//@EnableWebSecurity
-//@EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
     private final CorsConfigurationSource corsConfigurationSource;
-    private final ObjectMapper objectMapper;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final UrlRewriteFilter urlRewriteFilter;
+    private final TokenExceptionFilter tokenExceptionFilter;
 
+    public SecurityConfig(CustomOAuth2UserService oAuth2UserService, @Lazy OAuth2SuccessHandler oAuth2SuccessHandler, @Lazy TokenAuthenticationFilter tokenAuthenticationFilter, CorsConfigurationSource corsConfigurationSource, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, UrlRewriteFilter urlRewriteFilter, @Lazy TokenExceptionFilter tokenExceptionFilter) {
+        this.oAuth2UserService = oAuth2UserService;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+        this.tokenAuthenticationFilter = tokenAuthenticationFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+        this.urlRewriteFilter = urlRewriteFilter;
+        this.tokenExceptionFilter = tokenExceptionFilter;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+        AuthenticationConfiguration authenticationConfiguration) throws Exception {
+
+        return authenticationConfiguration.getAuthenticationManager();
+    }
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
@@ -74,7 +89,8 @@ public class SecurityConfig {
                     .requestMatchers(
                         new AntPathRequestMatcher("/"),
                         new AntPathRequestMatcher("/auth/success"),
-                        new AntPathRequestMatcher("/auth/access-token/regenerate")
+                        new AntPathRequestMatcher("/auth/access-token/regenerate"),
+                        new AntPathRequestMatcher("/auth/login")
                     ).permitAll()
                     .anyRequest().authenticated()
             )
@@ -88,12 +104,9 @@ public class SecurityConfig {
 
             // JWT 관련 설정
             .addFilterBefore(urlRewriteFilter, OAuth2AuthorizationRequestRedirectFilter.class)
+            .addFilterBefore(tokenExceptionFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(tokenAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class)
-
-            // 토큰 예외 핸들링
-            .addFilterAfter(new TokenExceptionFilter(objectMapper),
-                TokenAuthenticationFilter.class)
 
             // 인증 예외 핸들링
             .exceptionHandling((exceptions) -> exceptions

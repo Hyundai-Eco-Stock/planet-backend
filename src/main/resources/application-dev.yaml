@@ -21,8 +21,12 @@ springdoc:
 
 jwt:
   key: ${JWT_SECRET_KEY}
-  access-token-expire-millis: 300000 # 1000 * 60 * 5= 5 minutes
-  refresh-token-expire-millis: 3600000 # 1000 * 60 * 60 = 1 hour
+  # 60000 = 1000 * 60 = 1 minutes
+  # 300000 = 1000 * 60 * 5 = 5 minutes
+  # 3600000 = 1000 * 60 * 60 = 1 hour
+  # 2592000000 = 1000 * 60 * 60 * 24 * 30 = 30 days
+  access-token-expire-millis: 60000
+  refresh-token-expire-millis: 2592000000
 
 spring:
   application:
@@ -50,6 +54,26 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1
+    consumer:
+      group-id: planet-app
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: org.phoenix.planet.dto.receipt.PaperBagReceiptCreateRequest
+    listener:
+      ack-mode: RECORD
+      concurrency: 1
 
   datasource:
     url: ${DB_URL}
@@ -60,4 +84,5 @@ spring:
   data:
     redis:
       host: ${REDIS_HOST}
-      port: 6379
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}

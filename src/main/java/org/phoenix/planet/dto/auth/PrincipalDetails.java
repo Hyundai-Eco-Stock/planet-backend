@@ -15,9 +15,15 @@ public record PrincipalDetails(
     String attributeKey
 ) implements OAuth2User, UserDetails {
 
+    public PrincipalDetails(Member member) {
+        this(member, null, null);
+    }
+
     @Override
     public String getName() {
-
+        if (attributes == null) {
+            return member.getEmail();
+        }
         return attributes.get(attributeKey).toString();
     }
 
@@ -37,7 +43,7 @@ public record PrincipalDetails(
     @Override
     public String getPassword() {
 
-        return null;
+        return member.getPwdHash();
     }
 
     @Override

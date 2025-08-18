@@ -57,7 +57,9 @@ public class SecurityConfig {
                 "/favicon.ico", // favicon
                 "/h2-console/**", // h2 콘솔
                 "/swagger-ui/**", // Swagger
-                "/v3/api-docs/**" // Swagger
+                "/v3/api-docs/**", // Swagger,
+                    "/health",
+                    "/api/health"
             );
     }
 

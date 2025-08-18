@@ -109,7 +109,7 @@ pipeline {
                 "docker pull 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest",
                 "docker rm -f planet || true",
                 "docker run -d --name planet -p 8080:8080 --restart unless-stopped --env-file /home/ec2-user/.env 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest",
-                "echo \"✅ Deployment completed on $(hostname)\""
+                "echo Deployment completed on $(hostname)"
               ]' \
               --region ap-northeast-2
             

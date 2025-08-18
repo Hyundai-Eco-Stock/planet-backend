@@ -8,7 +8,9 @@ pipeline {
   
   options { 
     timestamps()
-    timeout(time: 20, unit: 'MINUTES')
+    timeout(time: 15, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    skipDefaultCheckout()
   }
   
   environment {
@@ -17,48 +19,49 @@ pipeline {
     IMAGE_TAG = 'latest'
     CONTAINER_NAME = 'planet'
     ECR_REPO = '958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet'
+    GRADLE_USER_HOME = '/tmp/.gradle'
+    GRADLE_OPTS = '-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true'
   }
   
   stages {
-    stage('Setup') {
-      steps {
-        script {
-          // Check if AWS CLI is available
-          def awsInstalled = sh(
-            script: 'which aws || echo "notfound"',
-            returnStdout: true
-          ).trim()
-          
-          if (awsInstalled.contains('notfound')) {
-            echo "[INFO] Installing required packages..."
-            sh '''
-              apt-get update -qq
-              apt-get install -y curl unzip python3 python3-pip awscli
-            '''
-          } else {
-            echo "[INFO] AWS CLI already available, skipping package installation..."
+    stage('Checkout & Setup') {
+      parallel {
+        stage('Checkout') {
+          steps {
+            checkout scm
           }
         }
-        
-        sh '''
-          echo "[INFO] Tool versions:"
-          java -version
-          which docker && docker --version || echo "Docker not available"
-          aws --version
-        '''
+        stage('Setup Tools') {
+          steps {
+            script {
+              def awsInstalled = sh(
+                script: 'command -v aws >/dev/null 2>&1 && echo "found" || echo "notfound"',
+                returnStdout: true
+              ).trim()
+              
+              if (awsInstalled == 'notfound') {
+                echo "[INFO] Installing AWS CLI..."
+                sh '''
+                  apt-get update -qq
+                  apt-get install -y --no-install-recommends awscli
+                '''
+              } else {
+                echo "[INFO] AWS CLI already available"
+              }
+            }
+          }
+        }
       }
     }
     
     stage('Build') {
       steps {
         sh '''
-          echo "[INFO] Setting executable permissions..."
+          echo "[INFO] Setting up Gradle..."
           chmod +x ./gradlew
           
-          echo "[INFO] Building with Gradle (skipping tests)..."
-          # Use Gradle wrapper cache
-          export GRADLE_USER_HOME=~/.gradle
-          ./gradlew build -x test --no-daemon --build-cache
+          echo "[INFO] Building with Gradle..."
+          ./gradlew build -x test --no-daemon --build-cache --parallel --info
           
           echo "[INFO] Build artifacts:"
           ls -la build/libs/
@@ -73,21 +76,20 @@ pipeline {
           string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
         ]) {
           sh '''
-            echo "[INFO] Configuring AWS credentials..."
+            echo "[INFO] Configuring AWS & ECR login..."
             aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
             aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
             aws configure set default.region "ap-northeast-2"
             
-            echo "[INFO] Logging into Amazon ECR..."
-            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet
+            # ECR login
+            aws ecr get-login-password --region ap-northeast-2 | \
+              docker login --username AWS --password-stdin 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com
             
-            echo "[INFO] Building Docker image..."
-            docker build -t 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest .
+            echo "[INFO] Building & pushing Docker image..."
+            docker build -t "$ECR_REPO:$IMAGE_TAG" . --no-cache=true
+            docker push "$ECR_REPO:$IMAGE_TAG"
             
-            echo "[INFO] Pushing to ECR..."
-            docker push 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest
-            
-            echo "[INFO] ✅ Docker image pushed successfully!"
+            echo "[INFO] ✅ Image pushed successfully!"
           '''
         }
       }
@@ -103,33 +105,34 @@ pipeline {
           string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
         ]) {
           sh '''
-            echo "[INFO] Finding EC2 instances in Auto Scaling Group..."
+            echo "[INFO] Finding EC2 instances..."
             INSTANCE_IDS=$(aws ec2 describe-instances \
               --filters "Name=tag:aws:autoscaling:groupName,Values=planet" "Name=instance-state-name,Values=running" \
-              --query "Reservations[].Instances[].InstanceId" --output text)
-            
-            echo "[INFO] Deploying to instances: $INSTANCE_IDS"
+              --query "Reservations[].Instances[].InstanceId" --output text --region ap-northeast-2)
             
             if [ -z "$INSTANCE_IDS" ]; then
-              echo "[ERROR] No running instances found in ASG: planet"
+              echo "[ERROR] No running instances found"
               exit 1
             fi
             
-            echo "[INFO] Sending deployment command via SSM..."
+            echo "[INFO] Deploying to: $INSTANCE_IDS"
+            
+            # Send deployment command
             aws ssm send-command \
               --document-name "AWS-RunShellScript" \
-              --comment "Deploy Docker container" \
+              --comment "Deploy planet container" \
               --instance-ids $INSTANCE_IDS \
               --parameters commands='[
-                "aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet",
+                "aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com",
                 "docker pull 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest",
                 "docker rm -f planet || true",
                 "docker run -d --name planet -p 8080:8080 --restart unless-stopped --env-file /home/ec2-user/.env 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest",
-                "echo Deployment completed on $(hostname)"
+                "docker ps --filter name=planet"
               ]' \
-              --region ap-northeast-2
+              --region ap-northeast-2 \
+              --output text
             
-            echo "[INFO] ✅ Deployment command sent!"
+            echo "[INFO] ✅ Deployment initiated!"
           '''
         }
       }
@@ -138,15 +141,15 @@ pipeline {
   
   post {
     success {
-      echo "🎉 Backend deployment completed successfully!"
+      echo "🎉 Pipeline completed successfully!"
     }
     failure {
-      echo "❌ Backend deployment failed!"
+      echo "❌ Pipeline failed!"
     }
     cleanup {
       sh '''
-        echo "[INFO] Cleaning up Docker images..."
-        docker system prune -f || true
+        echo "[INFO] Cleanup..."
+        docker system prune -f --volumes || true
       '''
     }
   }

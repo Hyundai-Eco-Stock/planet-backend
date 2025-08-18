@@ -22,9 +22,9 @@
             javaType="org.phoenix.planet.constant.Sex"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
         
-        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
+        <result column="created_at" property="createdAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
-        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"
+        <result column="updated_at" property="updatedAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
     </resultMap>
     

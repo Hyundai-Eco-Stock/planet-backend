@@ -10,9 +10,9 @@
         type="org.phoenix.planet.dto.product.raw.ProductCategory">
         <id column="category_id" property="id"/>
         <result column="name" property="name"/>
-        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
+        <result column="created_at" property="createdAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
-        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"
+        <result column="updated_at" property="updatedAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
     </resultMap>
     

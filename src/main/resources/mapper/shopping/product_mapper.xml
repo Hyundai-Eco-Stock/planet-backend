@@ -14,9 +14,9 @@
         <result column="quantity" property="quantity"/>
         <result column="eco_deal_status" property="ecoDealStatus"/>
         <result column="sale_percent" property="salePercent"/>
-        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
+        <result column="created_at" property="createdAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
-        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"
+        <result column="updated_at" property="updatedAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
     </resultMap>
     

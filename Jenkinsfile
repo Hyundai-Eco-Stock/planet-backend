@@ -22,11 +22,25 @@ pipeline {
   stages {
     stage('Setup') {
       steps {
-        sh '''
-          echo "[INFO] Installing required packages..."
-          apt-get update -qq
-          apt-get install -y curl unzip python3 python3-pip awscli
+        script {
+          // Check if packages are already installed
+          def packagesInstalled = sh(
+            script: 'dpkg -l | grep -E "(awscli|curl|python3-pip)" | wc -l',
+            returnStdout: true
+          ).trim()
           
+          if (packagesInstalled.toInteger() < 3) {
+            echo "[INFO] Installing required packages..."
+            sh '''
+              apt-get update -qq
+              apt-get install -y curl unzip python3 python3-pip awscli
+            '''
+          } else {
+            echo "[INFO] Packages already installed, skipping..."
+          }
+        }
+        
+        sh '''
           echo "[INFO] Tool versions:"
           java -version
           which docker && docker --version || echo "Docker not available"
@@ -42,7 +56,9 @@ pipeline {
           chmod +x ./gradlew
           
           echo "[INFO] Building with Gradle (skipping tests)..."
-          ./gradlew build -x test --no-daemon
+          # Use Gradle wrapper cache
+          export GRADLE_USER_HOME=~/.gradle
+          ./gradlew build -x test --no-daemon --build-cache
           
           echo "[INFO] Build artifacts:"
           ls -la build/libs/

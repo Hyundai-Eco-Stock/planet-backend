@@ -96,7 +96,7 @@ public class AuthController {
 
         String profileUrl = principalDetails.member().getProfileUrl();
         if (profileUrl != null) {
-            if (!profileUrl.startsWith("https://")) {
+            if (!profileUrl.startsWith("http")) {
                 profileUrl = cloudFrontFileUtil.generateSignedUrl(profileUrl, 60);
             }
         }

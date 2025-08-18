@@ -1,23 +1,23 @@
-INSERT INTO product_category (category_id, name, created_at, updated_at)
-VALUES (1, '옷', SYSDATE, NULL);
+INSERT INTO product_category (category_id, name)
+VALUES (1, '옷');
 
-INSERT INTO product_category (category_id, name, created_at, updated_at)
-VALUES (2, '뷰티', SYSDATE, NULL);
+INSERT INTO product_category (category_id, name)
+VALUES (2, '뷰티');
 
-INSERT INTO product_category (category_id, name, created_at, updated_at)
-VALUES (3, '비누', SYSDATE, NULL);
+INSERT INTO product_category (category_id, name)
+VALUES (3, '비누');
 
-INSERT INTO product_category (category_id, name, created_at, updated_at)
-VALUES (4, '향수', SYSDATE, NULL);
+INSERT INTO product_category (category_id, name)
+VALUES (4, '향수');
 
-INSERT INTO product_category (category_id, name, created_at, updated_at)
-VALUES (5, '헤어', SYSDATE, NULL);
+INSERT INTO product_category (category_id, name)
+VALUES (5, '헤어');
 
-INSERT INTO product_category (category_id, name, created_at, updated_at)
-VALUES (6, '식기류', SYSDATE, NULL);
+INSERT INTO product_category (category_id, name)
+VALUES (6, '식기류');
 
-INSERT INTO product_category (category_id, name, created_at, updated_at)
-VALUES (7, '속옷', SYSDATE, NULL);
+INSERT INTO product_category (category_id, name)
+VALUES (7, '속옷');
 
 commit;
 

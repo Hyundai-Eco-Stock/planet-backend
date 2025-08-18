@@ -54,7 +54,7 @@ pipeline {
         withCredentials([
           string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
           string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
-          string(credentialsId: 'DOCKER_USERNAME', variable: 'ECR_REPO')
+          string(credentialsId: 'ECR_REPO', variable: 'ECR_REPO')
         ]) {
           sh '''
             echo "[INFO] Configuring AWS credentials..."
@@ -89,7 +89,7 @@ pipeline {
         withCredentials([
           string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
           string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
-          string(credentialsId: 'DOCKER_USERNAME', variable: 'ECR_REPO')
+          string(credentialsId: 'ECR_REPO', variable: 'ECR_REPO')
         ]) {
           sh '''
             echo "[INFO] Finding EC2 instances in Auto Scaling Group..."

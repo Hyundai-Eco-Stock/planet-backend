@@ -1,6 +1,10 @@
 server:
   port: 8080
 
+fcm:
+  credentials:
+    file: ${FIREBASE_CREDENTIALS_PATH}
+
 spring:
   servlet:
     multipart:

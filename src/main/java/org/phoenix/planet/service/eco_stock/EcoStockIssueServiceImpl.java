@@ -17,7 +17,7 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
     @Transactional
     public void publish(long memberId, long ecoStockId, int amount) {
 
-        log.info("종이백 미사용 에코스톡 발급");
+        log.info("종이백 미사용 에코스톡 발급 완료");
         for (int i = 0; i < amount; i++) {
             ecoStockIssueMapper.insert(memberId, ecoStockId);
         }

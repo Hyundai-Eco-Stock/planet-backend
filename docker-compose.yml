@@ -14,7 +14,7 @@ services:
     mem_limit: 2g
     volumes: # 호스트 경로 → 컨테이너 경로
       - /home/jaeyoung/jenkins_home/workspace/pk-APKA56ROHWDOECDQQLPK.pem:/app/secrets/pk-APKA56ROHWDOECDQQLPK.pem:ro
-
+      - /home/jaeyoung/jenkins_home/workspace/planet-firebase-adminsdk.json:/app/secrets/firebase-adminsdk.json:ro
 networks:
   planet_network:
     external: true

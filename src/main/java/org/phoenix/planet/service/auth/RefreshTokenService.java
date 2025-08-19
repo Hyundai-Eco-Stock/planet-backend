@@ -3,6 +3,7 @@ package org.phoenix.planet.service.auth;
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.repository.RefreshTokenRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -10,6 +11,7 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository repository;
 
+    @Transactional
     public void saveOrUpdate(long memberId, String refreshToken) {
 
         repository.save(memberId, refreshToken);

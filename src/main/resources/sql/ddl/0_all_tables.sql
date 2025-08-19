@@ -381,33 +381,3 @@ CREATE TABLE product_vector
         REFERENCES product (product_id)
 );
 CREATE SEQUENCE seq_product_vector START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-
-
--- --------------------------- 오프라인 결제 정보 -----------------------------
-CREATE TABLE offline_pay_history
-(
-    offline_pay_history_id NUMBER PRIMARY KEY,
-    price                  NUMBER               NOT NULL,
-    paid_at                DATE                 NOT NULL,
-    member_id              NUMBER               NOT NULL,
-    created_at             DATE DEFAULT SYSDATE NOT NULL,
-
-    CONSTRAINT fk_offline_pay_history_member FOREIGN KEY (member_id)
-        REFERENCES member (member_id)
-);
-CREATE SEQUENCE seq_offline_pay_history START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-
-
-CREATE TABLE offline_pay_product_history
-(
-    pay_product_offline_history_id NUMBER PRIMARY KEY,
-    product_name                   VARCHAR2(500)        NOT NULL,
-    product_price                  NUMBER               NOT NULL,
-    amount                         NUMBER               NOT NULL,
-    offline_pay_history_id         NUMBER               NOT NULL,
-    created_at                     DATE DEFAULT SYSDATE NOT NULL,
-
-    CONSTRAINT fk_offline_prod_pay
-        FOREIGN KEY (offline_pay_history_id) REFERENCES offline_pay_history (offline_pay_history_id)
-);
-CREATE SEQUENCE seq_offline_pay_product_history START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;

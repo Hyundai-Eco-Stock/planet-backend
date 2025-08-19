@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.OrderMapper">
+
+    <insert id="insertOrderHistory" parameterType="org.phoenix.planet.dto.order.raw.OrderHistory">
+        <selectKey keyProperty="orderHistoryId" resultType="Long" order="BEFORE">
+            SELECT SEQ_ORDER_HISTORY.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO ORDER_HISTORY(
+        ORDER_HISTORY_ID,
+        ORDER_NUMBER,
+        ORDER_STATUS,
+        ORIGIN_PRICE,
+        USED_POINT,
+        DONATION_PRICE,
+        FINAL_PAY_PRICE,
+        ECO_DEAL_QR_URL,
+        MEMBER_ID,
+        DEPARTMENT_STORE_ID,
+        CREATED_AT,
+        UPDATED_AT)
+        VALUES(
+        #{orderHistoryId},
+        #{orderNumber},
+        #{orderStatus},
+        #{originPrice},
+        #{usedPoint},
+        #{donationPrice},
+        #{finalPayPrice},
+        #{ecoDealQrUrl, jdbcType=VARCHAR},
+        #{memberId},
+        #{departmentStoreId, jdbcType=NUMERIC},
+        #{createdAt},
+        #{updatedAt}
+        )
+    </insert>
+
+    <insert id="insertOrderProduct" parameterType="org.phoenix.planet.dto.order.raw.OrderProduct">
+        INSERT INTO ORDER_PRODUCT(
+        ORDER_PRODUCT_ID,
+        ORDER_HISTORY_ID,
+        PRICE,
+        QUANTITY,
+        CANCEL_STATUS,
+        ORDER_TYPE,
+        PRODUCT_ID,
+        ECO_DEAL_DISCOUNT,
+        CREATED_AT,
+        UPDATED_AT)
+        VALUES(
+        SEQ_ORDER_PRODUCT.NEXTVAL,
+        #{orderHistoryId},
+        #{price},
+        #{quantity},
+        #{cancelStatus},
+        #{orderType},
+        #{productId},
+        #{ecoDealDiscount},
+        #{createdAt},
+        #{updatedAt}
+        )
+    </insert>
+
+</mapper>

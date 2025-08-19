@@ -17,6 +17,8 @@ public enum OrderError {
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다."),
     PRODUCT_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "현재 판매하지 않는 상품입니다."),
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "재고가 부족합니다."),
+    ECODEAL_PRODUCT_PICKUP_ONLY(HttpStatus.BAD_REQUEST, "에코딜 상품은 픽업만 가능합니다."),
+    NORMAL_PRODUCT_DELIVERY_ONLY(HttpStatus.BAD_REQUEST, "일반 상품은 배송만 가능합니다."),
 
     // 주문 상태 관련 에러
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),

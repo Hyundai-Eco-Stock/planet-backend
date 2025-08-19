@@ -11,6 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
+import org.phoenix.planet.dto.product.response.ProductCategoryDto;
+import org.phoenix.planet.dto.product.response.ProductCategoryResponse;
+import org.phoenix.planet.dto.product.response.ProductDto;
 import org.phoenix.planet.mapper.ProductMapper;
 import org.phoenix.planet.util.file.EsClient;
 import org.springframework.stereotype.Component;
@@ -54,5 +57,17 @@ public class ProductServiceImpl implements ProductService {
         fromDb.sort(Comparator.comparingInt(p -> rank.getOrDefault(p.getId(), Integer.MAX_VALUE)));
 
         return fromDb;
+    }
+
+    @Override
+    public ProductCategoryResponse findByCategory(Long categoryId) {
+        log.info("findByCategory called with category: {}", categoryId);
+        // 카테고리 전부 불러오고, 카테고리에 맞는 상품 전체 불러와야함.
+        List<ProductDto> list1 = productMapper.findByCategoryId(categoryId);
+        List<ProductCategoryDto> list2 = productMapper.findAllCategories();
+        return ProductCategoryResponse.builder()
+                .products(list1)
+                .categories(list2)
+                .build();
     }
 }

@@ -5,10 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
+import org.phoenix.planet.dto.product.response.ProductCategoryResponse;
 import org.phoenix.planet.dto.product.response.RecommendResponse;
 import org.phoenix.planet.service.product.ProductService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -26,5 +28,11 @@ public class ProductController {
         return RecommendResponse.builder()
                 .products(products)
                 .build();
+    }
+
+    @GetMapping
+    public ProductCategoryResponse findByCategory(@RequestParam Long categoryId) {
+        log.info("GET /products?category={} called", categoryId);
+        return productService.findByCategory(categoryId);
     }
 }

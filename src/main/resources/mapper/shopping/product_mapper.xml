@@ -132,4 +132,36 @@
       #{id}
     </foreach>
   </select>
+
+  <select id="findByCategoryId" parameterType="long"
+    resultType="org.phoenix.planet.dto.product.response.ProductDto">
+    SELECT
+    product_id,
+    category_id,
+    brand_id,
+    name,
+    price,
+    quantity,
+    eco_deal_status,
+    sale_percent,
+    created_at,
+    updated_at
+    FROM PRODUCT
+    <where>
+      <if test="categoryId != null">
+        category_id = #{categoryId}
+      </if>
+    </where>
+    ORDER BY product_id DESC
+  </select>
+
+  <select id="findAllCategories"
+    resultType="org.phoenix.planet.dto.product.response.ProductCategoryDto">
+    SELECT
+    category_id AS categoryId,
+    name AS categoryName,
+    image_url AS imageUrl
+    FROM product_category
+    ORDER BY category_id DESC
+  </select>
 </mapper>

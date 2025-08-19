@@ -10,14 +10,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ReceiptHistoryServiceImpl implements ReceiptHistoryService {
+public class OfflinePayServiceImpl implements OfflinePayService {
 
     private final ReceiptEventProducer receiptEventProducer;
-//    private final ReceiptHistoryMapper receiptHistoryMapper;
 
     @Override
     public void save(OfflinePayload offlinePayload) {
-        // OfflinePayHistory 와 offlinePayProductHistory 에 정보 저장
+        // TODO: OfflinePayHistory 와 offlinePayProductHistory 에 정보 저장
         receiptEventProducer.publish(KafkaTopic.OFFLINE_PAY_DETECTED.getValue(), null,
             offlinePayload);
     }

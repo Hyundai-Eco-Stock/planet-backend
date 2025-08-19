@@ -16,7 +16,7 @@
         SELECT department_store_id
         FROM department_store_product
         WHERE product_id = #{productId}
-        LIMIT 1
+        AND ROWNUM = 1
     </select>
 
 

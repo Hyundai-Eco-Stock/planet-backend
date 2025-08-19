@@ -19,4 +19,6 @@ public interface ProductMapper {
     List<Product> findAll();
 
     List<EcoProductListResponse> findTodayAllEcoProducts();
+
+    List<Product> findByIdIn(List<String> ids);
 }

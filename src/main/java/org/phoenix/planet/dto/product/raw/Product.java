@@ -24,9 +24,9 @@ public class Product {
 
     private String name;
 
-    private int price;
+    private Long price;
 
-    private long quantity;
+    private Integer quantity;
 
     private String ecoDealStatus;
 

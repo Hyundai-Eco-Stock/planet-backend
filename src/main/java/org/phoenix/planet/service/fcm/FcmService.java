@@ -26,8 +26,10 @@ public class FcmService {
                 .build();
 
             String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("Successfully sent message: " + response);
+            log.info("Successfully sent message: " + response);
         } catch (Exception e) {
+            // TODO: 향후에 kafka 토픽에 담아 다시 시도하도록 할 예정
+            // TODO: 커스텀 에러 던지기
             log.warn(e.getMessage());
         }
     }
@@ -48,6 +50,8 @@ public class FcmService {
                 response.getSuccessCount(), response.getFailureCount());
 
         } catch (Exception e) {
+            // TODO: 향후에 kafka 토픽에 담아 다시 시도하도록 할 예정
+            // TODO: 커스텀 에러 던지기
             log.warn("Error sending multicast message: {}", e.getMessage());
         }
     }

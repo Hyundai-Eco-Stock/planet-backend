@@ -12,50 +12,28 @@ import static org.phoenix.planet.constant.OrderError.*;
 
 /**
  * 주문 생성 요청 DTO
- * 장바구니에서 주문으로 넘어올 때 사용하는 DTO
  * 픽업과 일반배송은 동시 주문 불가능 (한 주문 내 모든 상품은 동일한 타입)
  */
 public record CreateOrderRequest(
         @NotEmpty(message = "주문할 상품이 없습니다") @Valid List<OrderProductRequest> products,  // 주문할 상품 목록
         @Min(value = 0, message = "사용 포인트는 0 이상이어야 합니다") Long usedPoint,
-        @Min(value = 0, message = "기부 금액은 0 이상이어야 합니다") Long donationPrice,
-        Long departmentStoreId  // 에코딜 주문(픽업 주문) 시, 필수
+        @Min(value = 0, message = "기부 금액은 0 이상이어야 합니다") Long donationPrice
 ) {
 
     public CreateOrderRequest {
         usedPoint = (usedPoint != null) ? usedPoint : 0L;
         donationPrice = (donationPrice != null) ? donationPrice : 0L;
-        validateOrderTypes(products, departmentStoreId);
+        validateOrderTypes(products);
     }
 
-    /**
-     * 주문 타입 검증 메서드
-     * 1. 픽업/배송 혼재 불가능
-     * 2. 픽업 주문 시 매장 필수
-     * 3. 배송 주문 시 매장 선택 불가
-     */
-    private void validateOrderTypes(@NotEmpty(message = "주문할 상품이 없습니다") @Valid List<OrderProductRequest> products, Long departmentStoreId) {
+    private void validateOrderTypes(List<OrderProductRequest> products) {
         // 첫 번째 상품의 주문 타입을 기준으로 설정
-        OrderType firstOrderType = products.get(0).orderType();
+        OrderType firstOrderType = products.getFirst().orderType();
         boolean allSameType = products.stream()
                 .allMatch(product -> product.orderType() == firstOrderType);
 
         if (!allSameType) {
             throw new OrderException(MIXED_ORDER_TYPE);
-        }
-
-        // 픽업 주문인 경우 매장 선택 필수
-        if (firstOrderType == OrderType.PICKUP) {
-            if (departmentStoreId == null) {
-                throw new OrderException(PICKUP_STORE_REQUIRED);
-            }
-        }
-
-        // 일반 배송 주문인 경우 매장 선택 불가
-        if (firstOrderType == OrderType.DELIVERY) {
-            if (departmentStoreId != null) {
-                throw new OrderException(DELIVERY_STORE_NOT_ALLOWED);
-            }
         }
     }
 

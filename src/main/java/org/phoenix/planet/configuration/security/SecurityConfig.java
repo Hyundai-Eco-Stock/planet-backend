@@ -1,6 +1,5 @@
 package org.phoenix.planet.configuration.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.phoenix.planet.service.auth.CustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,11 +8,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -29,16 +26,21 @@ public class SecurityConfig {
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
     private final CorsConfigurationSource corsConfigurationSource;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    private final UrlRewriteFilter urlRewriteFilter;
     private final TokenExceptionFilter tokenExceptionFilter;
 
-    public SecurityConfig(CustomOAuth2UserService oAuth2UserService, @Lazy OAuth2SuccessHandler oAuth2SuccessHandler, @Lazy TokenAuthenticationFilter tokenAuthenticationFilter, CorsConfigurationSource corsConfigurationSource, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, UrlRewriteFilter urlRewriteFilter, @Lazy TokenExceptionFilter tokenExceptionFilter) {
+    public SecurityConfig(
+        CustomOAuth2UserService oAuth2UserService,
+        @Lazy OAuth2SuccessHandler oAuth2SuccessHandler,
+        @Lazy TokenAuthenticationFilter tokenAuthenticationFilter,
+        CorsConfigurationSource corsConfigurationSource,
+        CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+        @Lazy TokenExceptionFilter tokenExceptionFilter) {
+
         this.oAuth2UserService = oAuth2UserService;
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
         this.tokenAuthenticationFilter = tokenAuthenticationFilter;
         this.corsConfigurationSource = corsConfigurationSource;
         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
-        this.urlRewriteFilter = urlRewriteFilter;
         this.tokenExceptionFilter = tokenExceptionFilter;
     }
 
@@ -49,17 +51,6 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
-        return web -> web.ignoring()
-            .requestMatchers(
-                "/error",  // Error Endpoint
-                "/favicon.ico", // favicon
-                "/h2-console/**", // h2 콘솔
-                "/swagger-ui/**", // Swagger
-                "/v3/api-docs/**" // Swagger
-            );
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -85,13 +76,19 @@ public class SecurityConfig {
             // request 인증, 인가 설정
             .authorizeHttpRequests(request ->
                 request
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(
+                        new AntPathRequestMatcher("/error"),
+                        new AntPathRequestMatcher("/favicon.ico"),
+                        new AntPathRequestMatcher("/h2-console/**"),
+                        new AntPathRequestMatcher("/swagger-ui/**"),
+                        new AntPathRequestMatcher("/v3/api-docs/**"),
+                        new AntPathRequestMatcher("/health"),
                         new AntPathRequestMatcher("/"),
                         new AntPathRequestMatcher("/auth/success"),
                         new AntPathRequestMatcher("/auth/access-token/regenerate"),
                         new AntPathRequestMatcher("/auth/login")
                     ).permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .anyRequest().authenticated()
             )
 
@@ -103,7 +100,6 @@ public class SecurityConfig {
             )
 
             // JWT 관련 설정
-            .addFilterBefore(urlRewriteFilter, OAuth2AuthorizationRequestRedirectFilter.class)
             .addFilterBefore(tokenExceptionFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(tokenAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class)

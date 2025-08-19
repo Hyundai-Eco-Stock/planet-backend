@@ -25,6 +25,7 @@ public class FcmTokenController {
         @LoginMemberId long loginMemberId
     ) {
 
+        log.info("FCM 등록 요청: {}", fcmTokenRegisterRequest.token());
         memberDeviceTokenService.saveOrUpdate(loginMemberId, fcmTokenRegisterRequest.token());
         return ResponseEntity.ok().build();
     }

@@ -7,6 +7,7 @@ import org.phoenix.planet.dto.fcm.request.FcmTokenRegisterRequest;
 import org.phoenix.planet.service.fcm.MemberDeviceTokenService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,7 +21,7 @@ public class FcmTokenController {
 
     @PostMapping
     public ResponseEntity<Void> registerFcmToken(
-        FcmTokenRegisterRequest fcmTokenRegisterRequest,
+        @RequestBody FcmTokenRegisterRequest fcmTokenRegisterRequest,
         @LoginMemberId long loginMemberId
     ) {
 

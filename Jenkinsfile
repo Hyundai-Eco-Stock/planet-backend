@@ -124,7 +124,7 @@ pipeline {
                 "aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet",
                 "docker pull 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest",
                 "docker rm -f planet || true",
-                "docker run -d --name planet -p 8080:8080 --restart unless-stopped --env-file /home/ec2-user/.env 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest",
+                "docker run -d --name planet -p 8080:8080 --restart unless-stopped --env SPRING_PROFILES_ACTIVE=prod --env-file /home/ec2-user/.env 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest",
                 "echo Deployment completed on $(hostname)"
               ]' \
               --region ap-northeast-2

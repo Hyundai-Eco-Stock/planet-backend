@@ -70,7 +70,7 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       properties:
         spring.json.trusted.packages: "*"
-        spring.json.value.default.type: org.phoenix.planet.dto.receipt.PaperBagReceiptCreateRequest
+        spring.json.value.default.type: org.phoenix.planet.dto.offline_pay.request.OfflinePayload
     listener:
       ack-mode: RECORD
       concurrency: 1

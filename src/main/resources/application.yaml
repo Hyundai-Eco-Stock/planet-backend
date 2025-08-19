@@ -1,6 +1,10 @@
 server:
   port: 8080
 
+fcm:
+  credentials:
+    file: classpath:firebase/firebase-adminsdk.json
+
 spring:
   servlet:
     multipart:

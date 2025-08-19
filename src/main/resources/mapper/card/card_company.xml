@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.CardCompanyMapper">
+    
+    <select id="selectAll"
+        resultType="org.phoenix.planet.dto.card.CardCompanyListResponse">
+        SELECT
+        cc.card_company_id AS cardCompanyId,
+        cc.name AS name
+        FROM card_company cc
+        ORDER BY cc.card_company_id
+    </select>
+</mapper>

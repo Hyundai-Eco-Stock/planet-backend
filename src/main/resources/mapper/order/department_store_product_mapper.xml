@@ -12,4 +12,12 @@
         AND department_store_id = #{departmentStoreId}
     </select>
 
+    <select id="findDepartmentStoreIdByProductId" resultType="Long">
+        SELECT department_store_id
+        FROM department_store_product
+        WHERE product_id = #{productId}
+        LIMIT 1
+    </select>
+
+
 </mapper>

@@ -1,14 +1,16 @@
 package org.phoenix.planet.error;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.error.order.OrderException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
-import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -73,19 +75,35 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException e) {
         Map<String, Object> body = new HashMap<>();
-        Map<String, String> errors = new HashMap<>();
+        String errorMessage = "입력값이 올바르지 않습니다.";
 
         if (e.getBindingResult() != null) {
-            e.getBindingResult().getAllErrors().forEach((error) -> {
-                String fieldName = ((FieldError) error).getField();
-                String errorMessage = error.getDefaultMessage();
-                errors.put(fieldName, errorMessage);
-            });
+            List<ObjectError> allErrors = e.getBindingResult().getAllErrors();
+
+            // 첫 번째 에러 메시지 추출
+            if (!allErrors.isEmpty()) {
+                errorMessage = allErrors.get(0).getDefaultMessage();
+            }
         }
 
         body.put("errorCode", e.getClass().getSimpleName());
-        body.put("message", e.getMessage());
-        body.put("errors", errors);
+        body.put("message", errorMessage);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(body);
+    }
+
+    /**
+     * JSON 파싱 예외 처리(잘못된 enum)
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        Map<String, Object> body = new HashMap<>();
+        String errorMessage = "입력값이 올바르지 않습니다.";
+
+        body.put("errorCode", "INVALID_REQUEST_FORMAT");
+        body.put("message", errorMessage);
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

@@ -8,4 +8,6 @@ import org.phoenix.planet.dto.department_store.response.OfflineShopListResponse;
 public interface OfflineShopMapper {
 
     List<OfflineShopListResponse> selectAll();
+
+    String selectTypeById(Long shopId);
 }

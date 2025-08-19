@@ -18,5 +18,12 @@
         ON s.department_store_id = ds.department_store_id
         ORDER BY ds.department_store_id, s.offline_shop_id
     </select>
+    
+    <select id="selectTypeById" parameterType="long" resultType="java.lang.String">
+        SELECT
+        type
+        FROM offline_shop
+        WHERE offline_shop_id = #{id}
+    </select>
 
 </mapper>

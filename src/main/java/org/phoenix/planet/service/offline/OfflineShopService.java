@@ -6,4 +6,6 @@ import org.phoenix.planet.dto.department_store.response.OfflineShopListResponse;
 public interface OfflineShopService {
 
     List<OfflineShopListResponse> searchAll();
+
+    String searchTypeById(Long shopId);
 }

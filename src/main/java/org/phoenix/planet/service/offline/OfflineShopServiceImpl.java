@@ -19,4 +19,10 @@ public class OfflineShopServiceImpl implements OfflineShopService {
 
         return offlineShopMapper.selectAll();
     }
+
+    @Override
+    public String searchTypeById(Long shopId) {
+
+        return offlineShopMapper.selectTypeById(shopId);
+    }
 }

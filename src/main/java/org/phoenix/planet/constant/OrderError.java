@@ -29,7 +29,7 @@ public enum OrderError {
 
     // 기타 에러
     INVALID_ORDER_DATA(HttpStatus.BAD_REQUEST, "주문 데이터가 올바르지 않습니다."),
-    ORDER_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "주문 생성 중 오류가 발생했습니다.");
+    ORDER_DRAFT_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "주문 생성 중 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String value;

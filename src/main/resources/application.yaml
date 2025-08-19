@@ -3,7 +3,7 @@ server:
 
 fcm:
   credentials:
-    file: classpath:firebase/firebase-adminsdk.json
+    file: ${FIREBASE_CREDENTIALS_PATH}
 
 spring:
   servlet:

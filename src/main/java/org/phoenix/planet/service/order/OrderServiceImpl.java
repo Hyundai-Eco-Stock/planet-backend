@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class OrderServiceImpl implements OrderService {
 
     private final OrderValidationService orderValidationService;
@@ -36,6 +35,7 @@ public class OrderServiceImpl implements OrderService {
     private final MemberMapper memberMapper;
 
     @Override
+    @Transactional
     public CreateOrderResponse createOrder(CreateOrderRequest request, Long memberId) {
         // ecoDeal인 경우 매장 자동 매핑
         Long departmentStoreId = determineDepartmentStoreId(request.products());

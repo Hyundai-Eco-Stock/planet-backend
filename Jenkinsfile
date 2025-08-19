@@ -20,10 +20,27 @@ pipeline {
   }
   
   stages {
+    stage('Check Conditions') {
+      steps {
+        script {
+          // 브랜치 체크 (deploy 브랜치 아니면 STOP)
+          if (env.GIT_BRANCH != 'origin/deploy') {
+            error("[SKIP] Not deploy branch → stopping pipeline.")
+          }
+
+          // PR 빌드 체크 (CHANGE_ID != null이면 PR 빌드, merge는 null)
+          if (env.CHANGE_ID != null) {
+            error("[SKIP] This is a PR build (not merged) → stopping pipeline.")
+          }
+
+          echo "[INFO] ✅ Valid deploy pipeline (deploy branch push or PR merge). Continuing..."
+        }
+      }
+    }
+    
     stage('Setup') {
       steps {
         script {
-          // Check if AWS CLI is available
           def awsInstalled = sh(
             script: 'which aws || echo "notfound"',
             returnStdout: true
@@ -56,7 +73,6 @@ pipeline {
           chmod +x ./gradlew
           
           echo "[INFO] Building with Gradle (skipping tests)..."
-          # Use Gradle wrapper cache
           export GRADLE_USER_HOME=~/.gradle
           ./gradlew build -x test --no-daemon --build-cache
           
@@ -94,9 +110,6 @@ pipeline {
     }
     
     stage('Deploy to EC2') {
-      when { 
-        expression { return env.GIT_BRANCH == 'origin/deploy' }
-      }
       steps {
         withCredentials([
           string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),

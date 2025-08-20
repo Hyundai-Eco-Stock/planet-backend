@@ -61,18 +61,21 @@ CREATE SEQUENCE seq_member_card START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 CREATE TABLE offline_pay_history
 (
     offline_pay_history_id NUMBER PRIMARY KEY,
-    shop_id                NUMBER               NOT NULL,
-    card_company_id        NUMBER               NOT NULL,
-    card_number_last4      VARCHAR2(4)          NOT NULL, -- 카드 번호 끝 4자리
-    total_price            NUMBER               NOT NULL, -- 결제 총액
-    paid_at                DATE DEFAULT SYSDATE NOT NULL,
-    barcode                VARCHAR2(255)        NOT NULL, -- 바코드
-    created_at             DATE DEFAULT SYSDATE NOT NULL,
+    shop_id                NUMBER                    NOT NULL,
+    card_company_id        NUMBER                    NOT NULL,
+    card_number_last4      VARCHAR2(4)               NOT NULL, -- 카드 번호 끝 4자리
+    total_price            NUMBER                    NOT NULL, -- 결제 총액
+    paid_at                DATE      DEFAULT SYSDATE NOT NULL,
+    barcode                VARCHAR2(255)             NOT NULL, -- 바코드
+    stock_issued           NUMBER(1) DEFAULT 0       NOT NULL, -- 0: 미지급, 1: 지급
+    created_at             DATE      DEFAULT SYSDATE NOT NULL,
     updated_at             DATE,
     CONSTRAINT fk_offline_pay_shop
         FOREIGN KEY (shop_id) REFERENCES offline_shop (offline_shop_id),
     CONSTRAINT fk_offline_pay_card_company
-        FOREIGN KEY (card_company_id) REFERENCES card_company (card_company_id)
+        FOREIGN KEY (card_company_id) REFERENCES card_company (card_company_id),
+    CONSTRAINT chk_stock_issued
+        CHECK (stock_issued IN (0, 1))
 );
 
 CREATE SEQUENCE seq_offline_pay_history

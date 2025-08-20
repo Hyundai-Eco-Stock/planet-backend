@@ -13,6 +13,22 @@ CREATE TABLE offline_shop
         REFERENCES department_store (department_store_id)
 );
 
+-- --------------------------- 오프라인 샵 상품 -----------------------------
+CREATE TABLE offline_product
+(
+    offline_product_id NUMBER PRIMARY KEY,
+    offline_shop_id    NUMBER               NOT NULL,
+    name               VARCHAR2(255)        NOT NULL,
+    price              NUMBER               NOT NULL,
+    created_at         DATE DEFAULT SYSDATE NOT NULL,
+    updated_at         DATE,
+    CONSTRAINT fk_offline_shop_product_shop FOREIGN KEY (offline_shop_id)
+        REFERENCES offline_shop (offline_shop_id)
+);
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_offline_product START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
 -- 시퀀스 생성
 CREATE SEQUENCE seq_offline_shop START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 

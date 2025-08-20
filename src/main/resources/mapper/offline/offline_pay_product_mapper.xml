@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.OfflinePayProductMapper">
+    
+    <insert id="insert"
+        parameterType="org.phoenix.planet.dto.offline.raw.OfflinePayProductSaveRequest">
+        INSERT INTO offline_pay_product (
+        offline_pay_product_id,
+        offline_pay_history_id,
+        product_id,
+        name,
+        price,
+        amount,
+        created_at
+        )
+        VALUES (
+        seq_offline_pay_product.NEXTVAL,
+        #{offlinePayHistoryId},
+        #{productId},
+        #{name},
+        #{price},
+        #{amount},
+        SYSDATE
+        )
+    </insert>
+
+</mapper>

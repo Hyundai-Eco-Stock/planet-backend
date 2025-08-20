@@ -3,6 +3,7 @@ package org.phoenix.planet.service.offline;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.dto.offline.raw.OfflineProduct;
 import org.phoenix.planet.dto.offline.response.OfflineProductListResponse;
 import org.phoenix.planet.mapper.OfflineProductMapper;
 import org.springframework.stereotype.Service;
@@ -18,5 +19,18 @@ public class OfflineProductServiceImpl implements OfflineProductService {
     public List<OfflineProductListResponse> searchAllByShopId(long shopId) {
 
         return offlineProductMapper.selectAllByOfflineShopId(shopId);
+    }
+
+    @Override
+    public long getTotalPriceByIds(List<Long> productIdList) {
+
+        return offlineProductMapper.selectSumPriceOfIds(productIdList);
+    }
+
+    @Override
+    public OfflineProduct searchById(Long itemId) {
+
+        return offlineProductMapper.selectById(itemId)
+            .orElseThrow(() -> new IllegalArgumentException("item id에 해당하는 오프라인 상품 정보가 없습니다"));
     }
 }

@@ -1,4 +1,4 @@
-package org.phoenix.planet.dto.offline_pay.response;
+package org.phoenix.planet.dto.offline.response;
 
 import lombok.Data;
 

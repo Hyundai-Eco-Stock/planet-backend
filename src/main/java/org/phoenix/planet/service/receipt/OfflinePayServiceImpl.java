@@ -3,7 +3,7 @@ package org.phoenix.planet.service.receipt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.KafkaTopic;
-import org.phoenix.planet.dto.offline_pay.request.OfflinePayload;
+import org.phoenix.planet.dto.offline.request.OfflinePayload;
 import org.phoenix.planet.producer.ReceiptEventProducer;
 import org.springframework.stereotype.Service;
 

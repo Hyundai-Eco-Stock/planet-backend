@@ -1,4 +1,4 @@
-package org.phoenix.planet.dto.offline_pay.request;
+package org.phoenix.planet.dto.offline.request;
 
 import java.util.List;
 

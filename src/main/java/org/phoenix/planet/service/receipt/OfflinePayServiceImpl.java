@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.KafkaTopic;
+import org.phoenix.planet.dto.eco_stock_certificate.request.PaperBagNoUseCertificateRequest;
 import org.phoenix.planet.dto.eco_stock_certificate.request.TumblerCertificateRequest;
 import org.phoenix.planet.dto.offline.raw.KafkaOfflinePayInfo;
 import org.phoenix.planet.dto.offline.raw.OfflinePayHistory;
@@ -85,11 +86,17 @@ public class OfflinePayServiceImpl implements OfflinePayService {
 
     @Override
     @Transactional
-    public void certificate(long loginMemberId,
+    public void certificateTumbler(long loginMemberId,
         TumblerCertificateRequest tumblerCertificateRequest) {
-
+        // 결제 내역 조회
         OfflinePayHistory offlinePayHistory = offlinePayHistoryService.searchByBarcode(
             tumblerCertificateRequest.code());
+        // TODO: 결제 상점 조회
+        // TODO: 결제 상점 타입이 CAFE가 아니면
+        // throw new IllegalArgumentException("카페에서 결제한 영수증 내역이 아닙니다");
+
+        // TODO: 결제한 상품 중에 "텀블러 할인" 이 없으면
+        // throw new IllegalArgumentException("텀블러 할인 내역이 없는 영수증 내역입니다");
         if (offlinePayHistory.stockIssued()) {
             throw new IllegalArgumentException("이미 발급된 영수증 내역입니다");
         }
@@ -100,6 +107,36 @@ public class OfflinePayServiceImpl implements OfflinePayService {
         ecoStockIssueService.publish(
             loginMemberId,
             1L,
+            1
+        );
+    }
+
+    @Override
+    @Transactional
+    public void certificatePaperBagNoUse(long loginMemberId,
+        PaperBagNoUseCertificateRequest paperBagNoUseCertificateRequest) {
+        // 결제 내역 조회
+        OfflinePayHistory offlinePayHistory = offlinePayHistoryService.searchByBarcode(
+            paperBagNoUseCertificateRequest.code());
+        // TODO: 결제 상점 조회
+        // TODO: 결제 상점 타입이 DEPARTMENT_STORE, FOOD_MALL이 아니면
+        // throw new IllegalArgumentException("백화점에서 결제한 영수증 내역이 아닙니다");
+
+        // TODO: 결제 상품 조회
+
+        // TODO: 결제한 상품 중에 "종이백" 이 있으면
+        //  throw new IllegalArgumentException("종이백을 구매한 영수증 내역입니다");
+        if (offlinePayHistory.stockIssued()) {
+            throw new IllegalArgumentException("이미 발급된 영수증 내역입니다");
+        }
+        // 에코 스톡 발급 처리
+        offlinePayHistoryService.updateStockIssueStatusTrue(
+            offlinePayHistory.offlinePayHistoryId());
+
+        // 종이백 미사용 에코스톡 발급 (일단 하나만 발급)
+        ecoStockIssueService.publish(
+            loginMemberId,
+            4L,
             1
         );
     }

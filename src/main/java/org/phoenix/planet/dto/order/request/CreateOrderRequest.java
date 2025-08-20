@@ -21,8 +21,6 @@ public record CreateOrderRequest(
 ) {
 
     public CreateOrderRequest {
-        usedPoint = (usedPoint != null) ? usedPoint : 0L;
-        donationPrice = (donationPrice != null) ? donationPrice : 0L;
         validateOrderTypes(products);
     }
 

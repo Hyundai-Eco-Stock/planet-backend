@@ -14,8 +14,8 @@ public record OrderDraft(
         Long memberId,
         List<OrderProductRequest> products,
         Long totalAmount,        // 상품 금액만
-        Long usedPoint,          // 사용 포인트 (저장만, 검증은 결제 시)
-        Long donationPrice,      // 기부 금액 (저장만, 검증은 결제 시)
+        Long usedPoint,
+        Long donationPrice,
 
         // DELIVERY용 - 기본값: 사용자 정보, 변경 가능
         String deliveryAddress,  // 기본 배송지 혹은 입력 받은 주소

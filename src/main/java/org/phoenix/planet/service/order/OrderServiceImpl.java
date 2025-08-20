@@ -43,14 +43,20 @@ public class OrderServiceImpl implements OrderService {
                 .validateAndCalculate(request.products(), departmentStoreId);
         String orderNumber = orderNumberService.generateOrderNumber();
 
+        // 사용자 보유 포인트 조회
+        Long availablePoint = getMemberAvailablePoint(memberId);
+
+        // 기본 기부금 계산
+        Long defaultDonationPrice = calculateDefaultDonation(validationResult.totalAmount());
+
         OrderDraft orderDraft = createOrderDraft(
                 orderNumber,
                 memberId,
                 request.products(),
                 validationResult.totalAmount(),  // 순수 상품 금액만
                 departmentStoreId,
-                request.usedPoint(),
-                request.donationPrice()
+                availablePoint,
+                defaultDonationPrice
         );
         orderDraftService.saveOrderDraft(orderDraft);
 
@@ -59,6 +65,16 @@ public class OrderServiceImpl implements OrderService {
                 validationResult.totalAmount(), // 상품 금액만 반환
                 "주문서가 성공적으로 생성되었습니다."
         );
+    }
+
+    private Long calculateDefaultDonation(Long totalAmount) {
+        return totalAmount % 1000;  // 1000원 미만을 기부금으로
+    }
+
+    private Long getMemberAvailablePoint(Long memberId) {
+        return memberMapper.findById(memberId)
+                .map(Member::getPoint)
+                .orElse(0L);
     }
 
     private OrderDraft createOrderDraft(String orderNumber, Long memberId,

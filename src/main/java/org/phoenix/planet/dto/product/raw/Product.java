@@ -32,6 +32,8 @@ public class Product {
 
     private int salePercent;
 
+    private String imageUrl;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

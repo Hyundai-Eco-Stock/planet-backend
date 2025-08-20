@@ -14,7 +14,6 @@ import org.phoenix.planet.error.auth.AuthException;
 import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.mapper.DepartmentStoreProductMapper;
 import org.phoenix.planet.mapper.MemberMapper;
-import org.phoenix.planet.repository.OrderDraftRepository;
 import org.phoenix.planet.util.order.OrderNumberGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderValidationService orderValidationService;
-    private final OrderDraftRepository orderDraftRepository;
+    private final OrderDraftService orderDraftService;
     private final OrderNumberGenerator orderNumberGenerator;
     private final DepartmentStoreProductMapper departmentStoreProductMapper;
     private final MemberMapper memberMapper;
@@ -54,7 +53,7 @@ public class OrderServiceImpl implements OrderService {
                 request.usedPoint(),
                 request.donationPrice()
         );
-        orderDraftRepository.save(orderDraft);
+        orderDraftService.saveOrderDraft(orderDraft);
 
         return new CreateOrderResponse(
                 orderNumber,

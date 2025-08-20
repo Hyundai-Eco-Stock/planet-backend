@@ -29,5 +29,28 @@
         0
         )
     </insert>
+    
+    <update id="updateStockIssueStatusTrue" parameterType="long">
+        UPDATE offline_pay_history
+        SET stock_issued = 1,
+        updated_at = SYSDATE
+        WHERE offline_pay_history_id = #{offlinePayHistoryId}
+    </update>
+    
+    <select id="selectByBarcode"
+        parameterType="string"
+        resultType="org.phoenix.planet.dto.offline.raw.OfflinePayHistory"
+    >
+        SELECT
+        offline_pay_history_id AS offlinePayHistoryId,
+        shop_id AS shopId,
+        card_company_id AS cardCompanyId,
+        card_number_last4 AS cardNumberLast4,
+        total_price AS totalPrice,
+        barcode,
+        stock_issued AS stockIssued
+        FROM offline_pay_history
+        WHERE barcode = #{barcode}
+    </select>
 
 </mapper>

@@ -9,16 +9,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.phoenix.planet.constant.KafkaTopic;
 import org.phoenix.planet.dto.eco_stock.raw.EcoStock;
-import org.phoenix.planet.dto.offline.request.OfflinePayload;
+import org.phoenix.planet.dto.offline.raw.KafkaOfflinePayInfo;
 import org.phoenix.planet.service.card.MemberCardService;
 import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.phoenix.planet.service.eco_stock.EcoStockService;
 import org.phoenix.planet.service.fcm.FcmService;
 import org.phoenix.planet.service.fcm.MemberDeviceTokenService;
+import org.phoenix.planet.service.offline.OfflinePayHistoryService;
 import org.phoenix.planet.service.offline.OfflineShopService;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -33,12 +35,14 @@ public class ReceiptEventConsumer {
     private final OfflineShopService offlineShopService;
     private final EcoStockIssueService ecoStockIssueService;
     private final MemberDeviceTokenService memberDeviceTokenService;
+    private final OfflinePayHistoryService offlinePayHistoryService;
 
     private static final List<Long> tumblerDiscountProductIdList = Arrays.asList(
         1099L, 2099L, 3099L, 4099L);
     private static final List<Long> paperBagProductIdList = Arrays.asList(
         1199L, 2199L, 3199L, 4199L);
 
+    @Transactional
     @KafkaListener(topics = KafkaTopic.OFFLINE_PAY_DETECTED_VALUE)
     public void onMessage(String message) throws JsonProcessingException {
 
@@ -77,8 +81,12 @@ public class ReceiptEventConsumer {
                     memberId);
                 // 에코스톡 정보 가져와 푸시 알림 보내기
                 EcoStock ecoStock = ecoStockService.searchById(ecoStockId);
+                // 에코스톡 발급 처리
+                offlinePayHistoryService.updateStockIssueStatusTrue(event.offlinePayHistoryId());
+                // 알람 전송
                 fcmService.sendNotificationToMany(memberTokens, "에코스톡 발급",
                     ecoStock.name() + " 1주 발급 완료");
+                log.info("{} 에코스톡 발급 완료", ecoStock.name());
             }
 
         } else { // 아직 등록되지 않은 카드면 할 수 있는게 없다고 생각...

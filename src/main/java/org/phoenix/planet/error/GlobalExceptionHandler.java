@@ -26,7 +26,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(Exception e) {
+    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
+        IllegalArgumentException e) {
 
         Map<String, Object> body = new HashMap<>();
         body.put("errorCode", e.getClass().getName());
@@ -54,14 +55,15 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(OrderException.class)
     public ResponseEntity<Map<String, Object>> handleOrderException(OrderException e) {
+
         Map<String, Object> body = new HashMap<>();
         body.put("errorCode", e.getError().name());
         body.put("message", e.getError().getValue());
 
         return ResponseEntity
-                .status(e.getError().getHttpStatus())
-                .header("X-Error-Code", e.getError().name())
-                .body(body);
+            .status(e.getError().getHttpStatus())
+            .header("X-Error-Code", e.getError().name())
+            .body(body);
     }
 
 }

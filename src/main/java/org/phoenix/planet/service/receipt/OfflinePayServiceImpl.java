@@ -13,6 +13,7 @@ import org.phoenix.planet.dto.offline.raw.OfflineProduct;
 import org.phoenix.planet.dto.offline.request.OfflinePayload;
 import org.phoenix.planet.dto.offline.request.OfflinePayload.Item;
 import org.phoenix.planet.producer.ReceiptEventProducer;
+import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.phoenix.planet.service.offline.OfflinePayHistoryService;
 import org.phoenix.planet.service.offline.OfflinePayProductService;
 import org.phoenix.planet.service.offline.OfflineProductService;
@@ -30,6 +31,7 @@ public class OfflinePayServiceImpl implements OfflinePayService {
     private final OfflinePayProductService offlinePayProductService;
     private final OfflineProductService offlineProductService;
     private final ReceiptNoGenerator receiptNoGenerator;
+    private final EcoStockIssueService ecoStockIssueService;
 
     @Override
     @Transactional
@@ -82,12 +84,23 @@ public class OfflinePayServiceImpl implements OfflinePayService {
     }
 
     @Override
-    public void certificate(TumblerCertificateRequest tumblerCertificateRequest) {
+    @Transactional
+    public void certificate(long loginMemberId,
+        TumblerCertificateRequest tumblerCertificateRequest) {
 
         OfflinePayHistory offlinePayHistory = offlinePayHistoryService.searchByBarcode(
             tumblerCertificateRequest.code());
         if (offlinePayHistory.stockIssued()) {
             throw new IllegalArgumentException("이미 발급된 영수증 내역입니다");
         }
+        // 에코 스톡 발급 처리
+        offlinePayHistoryService.updateStockIssueStatusTrue(
+            offlinePayHistory.offlinePayHistoryId());
+        // 텀블러 에코스톡 발급 (일단 하나만 발급)
+        ecoStockIssueService.publish(
+            loginMemberId,
+            1L,
+            1
+        );
     }
 }

@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.KafkaTopic;
+import org.phoenix.planet.dto.eco_stock_certificate.request.TumblerCertificateRequest;
+import org.phoenix.planet.dto.offline.raw.KafkaOfflinePayInfo;
+import org.phoenix.planet.dto.offline.raw.OfflinePayHistory;
 import org.phoenix.planet.dto.offline.raw.OfflinePayProductSaveRequest;
 import org.phoenix.planet.dto.offline.raw.OfflinePaySaveRequest;
 import org.phoenix.planet.dto.offline.raw.OfflineProduct;
@@ -12,7 +15,6 @@ import org.phoenix.planet.dto.offline.request.OfflinePayload.Item;
 import org.phoenix.planet.producer.ReceiptEventProducer;
 import org.phoenix.planet.service.offline.OfflinePayHistoryService;
 import org.phoenix.planet.service.offline.OfflinePayProductService;
-import org.phoenix.planet.service.offline.OfflinePayProductServiceImpl;
 import org.phoenix.planet.service.offline.OfflineProductService;
 import org.phoenix.planet.util.receipt.ReceiptNoGenerator;
 import org.springframework.stereotype.Service;
@@ -28,28 +30,27 @@ public class OfflinePayServiceImpl implements OfflinePayService {
     private final OfflinePayProductService offlinePayProductService;
     private final OfflineProductService offlineProductService;
     private final ReceiptNoGenerator receiptNoGenerator;
-    private final OfflinePayProductServiceImpl offlinePayProductServiceImpl;
 
     @Override
     @Transactional
     public void save(OfflinePayload payload) {
         // 오프라인 결제 정보 저장
-        long offlinePayHistoryId = offlinePayHistoryService.save(
-            OfflinePaySaveRequest.builder()
-                .shopId(payload.shopId())
-                .cardCompanyId(payload.cardCompanyId())
-                .cardNumberLast4(payload.last4())
-                .totalPrice(offlineProductService.getTotalPriceByIds(
-                    payload.items().stream()
-                        .map(Item::productId)
-                        .toList()))
-                .barcode(receiptNoGenerator.generate(
-                    payload.shopId(),
-                    payload.posId(),
-                    payload.dailySeq(),
-                    LocalDateTime.now()
-                ))
-                .build());
+        OfflinePaySaveRequest offlinePaySaveRequest = OfflinePaySaveRequest.builder()
+            .shopId(payload.shopId())
+            .cardCompanyId(payload.cardCompanyId())
+            .cardNumberLast4(payload.last4())
+            .totalPrice(offlineProductService.getTotalPriceByIds(
+                payload.items().stream()
+                    .map(Item::productId)
+                    .toList()))
+            .barcode(receiptNoGenerator.generate(
+                payload.shopId(),
+                payload.posId(),
+                payload.dailySeq(),
+                LocalDateTime.now()))
+            .build();
+        long offlinePayHistoryId = offlinePayHistoryService.save(offlinePaySaveRequest);
+
         // 결제 상품 정보들 저장
         payload.items()
             .forEach(item -> {
@@ -65,7 +66,28 @@ public class OfflinePayServiceImpl implements OfflinePayService {
                         .build());
             });
 
-        receiptEventProducer.publish(KafkaTopic.OFFLINE_PAY_DETECTED.getValue(), null,
-            payload);
+        receiptEventProducer.publish(
+            KafkaTopic.OFFLINE_PAY_DETECTED,
+            KafkaOfflinePayInfo.builder()
+                .offlinePayHistoryId(offlinePayHistoryId)
+                .posId(payload.posId())
+                .dailySeq(payload.dailySeq())
+                .shopId(payload.shopId())
+                .cardCompanyId(payload.cardCompanyId())
+                .cardNumber(payload.cardNumber())
+                .last4(payload.last4())
+                .items(payload.items())
+                .summary(payload.summary())
+                .build());
+    }
+
+    @Override
+    public void certificate(TumblerCertificateRequest tumblerCertificateRequest) {
+
+        OfflinePayHistory offlinePayHistory = offlinePayHistoryService.searchByBarcode(
+            tumblerCertificateRequest.code());
+        if (offlinePayHistory.stockIssued()) {
+            throw new IllegalArgumentException("이미 발급된 영수증 내역입니다");
+        }
     }
 }

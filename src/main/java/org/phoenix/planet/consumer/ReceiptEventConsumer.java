@@ -42,8 +42,9 @@ public class ReceiptEventConsumer {
     @KafkaListener(topics = KafkaTopic.OFFLINE_PAY_DETECTED_VALUE)
     public void onMessage(String message) throws JsonProcessingException {
 
-        OfflinePayload event = objectMapper.readValue(message,
-            OfflinePayload.class);
+        KafkaOfflinePayInfo event = objectMapper.readValue(
+            message,
+            KafkaTopic.OFFLINE_PAY_DETECTED.getPayloadType());
         log.info("Successfully deserialized event: {}", event);
 
         // 카드 정보로 memberId 조회

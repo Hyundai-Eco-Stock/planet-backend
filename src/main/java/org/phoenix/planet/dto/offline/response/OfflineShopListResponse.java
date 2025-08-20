@@ -1,4 +1,4 @@
-package org.phoenix.planet.dto.department_store.response;
+package org.phoenix.planet.dto.offline.response;
 
 public record OfflineShopListResponse(
     Long offlineShopId,

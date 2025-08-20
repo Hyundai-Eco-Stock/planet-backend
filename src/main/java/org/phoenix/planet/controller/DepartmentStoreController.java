@@ -4,7 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.department_store.response.DepartmentStoreListResponse;
-import org.phoenix.planet.dto.department_store.response.OfflineShopListResponse;
+import org.phoenix.planet.dto.offline.response.OfflineShopListResponse;
 import org.phoenix.planet.service.department_store.DepartmentStoreService;
 import org.phoenix.planet.service.offline.OfflineShopService;
 import org.springframework.http.ResponseEntity;

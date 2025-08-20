@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ReceiptNoGenerator {
+public class ReceiptNoGeneratorUtil {
 
     public String generate(
         long brandId,

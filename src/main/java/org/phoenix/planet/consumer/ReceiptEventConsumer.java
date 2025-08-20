@@ -55,7 +55,7 @@ public class ReceiptEventConsumer {
         Long memberId = memberCardService.searchByCardCompanyIdAndCardNumber(
             event.cardCompanyId(),
             event.cardNumber());
-
+        
         if (memberId != null) { // 등록된 카드이면
             // 가게 타입에 따른 에코스톡 발급 여부 확인
             String shopType = offlineShopService.searchTypeById(event.shopId());
@@ -67,13 +67,16 @@ public class ReceiptEventConsumer {
 
             // 에코스톡 발급 될 것 있나 확인
             Long ecoStockId = null;
+            String fcmMessage = null;
             if ("CAFE".equals(shopType) && hasTumbler) {
                 ecoStockId = 1L; // 텀블러 에코스톡 id
+                fcmMessage = "텀블러 사용으로 에코스톡 1주가 발급되었습니다.";
             } else if ("FOOD_MALL".equals(shopType) && !hasPaperBag) {
                 ecoStockId = 4L; // 종이백 미사용 에코스톡 id
+                fcmMessage = "종이백 미사용으로 에코스톡 1주가 발급되었습니다.";
             }
 
-            if (ecoStockId != null) {
+            if (ecoStockId != null && fcmMessage != null) {
                 // 에코스톡 발급
                 ecoStockIssueService.publish(memberId, ecoStockId, 1);
                 // FCM 토큰 목록 가져오기
@@ -84,8 +87,10 @@ public class ReceiptEventConsumer {
                 // 에코스톡 발급 처리
                 offlinePayHistoryService.updateStockIssueStatusTrue(event.offlinePayHistoryId());
                 // 알람 전송
-                fcmService.sendNotificationToMany(memberTokens, "에코스톡 발급",
-                    ecoStock.name() + " 1주 발급 완료");
+                fcmService.sendNotificationToMany(
+                    memberTokens,
+                    "\uD83C\uDF89 에코스톡 지급 완료!",
+                    fcmMessage);
                 log.info("{} 에코스톡 발급 완료", ecoStock.name());
             }
 

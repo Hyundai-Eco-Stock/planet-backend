@@ -26,5 +26,19 @@
         SYSDATE
         )
     </insert>
+    
+    <select id="selectByPayHistoryId"
+        resultType="org.phoenix.planet.dto.offline.raw.OfflineProduct"
+        parameterType="long">
+        SELECT
+        offline_pay_product_id AS offlineProductId,
+        offline_pay_history_id AS offlineShopId,
+        name,
+        price
+        FROM offline_pay_product
+        WHERE offline_pay_history_id = #{offlinePayHistoryId}
+        ORDER BY offline_pay_product_id
+    </select>
+
 
 </mapper>

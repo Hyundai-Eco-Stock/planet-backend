@@ -1,6 +1,7 @@
 package org.phoenix.planet.service.receipt;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.KafkaTopic;
@@ -8,6 +9,7 @@ import org.phoenix.planet.dto.eco_stock_certificate.request.PaperBagNoUseCertifi
 import org.phoenix.planet.dto.eco_stock_certificate.request.TumblerCertificateRequest;
 import org.phoenix.planet.dto.offline.raw.KafkaOfflinePayInfo;
 import org.phoenix.planet.dto.offline.raw.OfflinePayHistory;
+import org.phoenix.planet.dto.offline.raw.OfflinePayProduct;
 import org.phoenix.planet.dto.offline.raw.OfflinePayProductSaveRequest;
 import org.phoenix.planet.dto.offline.raw.OfflinePaySaveRequest;
 import org.phoenix.planet.dto.offline.raw.OfflineProduct;
@@ -18,7 +20,8 @@ import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.phoenix.planet.service.offline.OfflinePayHistoryService;
 import org.phoenix.planet.service.offline.OfflinePayProductService;
 import org.phoenix.planet.service.offline.OfflineProductService;
-import org.phoenix.planet.util.receipt.ReceiptNoGenerator;
+import org.phoenix.planet.service.offline.OfflineShopService;
+import org.phoenix.planet.util.receipt.ReceiptNoGeneratorUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,11 +30,16 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OfflinePayServiceImpl implements OfflinePayService {
 
+    // 영수증 번호 생성 유틸
+    private final ReceiptNoGeneratorUtil receiptNoGeneratorUtil;
+    // kafka producer
     private final ReceiptEventProducer receiptEventProducer;
+    // 오프라인 결제, 상품 관련
     private final OfflinePayHistoryService offlinePayHistoryService;
     private final OfflinePayProductService offlinePayProductService;
     private final OfflineProductService offlineProductService;
-    private final ReceiptNoGenerator receiptNoGenerator;
+    private final OfflineShopService offlineShopService;
+    // 에코 스톡
     private final EcoStockIssueService ecoStockIssueService;
 
     @Override
@@ -46,7 +54,7 @@ public class OfflinePayServiceImpl implements OfflinePayService {
                 payload.items().stream()
                     .map(Item::productId)
                     .toList()))
-            .barcode(receiptNoGenerator.generate(
+            .barcode(receiptNoGeneratorUtil.generate(
                 payload.shopId(),
                 payload.posId(),
                 payload.dailySeq(),
@@ -91,15 +99,25 @@ public class OfflinePayServiceImpl implements OfflinePayService {
         // 결제 내역 조회
         OfflinePayHistory offlinePayHistory = offlinePayHistoryService.searchByBarcode(
             tumblerCertificateRequest.code());
-        // TODO: 결제 상점 조회
-        // TODO: 결제 상점 타입이 CAFE가 아니면
-        // throw new IllegalArgumentException("카페에서 결제한 영수증 내역이 아닙니다");
-
-        // TODO: 결제한 상품 중에 "텀블러 할인" 이 없으면
-        // throw new IllegalArgumentException("텀블러 할인 내역이 없는 영수증 내역입니다");
         if (offlinePayHistory.stockIssued()) {
-            throw new IllegalArgumentException("이미 발급된 영수증 내역입니다");
+            throw new IllegalArgumentException("이미 텀블러 에코스톡이 발급된 영수증 내역입니다");
         }
+
+        // 결제 상점 조회
+        String shopType = offlineShopService.searchTypeById(offlinePayHistory.shopId());
+        if (!"CAFE".equals(shopType)) {
+            throw new IllegalArgumentException("카페에서 결제한 영수증 내역이 아닙니다");
+        }
+
+        // 결제한 상품 조회
+        List<OfflinePayProduct> productList = offlinePayProductService.searchByPayHistoryId(
+            offlinePayHistory.offlinePayHistoryId());
+        boolean hasTumblerDiscount = productList.stream()
+            .anyMatch(p -> "텀블러 할인".equals(p.name()));
+        if (!hasTumblerDiscount) {
+            throw new IllegalArgumentException("텀블러 할인 내역이 없는 영수증 내역입니다");
+        }
+
         // 에코 스톡 발급 처리
         offlinePayHistoryService.updateStockIssueStatusTrue(
             offlinePayHistory.offlinePayHistoryId());
@@ -109,6 +127,7 @@ public class OfflinePayServiceImpl implements OfflinePayService {
             1L,
             1
         );
+        log.info("텀블러 사용 에코스톡 발급 완료");
     }
 
     @Override
@@ -118,26 +137,34 @@ public class OfflinePayServiceImpl implements OfflinePayService {
         // 결제 내역 조회
         OfflinePayHistory offlinePayHistory = offlinePayHistoryService.searchByBarcode(
             paperBagNoUseCertificateRequest.code());
-        // TODO: 결제 상점 조회
-        // TODO: 결제 상점 타입이 DEPARTMENT_STORE, FOOD_MALL이 아니면
-        // throw new IllegalArgumentException("백화점에서 결제한 영수증 내역이 아닙니다");
-
-        // TODO: 결제 상품 조회
-
-        // TODO: 결제한 상품 중에 "종이백" 이 있으면
-        //  throw new IllegalArgumentException("종이백을 구매한 영수증 내역입니다");
         if (offlinePayHistory.stockIssued()) {
-            throw new IllegalArgumentException("이미 발급된 영수증 내역입니다");
+            throw new IllegalArgumentException("이미 종이백 미사용 에코스톡이 발급된 영수증 내역입니다");
         }
+
+        // 결제 상점 조회
+        String shopType = offlineShopService.searchTypeById(offlinePayHistory.shopId());
+        if (!"DEPARTMENT_STORE".equals(shopType) && !"FOOD_MALL".equals(shopType)) {
+            throw new IllegalArgumentException("백화점 내에서 결제한 영수증 내역이 아닙니다");
+        }
+
+        // 결제한 상품 조회
+        List<OfflinePayProduct> productList = offlinePayProductService.searchByPayHistoryId(
+            offlinePayHistory.offlinePayHistoryId());
+        boolean hasPaperBag = productList.stream()
+            .anyMatch(p -> "종이백".equals(p.name()));
+        if (hasPaperBag) {
+            throw new IllegalArgumentException("종이백을 구매한 영수증 내역입니다");
+        }
+
         // 에코 스톡 발급 처리
         offlinePayHistoryService.updateStockIssueStatusTrue(
             offlinePayHistory.offlinePayHistoryId());
-
         // 종이백 미사용 에코스톡 발급 (일단 하나만 발급)
         ecoStockIssueService.publish(
             loginMemberId,
             4L,
             1
         );
+        log.info("종이백 미사용 에코스톡 발급 완료");
     }
 }

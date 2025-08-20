@@ -14,7 +14,6 @@ import org.phoenix.planet.error.auth.AuthException;
 import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.mapper.DepartmentStoreProductMapper;
 import org.phoenix.planet.mapper.MemberMapper;
-import org.phoenix.planet.util.order.OrderNumberGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +28,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderValidationService orderValidationService;
     private final OrderDraftService orderDraftService;
-    private final OrderNumberGenerator orderNumberGenerator;
+    private final OrderNumberService orderNumberService;
     private final DepartmentStoreProductMapper departmentStoreProductMapper;
     private final MemberMapper memberMapper;
 
@@ -42,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
         // 상품 검증
         OrderValidationResult validationResult = orderValidationService
                 .validateAndCalculate(request.products(), departmentStoreId);
-        String orderNumber = orderNumberGenerator.generateOrderNumber();
+        String orderNumber = orderNumberService.generateOrderNumber();
 
         OrderDraft orderDraft = createOrderDraft(
                 orderNumber,

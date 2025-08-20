@@ -12,12 +12,13 @@
         AND department_store_id = #{departmentStoreId}
     </select>
 
-    <select id="findDepartmentStoreIdByProductId" resultType="Long">
-        SELECT department_store_id
-        FROM department_store_product
-        WHERE product_id = #{productId}
-        AND ROWNUM = 1
+    <select id="findCommonPickupStoresByProductIds" resultType="org.phoenix.planet.dto.order.raw.PickupStoreInfo">
+        SELECT
+        dsp.department_store_id as storeId,
+        ds.name as storeName
+        FROM department_store_product dsp
+        JOIN department_store ds ON dsp.department_store_id = ds.department_store_id
+        WHERE dsp.product_id = #{productId}
     </select>
-
 
 </mapper>

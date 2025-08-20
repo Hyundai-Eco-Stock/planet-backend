@@ -60,13 +60,11 @@ public class OrderValidationServiceImpl implements OrderValidationService {
                 throw new OrderException(OrderError.ECODEAL_PRODUCT_PICKUP_ONLY);
             }
 
-            // ecoDeal 픽업이면 매장 ID 필수
-            if (departmentStoreId == null) {
-                throw new OrderException(OrderError.PICKUP_STORE_REQUIRED);
+            // 매장 검증은 departmentStoreId가 있을 때만
+            if (departmentStoreId != null) {
+                validateProductAvailableAtStore(productRequest.productId(), departmentStoreId);
             }
-
-            // 해당 매장에서 상품 판매 여부 확인
-            validateProductAvailableAtStore(productRequest.productId(), departmentStoreId);
+            // departmentStoreId가 null이면 매장 검증 스킵 (주문서 생성 단계)
         } else {
             // 일반 상품: 무조건 배송만 가능
             if (requestOrderType != OrderType.DELIVERY) {

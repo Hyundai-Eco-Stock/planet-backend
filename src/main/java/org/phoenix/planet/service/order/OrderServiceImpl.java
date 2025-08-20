@@ -7,6 +7,7 @@ import org.phoenix.planet.constant.OrderType;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.order.raw.OrderDraft;
 import org.phoenix.planet.dto.order.raw.OrderValidationResult;
+import org.phoenix.planet.dto.order.raw.PickupStoreInfo;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.request.OrderProductRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
@@ -18,9 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,12 +37,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public CreateOrderResponse createOrder(CreateOrderRequest request, Long memberId) {
-        // ecoDeal인 경우 매장 자동 매핑
-        Long departmentStoreId = determineDepartmentStoreId(request.products());
-
         // 상품 검증
-        OrderValidationResult validationResult = orderValidationService
-                .validateAndCalculate(request.products(), departmentStoreId);
+        OrderValidationResult validationResult = orderValidationService.validateAndCalculate(request.products(), null);
         String orderNumber = orderNumberService.generateOrderNumber();
 
         // 사용자 보유 포인트 조회
@@ -49,12 +47,15 @@ public class OrderServiceImpl implements OrderService {
         // 기본 기부금 계산
         Long defaultDonationPrice = calculateDefaultDonation(validationResult.totalAmount());
 
+        // 픽업 가능한 매장 리스트 조회
+        List<PickupStoreInfo> availablePickupStores = findCommonPickupStores(request.products());
+
         OrderDraft orderDraft = createOrderDraft(
                 orderNumber,
                 memberId,
                 request.products(),
                 validationResult.totalAmount(),  // 순수 상품 금액만
-                departmentStoreId,
+                null, // 매장 선택은 나중에
                 availablePoint,
                 defaultDonationPrice
         );
@@ -63,8 +64,37 @@ public class OrderServiceImpl implements OrderService {
         return new CreateOrderResponse(
                 orderNumber,
                 validationResult.totalAmount(), // 상품 금액만 반환
+                availablePickupStores,
                 "주문서가 성공적으로 생성되었습니다."
         );
+    }
+
+    private List<PickupStoreInfo> findCommonPickupStores(List<OrderProductRequest> products) {
+        OrderType orderType = products.getFirst().orderType();
+
+        if (orderType != OrderType.PICKUP) {
+            return List.of();
+        }
+
+        Set<PickupStoreInfo> commonStores = null;
+
+        for (OrderProductRequest product : products) {
+            List<PickupStoreInfo> productStores = departmentStoreProductMapper
+                    .findCommonPickupStoresByProductIds(product.productId());
+            Set<PickupStoreInfo> storeSet = new HashSet<>(productStores);
+
+            if (commonStores == null) {
+                commonStores = storeSet;
+            } else {
+                commonStores.retainAll(storeSet); // 교집합
+            }
+
+            if (commonStores.isEmpty()) {
+                throw new OrderException(OrderError.DIFFERENT_PICKUP_STORES_NOT_ALLOWED);
+            }
+        }
+
+        return new ArrayList<>(commonStores);
     }
 
     private Long calculateDefaultDonation(Long totalAmount) {
@@ -105,26 +135,6 @@ public class OrderServiceImpl implements OrderService {
                     departmentStoreId, now, now.plusMinutes(30)
             );
         }
-    }
-
-    private Long determineDepartmentStoreId(List<OrderProductRequest> products) {
-        OrderType orderType = products.getFirst().orderType();
-
-        if (orderType == OrderType.PICKUP) {
-            // 모든 ecoDeal 상품이 동일한 매장에서 판매되는지 확인
-            Set<Long> departmentStoreIds = products.stream()
-                    .map(product -> departmentStoreProductMapper.findDepartmentStoreIdByProductId(product.productId())
-                            .orElseThrow(() -> new OrderException(OrderError.PICKUP_STORE_NOT_FOUND)))
-                    .collect(Collectors.toSet());
-
-            if (departmentStoreIds.size() > 1) {
-                throw new OrderException(OrderError.DIFFERENT_PICKUP_STORES_NOT_ALLOWED);
-            }
-
-            return departmentStoreIds.iterator().next();
-        }
-
-        return null; // 배송 주문인 경우
     }
 
 }

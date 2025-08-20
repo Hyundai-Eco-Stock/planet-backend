@@ -1,14 +1,15 @@
 package org.phoenix.planet.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.phoenix.planet.dto.order.raw.PickupStoreInfo;
 
-import java.util.Optional;
+import java.util.List;
 
 @Mapper
 public interface DepartmentStoreProductMapper {
 
     boolean existsByProductIdAndDepartmentStoreId(Long productId, Long departmentStoreId);
 
-    Optional<Long> findDepartmentStoreIdByProductId(Long productId);
+    List<PickupStoreInfo> findCommonPickupStoresByProductIds(Long productId);
 
 }

@@ -95,7 +95,7 @@ public class ReceiptEventConsumer {
             }
 
         } else { // 아직 등록되지 않은 카드면 할 수 있는게 없다고 생각...
-
+            log.warn("미등록 카드 결제 정보 수신. memberId is null. event: {}", event);
         }
     }
 

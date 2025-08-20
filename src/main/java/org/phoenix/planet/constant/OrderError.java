@@ -26,6 +26,8 @@ public enum OrderError {
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),
     ORDER_NOT_CANCELABLE(HttpStatus.BAD_REQUEST, "취소할 수 없는 주문 상태입니다."),
     ORDER_ALREADY_PAID(HttpStatus.BAD_REQUEST, "이미 결제 완료된 주문입니다."),
+    ORDER_DRAFT_EXPIRED(HttpStatus.BAD_REQUEST, "주문서 유효시간이 만료되었습니다."),
+    UNAUTHORIZED_ORDER_ACCESS(HttpStatus.FORBIDDEN, "본인의 주문서만 조회할 수 있습니다."),
 
     // 포인트 관련 에러
     INSUFFICIENT_POINTS(HttpStatus.BAD_REQUEST, "사용 가능한 포인트가 부족합니다."),

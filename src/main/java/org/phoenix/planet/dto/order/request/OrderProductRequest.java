@@ -10,8 +10,8 @@ import org.phoenix.planet.constant.OrderType;
  * 한 주문 내 모든 상품은 동일한 orderType이어야 함
  */
 public record OrderProductRequest(
-        @NotNull(message = "상품 ID는 필수입니다") @Min(value = 1, message = "상품 ID는 1 이상이어야 합니다") Long productId,
-        @NotNull(message = "수량은 필수입니다") @Min(value = 1, message = "수량은 1개 이상이어야 합니다") Integer quantity,
-        @NotNull(message = "주문 타입은 필수입니다") OrderType orderType
+        @NotNull(message = "상품 정보가 올바르지 않습니다") @Min(value = 1, message = "상품 ID는 1 이상이어야 합니다") Long productId,
+        @NotNull(message = "상품 정보가 올바르지 않습니다") @Min(value = 1, message = "수량은 1개 이상이어야 합니다") Integer quantity,
+        @NotNull(message = "상품 정보가 올바르지 않습니다") OrderType orderType
 ) {
 }

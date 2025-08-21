@@ -24,13 +24,15 @@ public class Product {
 
     private String name;
 
-    private int price;
+    private Long price;
 
-    private long quantity;
+    private Integer quantity;
 
     private String ecoDealStatus;
 
     private int salePercent;
+
+    private String imageUrl;
 
     private LocalDateTime createdAt;
 

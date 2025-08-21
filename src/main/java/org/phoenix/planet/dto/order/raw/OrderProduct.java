@@ -25,7 +25,7 @@ public class OrderProduct {
 
     private OrderType orderType;  // 주문 타입 (PICKUP: 픽업, DELIVERY: 배송)
 
-    private Long ecoDealDiscount;  // 에코딜 할인 금액 (주문 시점 할인 내역 보존용)
+    private Long discountPrice;
 
     private Long orderHistoryId;
 

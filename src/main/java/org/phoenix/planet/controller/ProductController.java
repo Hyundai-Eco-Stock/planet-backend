@@ -5,7 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
-import org.phoenix.planet.dto.product.response.ProductCategoryResponse;
+import org.phoenix.planet.dto.product.response.ProductCategoryDto;
+import org.phoenix.planet.dto.product.response.ProductDto;
 import org.phoenix.planet.dto.product.response.RecommendResponse;
 import org.phoenix.planet.service.product.ProductService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,9 +31,21 @@ public class ProductController {
                 .build();
     }
 
+    // 카테고리, 상품목록 분리하고 초기 렌더링 시에만 카테고리 api 호출
     @GetMapping
-    public ProductCategoryResponse findByCategory(@RequestParam(required = false) Long categoryId) {
-        log.info("GET /products?category={} called", categoryId);
+    public List<ProductDto> findByCategory(@RequestParam(required = false) Long categoryId) {
         return productService.findByCategory(categoryId);
+    }
+
+    @GetMapping("/categories")
+    public List<ProductCategoryDto> getCategories() {
+        return productService.getCategories();
+    }
+
+    /* 검색 */
+    @GetMapping("/search")
+    public void search(@RequestParam String searchKeyword) {
+        log.info("GET /products/search?searchKeyword={} called", searchKeyword);
+
     }
 }

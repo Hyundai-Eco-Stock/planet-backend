@@ -12,7 +12,6 @@ import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
 import org.phoenix.planet.dto.product.response.ProductCategoryDto;
-import org.phoenix.planet.dto.product.response.ProductCategoryResponse;
 import org.phoenix.planet.dto.product.response.ProductDto;
 import org.phoenix.planet.mapper.ProductMapper;
 import org.phoenix.planet.util.file.EsClient;
@@ -30,6 +29,23 @@ public class ProductServiceImpl implements ProductService {
     public List<EcoProductListResponse> getTodayEcoProductList() {
 
         return productMapper.findTodayAllEcoProducts();
+    }
+
+    @Override
+    public List<ProductCategoryDto> getCategories() {
+        List<ProductCategoryDto> list = productMapper.findAllCategories();
+        list.addFirst(
+                ProductCategoryDto.builder()
+                        .categoryName("전체")
+                        .build()
+        );
+        return list;
+    }
+
+    @Override
+    public List<ProductDto> findByCategory(Long categoryId) {
+        log.info("findByCategory called with category: {}", categoryId);
+        return productMapper.findByCategoryId(categoryId);
     }
 
     @Override

@@ -63,6 +63,7 @@ public class OfflinePayServiceImpl implements OfflinePayService {
         long offlinePayHistoryId = offlinePayHistoryService.save(offlinePaySaveRequest);
 
         // 결제 상품 정보들 저장
+        // TODO: item 들에 대한 모든 데이터를 한번에 쿼리 후 저장 고려
         payload.items()
             .forEach(item -> {
                 OfflineProduct offlineProduct = offlineProductService.searchById(item.productId());

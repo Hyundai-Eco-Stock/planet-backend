@@ -36,9 +36,10 @@ public class ReceiptEventConsumer {
     private final EcoStockIssueService ecoStockIssueService;
     private final MemberDeviceTokenService memberDeviceTokenService;
     private final OfflinePayHistoryService offlinePayHistoryService;
-
+    // TODO: DB 에서 조회 예정
     private static final List<Long> tumblerDiscountProductIdList = Arrays.asList(
         1099L, 2099L, 3099L, 4099L);
+    // TODO: DB 에서 조회 예정
     private static final List<Long> paperBagProductIdList = Arrays.asList(
         1199L, 2199L, 3199L, 4199L);
 
@@ -55,7 +56,7 @@ public class ReceiptEventConsumer {
         Long memberId = memberCardService.searchByCardCompanyIdAndCardNumber(
             event.cardCompanyId(),
             event.cardNumber());
-        
+
         if (memberId != null) { // 등록된 카드이면
             // 가게 타입에 따른 에코스톡 발급 여부 확인
             String shopType = offlineShopService.searchTypeById(event.shopId());

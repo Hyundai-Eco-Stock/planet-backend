@@ -34,7 +34,14 @@ public class MemberServiceImpl implements MemberService {
         }
 
         // 멤버 정보 수정
-        memberMapper.updatePwdHash(loginMemberId, pwdHash);
+        memberMapper.update(
+            loginMemberId,
+            pwdHash,
+            request.sex(),
+            request.birth(),
+            request.address(),
+            request.detailAddress()
+        );
     }
 
     @Override

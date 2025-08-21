@@ -16,4 +16,11 @@
         ORDER BY department_store_id
     </select>
 
+    <select id="findNameById" parameterType="long" resultType="string">
+        SELECT
+        name
+        FROM department_store
+        WHERE department_store_id = #{departmentStoreId}
+    </select>
+
 </mapper>

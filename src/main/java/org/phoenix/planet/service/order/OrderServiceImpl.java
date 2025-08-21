@@ -8,21 +8,24 @@ import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.order.raw.OrderDraft;
 import org.phoenix.planet.dto.order.raw.OrderValidationResult;
 import org.phoenix.planet.dto.order.raw.PickupStoreInfo;
+import org.phoenix.planet.dto.order.raw.PickupStoreProductInfo;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.request.OrderProductRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
+import org.phoenix.planet.dto.order.response.OrderDraftProductResponse;
+import org.phoenix.planet.dto.order.response.OrderDraftResponse;
+import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.error.auth.AuthException;
 import org.phoenix.planet.error.order.OrderException;
+import org.phoenix.planet.mapper.DepartmentStoreMapper;
 import org.phoenix.planet.mapper.DepartmentStoreProductMapper;
 import org.phoenix.planet.mapper.MemberMapper;
+import org.phoenix.planet.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +35,9 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDraftService orderDraftService;
     private final OrderNumberService orderNumberService;
     private final DepartmentStoreProductMapper departmentStoreProductMapper;
+    private final DepartmentStoreMapper departmentStoreMapper;
     private final MemberMapper memberMapper;
+    private final ProductMapper productMapper;
 
     @Override
     @Transactional
@@ -67,6 +72,130 @@ public class OrderServiceImpl implements OrderService {
                 availablePickupStores,
                 "주문서가 성공적으로 생성되었습니다."
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDraftResponse getOrderDraft(String orderNumber, Long memberId) {
+        // 주문번호 유효성 검증
+        if (!orderNumberService.isValidOrderNumber(orderNumber)) {
+            throw new OrderException(OrderError.ORDER_NOT_FOUND);
+        }
+
+        // OrderDraftService를 통해 Redis에서 조회
+        OrderDraft orderDraft = orderDraftService.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new OrderException(OrderError.ORDER_NOT_FOUND));
+
+        // 권한 검증
+        if (!orderDraft.memberId().equals(memberId)) {
+            throw new OrderException(OrderError.UNAUTHORIZED_ORDER_ACCESS);
+        }
+
+        // 주문서 만료 여부 검증
+        if (orderDraft.validUntil().isBefore(LocalDateTime.now())) {
+            throw new OrderException(OrderError.ORDER_DRAFT_EXPIRED);
+        }
+
+        // 추가 정보 조회 및 변환
+        return convertToOrderDraftResponse(orderDraft);
+    }
+
+    private OrderDraftResponse convertToOrderDraftResponse(OrderDraft orderDraft) {
+        // 모든 상품 ID 수집
+        List<Long> productIds = new ArrayList<>();
+        for (OrderProductRequest orderProduct : orderDraft.products()) {
+            productIds.add(orderProduct.productId());
+        }
+
+        // 상품 정보 일괄 조회
+        List<Product> products = productMapper.findByIds(productIds);
+        Map<Long, Product> productMap = new HashMap<>();
+        for (Product product : products) {
+            productMap.put(product.getId(), product);
+        }
+
+        // 픽업 매장 정보 일괄 조회 (PICKUP 타입인 경우에만)
+        Map<Long, List<PickupStoreInfo>> storeMap = new HashMap<>();
+        if (orderDraft.getOrderType() == OrderType.PICKUP) {
+            List<PickupStoreProductInfo> storeInfos = departmentStoreProductMapper.findPickupStoresByProductIds(productIds);
+
+            // 상품별 매장 리스트로 그룹핑
+            for (PickupStoreProductInfo storeInfo : storeInfos) {
+                Long productId = storeInfo.productId();
+                PickupStoreInfo pickupStore = new PickupStoreInfo(storeInfo.storeId(), storeInfo.storeName());
+
+                storeMap.computeIfAbsent(productId, key -> new ArrayList<>()).add(pickupStore);
+            }
+        }
+
+        List<OrderDraftProductResponse> productResponses = new ArrayList<>();
+        for (OrderProductRequest orderProduct : orderDraft.products()) {
+            Product product = productMap.get(orderProduct.productId());
+            List<PickupStoreInfo> availableStores = storeMap.getOrDefault(orderProduct.productId(), new ArrayList<>());
+
+            OrderDraftProductResponse productResponse = convertToOrderDraftProductResponse(
+                    orderProduct,
+                    product,
+                    availableStores
+            );
+            productResponses.add(productResponse);
+        }
+
+        // 매장 선택 정보 처리
+        OrderType orderType = orderDraft.getOrderType();
+        Long selectedPickupStoreId = null;
+        String selectedPickupStoreName = null;
+        List<PickupStoreInfo> availablePickupStores = new ArrayList<>();
+
+        if (orderType == OrderType.PICKUP && !productResponses.isEmpty()) {
+            selectedPickupStoreId = orderDraft.pickupDepartmentStoreId();
+            availablePickupStores = productResponses.getFirst().availableStores();
+
+            // 선택된 매장이 있는 경우 availablePickupStores에서 매장명 찾기
+            if (selectedPickupStoreId != null) {
+                for (PickupStoreInfo store : availablePickupStores) {
+                    if (store.storeId().equals(selectedPickupStoreId)) {
+                        selectedPickupStoreName = store.storeName();
+                        break;
+                    }
+                }
+            }
+        }
+
+        return OrderDraftResponse.builder()
+                .orderNumber(orderDraft.orderNumber())
+                .totalAmount(orderDraft.totalAmount())
+                .usedPoint(orderDraft.usedPoint())
+                .donationPrice(orderDraft.donationPrice())
+                .products(productResponses)
+                .deliveryAddress(orderDraft.deliveryAddress())
+                .recipientName(orderDraft.recipientName())
+                .selectedPickupStoreId(selectedPickupStoreId)
+                .selectedPickupStoreName(selectedPickupStoreName)
+                .availablePickupStores(availablePickupStores)
+                .createdAt(orderDraft.createdAt())
+                .validUntil(orderDraft.validUntil())
+                .build();
+    }
+
+    private OrderDraftProductResponse convertToOrderDraftProductResponse(
+            OrderProductRequest orderProductRequest,
+            Product product,
+            List<PickupStoreInfo> availableStores
+    ) {
+        if (product == null) {
+            throw new OrderException(OrderError.PRODUCT_NOT_FOUND);
+        }
+
+        return OrderDraftProductResponse.builder()
+                .productId(orderProductRequest.productId())
+                .productName(product.getName())
+                .productImageUrl(product.getImageUrl())
+                .price(product.getPrice())
+                .quantity(orderProductRequest.quantity())
+                .orderType(orderProductRequest.orderType())
+                .availableStores(availableStores)
+                .build();
     }
 
     private List<PickupStoreInfo> findCommonPickupStores(List<OrderProductRequest> products) {

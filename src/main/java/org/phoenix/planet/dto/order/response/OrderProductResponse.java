@@ -15,7 +15,7 @@ public record OrderProductResponse(
         Integer quantity,
         CancelStatus cancelStatus,
         OrderType orderType,
-        Long ecoDealDiscount,
+        Long discountPrice,
         Long originalPrice,  // 원래 상품 가격
         Integer salePercent  // 할인율
 ) {

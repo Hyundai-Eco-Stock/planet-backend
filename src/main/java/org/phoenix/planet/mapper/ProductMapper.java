@@ -3,8 +3,8 @@ package org.phoenix.planet.mapper;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.phoenix.planet.dto.product.raw.Product;
+import org.phoenix.planet.dto.product.raw.ProductCategory;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
-import org.phoenix.planet.dto.product.response.ProductCategoryDto;
 
 @Mapper
 public interface ProductMapper {
@@ -25,5 +25,5 @@ public interface ProductMapper {
 
     List<Product> findByCategoryId(Long category);
 
-    List<ProductCategoryDto> findAllCategories();
+    List<ProductCategory> findAllCategories();
 }

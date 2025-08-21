@@ -9,9 +9,9 @@ import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.product.raw.Product;
+import org.phoenix.planet.dto.product.raw.ProductCategory;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
-import org.phoenix.planet.dto.product.response.ProductCategoryDto;
 import org.phoenix.planet.mapper.ProductMapper;
 import org.phoenix.planet.util.file.EsClient;
 import org.springframework.stereotype.Component;
@@ -31,11 +31,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductCategoryDto> getCategories() {
-        List<ProductCategoryDto> list = productMapper.findAllCategories();
+    public List<ProductCategory> getCategories() {
+        List<ProductCategory> list = productMapper.findAllCategories();
         list.addFirst(
-                ProductCategoryDto.builder()
-                        .categoryName("전체")
+                ProductCategory.builder()
+                        .name("전체")
                         .build()
         );
         return list;

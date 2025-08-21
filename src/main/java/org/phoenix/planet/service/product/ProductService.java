@@ -2,9 +2,9 @@ package org.phoenix.planet.service.product;
 
 import java.util.List;
 import org.phoenix.planet.dto.product.raw.Product;
+import org.phoenix.planet.dto.product.raw.ProductCategory;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
-import org.phoenix.planet.dto.product.response.ProductCategoryDto;
 
 public interface ProductService {
 
@@ -12,7 +12,7 @@ public interface ProductService {
 
     List<Product> recommend(RecommendRequest req);
 
-    List<ProductCategoryDto> getCategories();
+    List<ProductCategory> getCategories();
 
     List<Product> findByCategory(Long categoryId);
 

@@ -157,11 +157,8 @@
   </select>
 
   <select id="findAllCategories"
-    resultType="org.phoenix.planet.dto.product.response.ProductCategoryDto">
-    SELECT
-    category_id AS categoryId,
-    name AS categoryName,
-    image_url AS imageUrl
+    resultType="org.phoenix.planet.dto.product.raw.ProductCategory">
+    SELECT *
     FROM product_category
     ORDER BY category_id
   </select>

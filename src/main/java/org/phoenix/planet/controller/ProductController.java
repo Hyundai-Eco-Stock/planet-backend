@@ -4,8 +4,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.product.raw.Product;
+import org.phoenix.planet.dto.product.raw.ProductCategory;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
-import org.phoenix.planet.dto.product.response.ProductCategoryDto;
 import org.phoenix.planet.dto.product.response.RecommendResponse;
 import org.phoenix.planet.service.product.ProductService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,8 +37,10 @@ public class ProductController {
     }
 
     @GetMapping("/categories")
-    public List<ProductCategoryDto> getCategories() {
-        return productService.getCategories();
+    public List<ProductCategory> getCategories() {
+        List<ProductCategory> dto = productService.getCategories();
+        log.info(dto.get(1).toString());
+        return dto;
     }
 
     /* 검색 */

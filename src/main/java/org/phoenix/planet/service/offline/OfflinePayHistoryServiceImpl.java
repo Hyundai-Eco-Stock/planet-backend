@@ -6,6 +6,7 @@ import org.phoenix.planet.dto.offline.raw.OfflinePayHistory;
 import org.phoenix.planet.dto.offline.raw.OfflinePaySaveRequest;
 import org.phoenix.planet.mapper.OfflinePayHistoryMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -15,6 +16,7 @@ public class OfflinePayHistoryServiceImpl implements OfflinePayHistoryService {
     private final OfflinePayHistoryMapper offlinePayHistoryMapper;
 
     @Override
+    @Transactional
     public long save(OfflinePaySaveRequest offlinePaySaveRequest) {
 
         offlinePayHistoryMapper.insert(offlinePaySaveRequest);

@@ -44,8 +44,8 @@ public class ProductController {
 
     /* 검색 */
     @GetMapping("/search")
-    public void search(@RequestParam String searchKeyword) {
+    public List<Product> search(@RequestParam String searchKeyword) {
         log.info("GET /products/search?searchKeyword={} called", searchKeyword);
-
+        return productService.searchByMlt(searchKeyword, 10);
     }
 }

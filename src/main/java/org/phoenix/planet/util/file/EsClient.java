@@ -37,6 +37,7 @@ public class EsClient {
         this.defaultSize = defaultSize;
     }
 
+    /* 유사 상품 추천 */
     public List<String> searchSimilarIds(String anchorName, String anchorCategoryId,
             String anchorId, Integer size) {
         int k = (size == null || size <= 0) ? defaultSize : size;
@@ -106,6 +107,56 @@ public class EsClient {
                 .uri("/" + idx + "/_search")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(query)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+        if (resp == null || resp.get("hits") == null) {
+            return Collections.emptyList();
+        }
+        return toIds(resp);
+    }
+
+
+    /* 검색 */
+    public List<String> searchMltMatchAll(String likeText, Integer size) {
+        int k = (size == null || size <= 0) ? 10 : size;
+        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
+
+        String body = String.format(
+                """
+                        {
+                          "size": %d,
+                          "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
+                          "query": { "match_all": {} },
+                          "rescore": [
+                            {
+                              "window_size": 200,
+                              "query": {
+                                "rescore_query": {
+                                  "more_like_this": {
+                                    "fields": ["product_name","category_name"],
+                                    "like": [ %s ],
+                                    "min_term_freq": 1,
+                                    "min_doc_freq": 1,
+                                    "max_query_terms": 50
+                                  }
+                                },
+                                "query_weight": 0.2,
+                                "rescore_query_weight": 2.0
+                              }
+                            }
+                          ]
+                        }
+                        """,
+                k,
+                safeJson(likeText)
+        );
+
+        JsonNode resp = webClient.post()
+                .uri("/" + idx + "/_search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();

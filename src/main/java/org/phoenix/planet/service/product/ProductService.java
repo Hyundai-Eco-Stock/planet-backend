@@ -17,4 +17,6 @@ public interface ProductService {
 
     List<ProductDto> findByCategory(Long categoryId);
 
+    // 상품 검색
+    List<Product> searchByMlt(String keyword, Integer size);
 }

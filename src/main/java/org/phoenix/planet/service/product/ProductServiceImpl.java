@@ -75,19 +75,29 @@ public class ProductServiceImpl implements ProductService {
         return fromDb;
     }
 
+    /* 검색 */
     @Override
-    public ProductCategoryResponse findByCategory(Long categoryId) {
-        log.info("findByCategory called with category: {}", categoryId);
-        // 카테고리 전부 불러오고, 카테고리에 맞는 상품 전체 불러와야함.
-        List<ProductDto> list1 = productMapper.findByCategoryId(categoryId);
-        List<ProductCategoryDto> list2 = productMapper.findAllCategories();
-        list2.addFirst(ProductCategoryDto.builder()
-                .categoryName("전체")
-                .build());
+    public List<Product> searchByMlt(String keyword, Integer size) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        return ProductCategoryResponse.builder()
-                .products(list1)
-                .categories(list2)
-                .build();
+        // 1) ES에서 추천 id만 받기 (MLT)
+        List<String> ids = esClient.searchMltMatchAll(keyword.trim(), size);
+        if (ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 2) DB 상세 로드
+        List<Product> fromDb = productMapper.findByIdIn(ids);
+        if (fromDb.isEmpty()) {
+            return fromDb;
+        }
+
+        // 3) ES 순서대로 정렬
+        Map<String, Integer> rank = IntStream.range(0, ids.size())
+                .boxed().collect(Collectors.toMap(ids::get, i -> i));
+        fromDb.sort(Comparator.comparingInt(p -> rank.getOrDefault(p.getId(), Integer.MAX_VALUE)));
+        return fromDb;
     }
 }

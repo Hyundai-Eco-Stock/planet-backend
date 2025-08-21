@@ -21,4 +21,17 @@
         WHERE dsp.product_id = #{productId}
     </select>
 
+    <select id="findPickupStoresByProductIds" parameterType="list" resultType="org.phoenix.planet.dto.order.raw.PickupStoreProductInfo">
+        SELECT
+        dsp.product_id,
+        ds.department_store_id as storeId,
+        ds.name as storeName
+        FROM department_store_product dsp
+        INNER JOIN department_store ds ON dsp.department_store_id = ds.department_store_id
+        WHERE dsp.product_id IN
+        <foreach collection="productIds" item="productId" open="(" separator="," close=")">
+            #{productId}
+        </foreach>
+    </select>
+
 </mapper>

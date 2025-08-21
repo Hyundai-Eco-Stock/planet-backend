@@ -8,6 +8,7 @@ import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.order.raw.OrderDraft;
 import org.phoenix.planet.dto.order.raw.OrderValidationResult;
 import org.phoenix.planet.dto.order.raw.PickupStoreInfo;
+import org.phoenix.planet.dto.order.raw.PickupStoreProductInfo;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.request.OrderProductRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
@@ -24,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -103,20 +101,55 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderDraftResponse convertToOrderDraftResponse(OrderDraft orderDraft) {
-        // 상품 정보 조회 및 반환
-        List<OrderDraftProductResponse> products = orderDraft.products().stream()
-                .map(this::convertToOrderDraftProductResponse)
-                .toList();
+        // 모든 상품 ID 수집
+        List<Long> productIds = new ArrayList<>();
+        for (OrderProductRequest orderProduct : orderDraft.products()) {
+            productIds.add(orderProduct.productId());
+        }
 
+        // 상품 정보 일괄 조회
+        List<Product> products = productMapper.findByIds(productIds);
+        Map<Long, Product> productMap = new HashMap<>();
+        for (Product product : products) {
+            productMap.put(product.getId(), product);
+        }
+
+        // 픽업 매장 정보 일괄 조회 (PICKUP 타입인 경우에만)
+        Map<Long, List<PickupStoreInfo>> storeMap = new HashMap<>();
+        if (orderDraft.getOrderType() == OrderType.PICKUP) {
+            List<PickupStoreProductInfo> storeInfos = departmentStoreProductMapper.findPickupStoresByProductIds(productIds);
+
+            // 상품별 매장 리스트로 그룹핑
+            for (PickupStoreProductInfo storeInfo : storeInfos) {
+                Long productId = storeInfo.productId();
+                PickupStoreInfo pickupStore = new PickupStoreInfo(storeInfo.storeId(), storeInfo.storeName());
+
+                storeMap.computeIfAbsent(productId, key -> new ArrayList<>()).add(pickupStore);
+            }
+        }
+
+        List<OrderDraftProductResponse> productResponses = new ArrayList<>();
+        for (OrderProductRequest orderProduct : orderDraft.products()) {
+            Product product = productMap.get(orderProduct.productId());
+            List<PickupStoreInfo> availableStores = storeMap.getOrDefault(orderProduct.productId(), new ArrayList<>());
+
+            OrderDraftProductResponse productResponse = convertToOrderDraftProductResponse(
+                    orderProduct,
+                    product,
+                    availableStores
+            );
+            productResponses.add(productResponse);
+        }
+
+        // 매장 선택 정보 처리
         OrderType orderType = orderDraft.getOrderType();
         Long selectedPickupStoreId = null;
         String selectedPickupStoreName = null;
-        List<PickupStoreInfo> availablePickupStores = List.of();
+        List<PickupStoreInfo> availablePickupStores = new ArrayList<>();
 
-        if (orderType == OrderType.PICKUP) {
-            // 선택된 매장 정보 (null일 수 있음 - 사용자가 아직 선택 안 함)
+        if (orderType == OrderType.PICKUP && !productResponses.isEmpty()) {
             selectedPickupStoreId = orderDraft.pickupDepartmentStoreId();
-            availablePickupStores = products.getFirst().availableStores();
+            availablePickupStores = productResponses.getFirst().availableStores();
 
             // 선택된 매장이 있는 경우 availablePickupStores에서 매장명 찾기
             if (selectedPickupStoreId != null) {
@@ -134,7 +167,7 @@ public class OrderServiceImpl implements OrderService {
                 .totalAmount(orderDraft.totalAmount())
                 .usedPoint(orderDraft.usedPoint())
                 .donationPrice(orderDraft.donationPrice())
-                .products(products)
+                .products(productResponses)
                 .deliveryAddress(orderDraft.deliveryAddress())
                 .recipientName(orderDraft.recipientName())
                 .selectedPickupStoreId(selectedPickupStoreId)
@@ -145,21 +178,13 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    private OrderDraftProductResponse convertToOrderDraftProductResponse(OrderProductRequest orderProductRequest) {
-        // Product 테이블에서 상품 정보 조회
-        Product product = productMapper.findById(orderProductRequest.productId());
-
+    private OrderDraftProductResponse convertToOrderDraftProductResponse(
+            OrderProductRequest orderProductRequest,
+            Product product,
+            List<PickupStoreInfo> availableStores
+    ) {
         if (product == null) {
             throw new OrderException(OrderError.PRODUCT_NOT_FOUND);
-        }
-
-        // 상품의 픽업 가능한 매장 조회
-        List<PickupStoreInfo> availablePickupStores = List.of();
-
-        if (orderProductRequest.orderType() == OrderType.PICKUP) {
-            availablePickupStores = departmentStoreProductMapper.findCommonPickupStoresByProductIds(
-                    orderProductRequest.productId()
-            );
         }
 
         return OrderDraftProductResponse.builder()
@@ -169,7 +194,7 @@ public class OrderServiceImpl implements OrderService {
                 .price(product.getPrice())
                 .quantity(orderProductRequest.quantity())
                 .orderType(orderProductRequest.orderType())
-                .availableStores(availablePickupStores)
+                .availableStores(availableStores)
                 .build();
     }
 

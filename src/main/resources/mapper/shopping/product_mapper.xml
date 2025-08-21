@@ -123,4 +123,24 @@
         ORDER BY p.created_at DESC
     </select>
 
+    <select id="findByIds" parameterType="list" resultType="org.phoenix.planet.dto.product.raw.Product">
+        SELECT
+        product_id as id,
+        category_id,
+        brand_id,
+        name,
+        price,
+        quantity,
+        eco_deal_status,
+        sale_percent,
+        image_url,
+        created_at,
+        updated_at
+        FROM PRODUCT
+        WHERE product_id IN
+        <foreach collection="productIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>

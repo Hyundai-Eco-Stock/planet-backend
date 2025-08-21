@@ -31,7 +31,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ProductCategoryResponse findByCategory(@RequestParam Long categoryId) {
+    public ProductCategoryResponse findByCategory(@RequestParam(required = false) Long categoryId) {
         log.info("GET /products?category={} called", categoryId);
         return productService.findByCategory(categoryId);
     }

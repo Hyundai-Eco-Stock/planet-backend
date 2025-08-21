@@ -5,7 +5,6 @@ import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
 import org.phoenix.planet.dto.product.response.ProductCategoryDto;
-import org.phoenix.planet.dto.product.response.ProductDto;
 
 public interface ProductService {
 
@@ -15,7 +14,7 @@ public interface ProductService {
 
     List<ProductCategoryDto> getCategories();
 
-    List<ProductDto> findByCategory(Long categoryId);
+    List<Product> findByCategory(Long categoryId);
 
     // 상품 검색
     List<Product> searchByMlt(String keyword, Integer size);

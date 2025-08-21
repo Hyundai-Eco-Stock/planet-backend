@@ -12,7 +12,6 @@ import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
 import org.phoenix.planet.dto.product.response.ProductCategoryDto;
-import org.phoenix.planet.dto.product.response.ProductDto;
 import org.phoenix.planet.mapper.ProductMapper;
 import org.phoenix.planet.util.file.EsClient;
 import org.springframework.stereotype.Component;
@@ -43,7 +42,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDto> findByCategory(Long categoryId) {
+    public List<Product> findByCategory(Long categoryId) {
         log.info("findByCategory called with category: {}", categoryId);
         return productMapper.findByCategoryId(categoryId);
     }

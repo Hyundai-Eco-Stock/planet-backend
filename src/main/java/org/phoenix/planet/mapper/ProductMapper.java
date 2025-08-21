@@ -5,7 +5,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
 import org.phoenix.planet.dto.product.response.ProductCategoryDto;
-import org.phoenix.planet.dto.product.response.ProductDto;
 
 @Mapper
 public interface ProductMapper {
@@ -24,7 +23,7 @@ public interface ProductMapper {
 
     List<Product> findByIdIn(List<String> ids);
 
-    List<ProductDto> findByCategoryId(Long category);
+    List<Product> findByCategoryId(Long category);
 
     List<ProductCategoryDto> findAllCategories();
 }

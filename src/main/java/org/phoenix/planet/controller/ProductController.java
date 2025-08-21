@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
 import org.phoenix.planet.dto.product.response.ProductCategoryDto;
-import org.phoenix.planet.dto.product.response.ProductDto;
 import org.phoenix.planet.dto.product.response.RecommendResponse;
 import org.phoenix.planet.service.product.ProductService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +32,7 @@ public class ProductController {
 
     // 카테고리, 상품목록 분리하고 초기 렌더링 시에만 카테고리 api 호출
     @GetMapping
-    public List<ProductDto> findByCategory(@RequestParam(required = false) Long categoryId) {
+    public List<Product> findByCategory(@RequestParam(required = false) Long categoryId) {
         return productService.findByCategory(categoryId);
     }
 

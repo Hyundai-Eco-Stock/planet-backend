@@ -134,7 +134,7 @@
   </select>
 
   <select id="findByCategoryId" parameterType="long"
-    resultType="org.phoenix.planet.dto.product.response.ProductDto">
+    resultType="org.phoenix.planet.dto.product.raw.Product">
     SELECT
     product_id,
     image_url,

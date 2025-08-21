@@ -11,4 +11,8 @@ public interface OfflineProductService {
     long getTotalPriceByIds(List<Long> productIdList);
 
     OfflineProduct searchById(Long itemId);
+
+    List<Long> searchTumblerProductIdList();
+
+    List<Long> searchPaperBagProductIdList();
 }

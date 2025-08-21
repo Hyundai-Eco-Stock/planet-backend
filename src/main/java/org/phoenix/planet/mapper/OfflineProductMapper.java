@@ -14,4 +14,8 @@ public interface OfflineProductMapper {
     long selectSumPriceOfIds(List<Long> productIdList);
 
     Optional<OfflineProduct> selectById(Long itemId);
+
+    List<Long> selectTumblerProductIdList();
+
+    List<Long> selectPaperBagProductIdList();
 }

@@ -35,4 +35,20 @@
         FROM offline_product
         WHERE offline_product_id = #{id}
     </select>
+    
+    <select id="selectTumblerProductIdList" resultType="java.lang.Long">
+        SELECT
+        offline_product_id
+        FROM
+        offline_product
+        WHERE name = '텀블러 할인'
+    </select>
+    
+    <select id="selectPaperBagProductIdList" resultType="java.lang.Long">
+        SELECT
+        offline_product_id
+        FROM
+        offline_product
+        WHERE name = '종이백'
+    </select>
 </mapper>

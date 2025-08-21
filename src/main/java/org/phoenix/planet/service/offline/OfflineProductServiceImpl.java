@@ -33,4 +33,16 @@ public class OfflineProductServiceImpl implements OfflineProductService {
         return offlineProductMapper.selectById(itemId)
             .orElseThrow(() -> new IllegalArgumentException("item id에 해당하는 오프라인 상품 정보가 없습니다"));
     }
+
+    @Override
+    public List<Long> searchTumblerProductIdList() {
+
+        return offlineProductMapper.selectTumblerProductIdList();
+    }
+
+    @Override
+    public List<Long> searchPaperBagProductIdList() {
+
+        return offlineProductMapper.selectPaperBagProductIdList();
+    }
 }

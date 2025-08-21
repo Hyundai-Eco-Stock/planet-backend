@@ -65,6 +65,10 @@ public class ProductServiceImpl implements ProductService {
         // 카테고리 전부 불러오고, 카테고리에 맞는 상품 전체 불러와야함.
         List<ProductDto> list1 = productMapper.findByCategoryId(categoryId);
         List<ProductCategoryDto> list2 = productMapper.findAllCategories();
+        list2.addFirst(ProductCategoryDto.builder()
+                .categoryName("전체")
+                .build());
+
         return ProductCategoryResponse.builder()
                 .products(list1)
                 .categories(list2)

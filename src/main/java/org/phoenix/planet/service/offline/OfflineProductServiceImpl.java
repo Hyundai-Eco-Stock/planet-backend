@@ -28,10 +28,16 @@ public class OfflineProductServiceImpl implements OfflineProductService {
     }
 
     @Override
-    public OfflineProduct searchById(Long itemId) {
+    public OfflineProduct searchById(Long productId) {
 
-        return offlineProductMapper.selectById(itemId)
+        return offlineProductMapper.selectById(productId)
             .orElseThrow(() -> new IllegalArgumentException("item id에 해당하는 오프라인 상품 정보가 없습니다"));
+    }
+
+    @Override
+    public List<OfflineProduct> searchByIds(List<Long> productIds) {
+
+        return offlineProductMapper.selectByIds(productIds);
     }
 
     @Override
@@ -45,4 +51,5 @@ public class OfflineProductServiceImpl implements OfflineProductService {
 
         return offlineProductMapper.selectPaperBagProductIdList();
     }
+
 }

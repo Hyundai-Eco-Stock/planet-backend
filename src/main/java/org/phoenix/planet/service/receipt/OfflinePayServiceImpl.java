@@ -2,6 +2,8 @@ package org.phoenix.planet.service.receipt;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.KafkaTopic;
@@ -63,10 +65,17 @@ public class OfflinePayServiceImpl implements OfflinePayService {
         long offlinePayHistoryId = offlinePayHistoryService.save(offlinePaySaveRequest);
 
         // 결제 상품 정보들 저장
-        // TODO: item 들에 대한 모든 데이터를 한번에 쿼리 후 저장 고려
+        List<Long> productIds = payload.items().stream()
+            .map(OfflinePayload.Item::productId)
+            .toList();
+
+        Map<Long, OfflineProduct> productMap = offlineProductService.searchByIds(productIds)
+            .stream()
+            .collect(Collectors.toMap(OfflineProduct::offlineProductId, p -> p));
+
         payload.items()
             .forEach(item -> {
-                OfflineProduct offlineProduct = offlineProductService.searchById(item.productId());
+                OfflineProduct offlineProduct = productMap.get(item.productId());
 
                 offlinePayProductService.save(
                     OfflinePayProductSaveRequest.builder()

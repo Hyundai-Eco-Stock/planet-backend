@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.OfflinePayHistoryMapper">
+    
+    <insert id="insert" parameterType="org.phoenix.planet.dto.offline.raw.OfflinePaySaveRequest">
+        <selectKey keyProperty="offlinePayHistoryId" resultType="long" order="BEFORE">
+            SELECT seq_offline_pay_history.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO offline_pay_history (
+        offline_pay_history_id,
+        shop_id,
+        card_company_id,
+        card_number_last4,
+        total_price,
+        paid_at,
+        barcode,
+        stock_issued
+        ) VALUES (
+        #{offlinePayHistoryId},
+        #{shopId},
+        #{cardCompanyId},
+        #{cardNumberLast4},
+        #{totalPrice},
+        SYSDATE,
+        #{barcode},
+        0
+        )
+    </insert>
+    
+    <update id="updateStockIssueStatusTrue" parameterType="long">
+        UPDATE offline_pay_history
+        SET stock_issued = 1,
+        updated_at = SYSDATE
+        WHERE offline_pay_history_id = #{offlinePayHistoryId}
+    </update>
+    
+    <select id="selectByBarcode"
+        parameterType="string"
+        resultType="org.phoenix.planet.dto.offline.raw.OfflinePayHistory"
+    >
+        SELECT
+        offline_pay_history_id AS offlinePayHistoryId,
+        shop_id AS shopId,
+        card_company_id AS cardCompanyId,
+        card_number_last4 AS cardNumberLast4,
+        total_price AS totalPrice,
+        barcode,
+        stock_issued AS stockIssued
+        FROM offline_pay_history
+        WHERE barcode = #{barcode}
+    </select>
+
+</mapper>

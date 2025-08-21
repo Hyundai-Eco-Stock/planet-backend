@@ -47,7 +47,8 @@ public class FcmService {
 
             BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
             log.info("Sent messages: {} success, {} failed",
-                response.getSuccessCount(), response.getFailureCount());
+                response.getSuccessCount(),
+                response.getFailureCount());
 
         } catch (Exception e) {
             // TODO: 향후에 kafka 토픽에 담아 다시 시도하도록 할 예정

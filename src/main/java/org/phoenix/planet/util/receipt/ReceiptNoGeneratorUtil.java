@@ -1,11 +1,14 @@
 package org.phoenix.planet.util.receipt;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import org.springframework.stereotype.Component;
 
-public class ReceiptNoGenerator {
+@Component
+public class ReceiptNoGeneratorUtil {
 
-    public static String generate(
-        int brandId,
+    public String generate(
+        long brandId,
         int posId,
         long dailySeq,
         LocalDateTime now) {
@@ -21,19 +24,18 @@ public class ReceiptNoGenerator {
         // 6. check = Luhn(base) (한 자리)
         // 7. receiptNo = base + check (최종 22자리)
 
-        String date = now.format(java.time.format.DateTimeFormatter.ofPattern("yyMMdd"));
-        String time = now.format(java.time.format.DateTimeFormatter.ofPattern("HHmm"));
+        String dateTime = now.format(DateTimeFormatter.ofPattern("yyMMddHHmmssSSS"));
         String store = String.format("%03d", brandId);
         String pos = String.format("%02d", posId);
         String seq = String.format("%06d", dailySeq);
 
-        String base = date + time + store + pos + seq; // 21자리
+        String base = dateTime + store + pos + seq; // 21자리
         char check = luhnCheckDigit(base);
         return base + check; // 22자리
     }
 
     // Luhn(Mod10)
-    private static char luhnCheckDigit(String digits) {
+    private char luhnCheckDigit(String digits) {
 
         int sum = 0;
         boolean doubleIt = true; // 오른쪽에서 두 번째부터 시작하려면 true로 시작

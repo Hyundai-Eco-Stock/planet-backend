@@ -6,7 +6,7 @@
 <mapper namespace="org.phoenix.planet.mapper.OfflineShopMapper">
     
     <select id="selectAll"
-        resultType="org.phoenix.planet.dto.department_store.response.OfflineShopListResponse">
+        resultType="org.phoenix.planet.dto.offline.response.OfflineShopListResponse">
         SELECT
         s.offline_shop_id AS offlineShopId,
         s.name AS shopName,

@@ -66,10 +66,19 @@ public class ProductServiceImpl implements ProductService {
             return fromDb;
         }
 
-        // 3) ES 순서대로 정렬
+        // 3) ES 순서대로 정렬 (ES ids는 String, DB id는 Long/Integer일 수 있으므로 String 기준으로 맞춤)
         Map<String, Integer> rank = IntStream.range(0, ids.size())
-                .boxed().collect(Collectors.toMap(ids::get, i -> i));
-        fromDb.sort(Comparator.comparingInt(p -> rank.getOrDefault(p.getId(), Integer.MAX_VALUE)));
+                .boxed()
+                .collect(Collectors.toMap(
+                        ids::get,
+                        i -> i,
+                        (a, b) -> a // 중복 id가 있을 경우 첫 위치 유지
+                ));
+
+        fromDb.sort(Comparator.comparingInt(p -> {
+            String key = (p == null) ? "" : String.valueOf(p.getId()); // getId() is primitive long
+            return rank.getOrDefault(key, Integer.MAX_VALUE);
+        }));
 
         return fromDb;
     }
@@ -86,6 +95,9 @@ public class ProductServiceImpl implements ProductService {
         if (ids.isEmpty()) {
             return Collections.emptyList();
         }
+        for (String id : ids) {
+            log.info("추천 상품 ID: {}", id);
+        }
 
         // 2) DB 상세 로드
         List<Product> fromDb = productMapper.findByIdIn(ids);
@@ -93,10 +105,26 @@ public class ProductServiceImpl implements ProductService {
             return fromDb;
         }
 
-        // 3) ES 순서대로 정렬
+        // 3) ES 순서대로 정렬 (ES ids는 String, DB id는 Long/Integer일 수 있으므로 String 기준으로 맞춤)
         Map<String, Integer> rank = IntStream.range(0, ids.size())
-                .boxed().collect(Collectors.toMap(ids::get, i -> i));
-        fromDb.sort(Comparator.comparingInt(p -> rank.getOrDefault(p.getId(), Integer.MAX_VALUE)));
+                .boxed()
+                .collect(Collectors.toMap(
+                        ids::get,
+                        i -> i,
+                        (a, b) -> a
+                ));
+
+        fromDb.sort(Comparator.comparingInt(p -> {
+            String key = (p == null) ? "" : String.valueOf(p.getId()); // getId() is primitive long
+            return rank.getOrDefault(key, Integer.MAX_VALUE);
+        }));
+
+        for (Product p : fromDb) {
+            log.info("DB에서 조회된 이후 ID: {}", p.getId());
+        }
+
         return fromDb;
+
+
     }
 }

@@ -48,6 +48,6 @@ public class ProductController {
     public List<Product> search(@RequestParam(required = false) String categoryId,
             @RequestParam String searchKeyword) {
         log.info("GET /products/search?searchKeyword={} called", searchKeyword);
-        return productService.searchByMlt(searchKeyword, categoryId, 10);
+        return productService.searchByMlt(searchKeyword, categoryId, 30);
     }
 }

@@ -144,31 +144,25 @@ public class EsClient {
                           "query": {
                             "bool": {
                               "filter": [ %s ],
-                              "must": { "match_all": {} }
+                              "must": { "match_all": {} },
+                              "should": [
+                                { "term": { "product_name.keyword": { "value": %s, "boost": 8 } } },
+                                { "match_phrase": { "product_name": { "query": %s, "boost": 5 } } },
+                                { "match": { "product_name": { "query": %s, "operator": "AND", "minimum_should_match": "100%%", "boost": 3 } } },
+                                { "multi_match": { "query": %s, "fields": ["product_name^2","brand_name"], "fuzziness": "AUTO", "boost": 1 } },
+                                { "match_phrase_prefix": { "product_name": { "query": %s, "max_expansions": 50, "boost": 1 } } }
+                              ]
                             }
                           },
-                          "rescore": [
-                            {
-                              "window_size": 200,
-                              "query": {
-                                "rescore_query": {
-                                  "more_like_this": {
-                                    "fields": ["product_name","category_name"],
-                                    "like": [ %s ],
-                                    "min_term_freq": 1,
-                                    "min_doc_freq": 1,
-                                    "max_query_terms": 50
-                                  }
-                                },
-                                "query_weight": 0.2,
-                                "rescore_query_weight": 2.0
-                              }
-                            }
-                          ]
+                          "sort": ["_score"]
                         }
                         """,
                 k,
                 catTerm,
+                safeJson(likeText),
+                safeJson(likeText),
+                safeJson(likeText),
+                safeJson(likeText),
                 safeJson(likeText)
         );
 

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.MemberDeviceTokenMapper">
+    
+    <!-- 특정 멤버의 모든 FCM 토큰 조회 -->
+    <select id="searchFcmTokenByMemberId" parameterType="long" resultType="string">
+        SELECT fcm_token
+        FROM member_device_token
+        WHERE member_id = #{memberId}
+    </select>
+    
+    <!-- 토큰 저장 -->
+    <insert id="insertToken" parameterType="map">
+        <selectKey keyProperty="id" resultType="long" order="BEFORE">
+            SELECT seq_member_device_token.NEXTVAL FROM dual
+        </selectKey>
+        
+        INSERT INTO member_device_token (
+        id,
+        member_id,
+        fcm_token
+        ) VALUES (
+        #{id},
+        #{memberId},
+        #{fcmToken}
+        )
+    </insert>
+    
+    <!-- 토큰 갱신 (이미 같은 멤버에 같은 토큰이 있으면 업데이트) -->
+    <update id="updateToken" parameterType="map">
+        UPDATE member_device_token
+        SET updated_at = SYSDATE
+        WHERE member_id = #{memberId}
+        AND fcm_token = #{fcmToken}
+    </update>
+    
+    <!-- 멤버의 특정 토큰 삭제 (로그아웃 시) -->
+    <delete id="deleteToken" parameterType="map">
+        DELETE FROM member_device_token
+        WHERE member_id = #{memberId}
+        AND fcm_token = #{fcmToken}
+    </delete>
+    
+    <!-- 멤버의 모든 토큰 삭제 -->
+    <delete id="deleteAllTokensByMemberId" parameterType="long">
+        DELETE FROM member_device_token
+        WHERE member_id = #{memberId}
+    </delete>
+</mapper>

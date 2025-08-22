@@ -37,6 +37,7 @@ public class ProductController {
     /* 카테고리 목록 조회 */
     @GetMapping("/categories")
     public List<ProductCategory> getCategories() {
+        log.info("여기까좡ㅆ다");
         return productService.getCategories();
     }
 

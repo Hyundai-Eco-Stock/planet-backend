@@ -36,6 +36,8 @@ public class Member {
 
     private Sex sex;
 
+    private Long point;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

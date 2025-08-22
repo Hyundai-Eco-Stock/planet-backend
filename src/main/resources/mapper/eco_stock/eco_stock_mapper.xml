@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.EcoStockMapper">
+    
+    <select id="selectById" parameterType="long"
+        resultType="org.phoenix.planet.dto.eco_stock.raw.EcoStock">
+        SELECT
+        eco_stock_id AS id,
+        name,
+        quantity,
+        image_url AS imageUrl
+        FROM eco_stock
+        WHERE eco_stock_id = #{id}
+    </select>
+</mapper>

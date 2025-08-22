@@ -7,7 +7,7 @@
 #**.sql
 .env
 
-
+src/main/resources/firebase/*.json
 
 
 

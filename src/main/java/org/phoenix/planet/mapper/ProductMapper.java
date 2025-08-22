@@ -26,4 +26,7 @@ public interface ProductMapper {
     List<Product> findByCategoryId(Long category);
 
     List<ProductCategory> findAllCategories();
+
+    List<Product> findByIds(List<Long> productIds);
+
 }

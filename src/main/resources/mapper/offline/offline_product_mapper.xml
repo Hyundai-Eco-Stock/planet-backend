@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.OfflineProductMapper">
+    <select id="selectAllByOfflineShopId" parameterType="long"
+        resultType="org.phoenix.planet.dto.offline.response.OfflineProductListResponse">
+        SELECT
+        offline_product_id AS productId,
+        offline_shop_id AS shopId,
+        name AS name,
+        price AS price
+        FROM offline_product
+        WHERE offline_shop_id = #{offlineShopId}
+        ORDER BY offline_product_id
+    </select>
+    
+    <select id="selectSumPriceOfIds" resultType="java.lang.Long" parameterType="list">
+        SELECT SUM(price)
+        FROM offline_product
+        WHERE offline_product_id IN
+        <foreach collection="productIdList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    
+    <select id="selectById" parameterType="long"
+        resultType="org.phoenix.planet.dto.offline.raw.OfflineProduct">
+        SELECT
+        offline_product_id AS productId,
+        offline_shop_id AS shopId,
+        name AS name,
+        price AS price
+        FROM offline_product
+        WHERE offline_product_id = #{id}
+    </select>
+    
+    <select id="selectByIds"
+        parameterType="list"
+        resultType="org.phoenix.planet.dto.offline.raw.OfflineProduct">
+        SELECT
+        offline_product_id AS productId,
+        offline_shop_id AS shopId,
+        name AS name,
+        price AS price
+        FROM offline_product
+        WHERE offline_product_id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    
+    <select id="selectTumblerProductIdList" resultType="java.lang.Long">
+        SELECT
+        offline_product_id
+        FROM
+        offline_product
+        WHERE name = '텀블러 할인'
+    </select>
+    
+    <select id="selectPaperBagProductIdList" resultType="java.lang.Long">
+        SELECT
+        offline_product_id
+        FROM
+        offline_product
+        WHERE name = '종이백'
+    </select>
+
+</mapper>

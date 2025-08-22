@@ -1,8 +1,8 @@
 package org.phoenix.planet.constant;
 
 import lombok.AllArgsConstructor;
-import org.phoenix.planet.dto.car_access.raw.EcoCarEnterEvent;
-import org.phoenix.planet.dto.offline.raw.KafkaOfflinePayInfo;
+import org.phoenix.planet.event.EcoCarEnterEvent;
+import org.phoenix.planet.event.KafkaOfflinePayInfo;
 
 @AllArgsConstructor
 public enum KafkaTopic {

@@ -1,4 +1,4 @@
-package org.phoenix.planet.dto.offline.raw;
+package org.phoenix.planet.event;
 
 import java.util.List;
 import lombok.Builder;

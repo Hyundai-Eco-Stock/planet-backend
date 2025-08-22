@@ -76,13 +76,13 @@ public class ProductServiceImpl implements ProductService {
 
     /* 검색 */
     @Override
-    public List<Product> searchByMlt(String keyword, Integer size) {
+    public List<Product> searchByMlt(String keyword, String categoryId, Integer size) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return Collections.emptyList();
         }
 
         // 1) ES에서 추천 id만 받기 (MLT)
-        List<String> ids = esClient.searchMltMatchAll(keyword.trim(), size);
+        List<String> ids = esClient.searchMltMatchAll(keyword.trim(), categoryId, size);
         if (ids.isEmpty()) {
             return Collections.emptyList();
         }

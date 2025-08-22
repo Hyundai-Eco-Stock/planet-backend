@@ -45,8 +45,9 @@ public class ProductController {
 
     /* 검색 */
     @GetMapping("/search")
-    public List<Product> search(@RequestParam String searchKeyword) {
+    public List<Product> search(@RequestParam(required = false) String categoryId,
+            @RequestParam String searchKeyword) {
         log.info("GET /products/search?searchKeyword={} called", searchKeyword);
-        return productService.searchByMlt(searchKeyword, 10);
+        return productService.searchByMlt(searchKeyword, categoryId, 10);
     }
 }

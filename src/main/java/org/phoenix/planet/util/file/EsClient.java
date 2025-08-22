@@ -118,17 +118,35 @@ public class EsClient {
     }
 
 
-    /* 검색 */
+    /* 검색 (기존 시그니처 유지: 카테고리 필터 없음) */
     public List<String> searchMltMatchAll(String likeText, Integer size) {
+        return searchMltMatchAll(likeText, null, size);
+    }
+
+    /* 검색 (카테고리 필터 추가 버전) */
+    public List<String> searchMltMatchAll(String likeText, String categoryId, Integer size) {
         int k = (size == null || size <= 0) ? 10 : size;
         String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
+
+        // category_id filter (numeric if possible)
+        String catTerm = "";
+        if (categoryId != null && !categoryId.isBlank()) {
+            boolean catIsNumeric = categoryId.matches("-?\\d+");
+            String catValue = catIsNumeric ? categoryId : safeJson(categoryId);
+            catTerm = String.format("{ \"term\": { \"category_id\": %s } }", catValue);
+        }
 
         String body = String.format(
                 """
                         {
                           "size": %d,
                           "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
-                          "query": { "match_all": {} },
+                          "query": {
+                            "bool": {
+                              "filter": [ %s ],
+                              "must": { "match_all": {} }
+                            }
+                          },
                           "rescore": [
                             {
                               "window_size": 200,
@@ -150,6 +168,7 @@ public class EsClient {
                         }
                         """,
                 k,
+                catTerm,
                 safeJson(likeText)
         );
 

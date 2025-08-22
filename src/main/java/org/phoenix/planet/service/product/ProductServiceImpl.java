@@ -59,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
                         i -> i                           // 순서
                 ));
         fromDb.sort(Comparator.comparingInt(
-                p -> esProductOrder.getOrDefault(p.getId(), Integer.MAX_VALUE)));
+                p -> esProductOrder.getOrDefault(p.getProductId(), Integer.MAX_VALUE)));
         return fromDb;
     }
 

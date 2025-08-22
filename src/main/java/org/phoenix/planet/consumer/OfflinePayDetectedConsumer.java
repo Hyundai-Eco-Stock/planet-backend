@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.phoenix.planet.constant.KafkaTopic;
 import org.phoenix.planet.dto.eco_stock.raw.EcoStock;
-import org.phoenix.planet.event.KafkaOfflinePayInfo;
+import org.phoenix.planet.event.PayEvent;
 import org.phoenix.planet.service.card.MemberCardService;
 import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.phoenix.planet.service.eco_stock.EcoStockService;
@@ -44,7 +44,7 @@ public class OfflinePayDetectedConsumer {
     )
     public void onMessage(String message) throws JsonProcessingException {
 
-        KafkaOfflinePayInfo event = objectMapper.readValue(
+        PayEvent event = objectMapper.readValue(
             message,
             KafkaTopic.OFFLINE_PAY_DETECTED.getPayloadType());
         log.info("Successfully deserialized event: {}", event);

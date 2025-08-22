@@ -28,8 +28,7 @@
     </insert>
     
     <select id="selectByPayHistoryId"
-        resultType="org.phoenix.planet.dto.offline.raw.OfflineProduct"
-        parameterType="long">
+        parameterType="long" resultType="org.phoenix.planet.dto.offline.raw.OfflinePayProduct">
         SELECT
         offline_pay_product_id AS offlineProductId,
         offline_pay_history_id AS offlineShopId,

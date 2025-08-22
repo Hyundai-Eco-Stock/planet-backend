@@ -39,7 +39,9 @@ public class OfflinePayDetectedConsumer {
     private final OfflineProductService offlineProductService;
 
     @Transactional
-    @KafkaListener(topics = KafkaTopic.OFFLINE_PAY_DETECTED_VALUE)
+    @KafkaListener(
+        topics = "#{T(org.phoenix.planet.constant.KafkaTopic).OFFLINE_PAY_DETECTED.getTopicName()}"
+    )
     public void onMessage(String message) throws JsonProcessingException {
 
         KafkaOfflinePayInfo event = objectMapper.readValue(

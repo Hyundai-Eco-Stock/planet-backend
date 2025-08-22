@@ -30,13 +30,13 @@ public class OfflineEventProducer {
         // 안전성 체크
         if (!topic.getPayloadType().isAssignableFrom(payload.getClass())) {
             throw new IllegalArgumentException(
-                "Invalid payload type for topic " + topic.getValue() +
+                "Invalid payload type for topic " + topic.getTopicName() +
                     ". Expected: " + topic.getPayloadType().getSimpleName() +
                     ", but got: " + payload.getClass().getSimpleName()
             );
         }
 
-        kafkaTemplate.send(topic.getValue(), null, payload)
+        kafkaTemplate.send(topic.getTopicName(), null, payload)
             .whenComplete((r, e) -> {
                 if (e != null) {
                     log.error(e.getMessage(), e);

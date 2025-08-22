@@ -40,7 +40,9 @@ public class EcoCarEnterDetectedConsumer {
 
 
     @Transactional
-    @KafkaListener(topics = KafkaTopic.ECO_CAR_ENTER_DETECTED_VALUE)
+    @KafkaListener(
+        topics = "#{T(org.phoenix.planet.constant.KafkaTopic).ECO_CAR_ENTER_DETECTED.getTopicName()}"
+    )
     public void onMessage(String message) throws JsonProcessingException {
 
         EcoCarEnterEvent event = objectMapper.readValue(

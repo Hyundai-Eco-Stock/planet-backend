@@ -18,7 +18,8 @@ public class KafkaErrorHandlerConfig {
         DeadLetterPublishingRecoverer recoverer =
             new DeadLetterPublishingRecoverer(
                 template,
-                (cr, ex) -> new TopicPartition(KafkaTopic.DEAD_LETTER.getValue(), cr.partition())
+                (cr, ex) -> new TopicPartition(KafkaTopic.DEAD_LETTER.getTopicName(),
+                    cr.partition())
             );
 
         // 3회, 2초 간격 재시도 후 DLT

@@ -1,12 +1,9 @@
-package org.phoenix.planet.service.receipt;
+package org.phoenix.planet.service.offline;
 
 import org.phoenix.planet.dto.eco_stock_certificate.request.PaperBagNoUseCertificateRequest;
 import org.phoenix.planet.dto.eco_stock_certificate.request.TumblerCertificateRequest;
-import org.phoenix.planet.dto.offline.request.OfflinePayload;
 
 public interface OfflinePayService {
-
-    void save(OfflinePayload offlinePayload);
 
     void certificateTumbler(long loginMemberId,
         TumblerCertificateRequest tumblerCertificateRequest);

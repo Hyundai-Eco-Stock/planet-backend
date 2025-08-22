@@ -36,7 +36,7 @@ public class MemberController {
         @LoginMemberId long loginMemberId
     ) {
 
-        MemberCarResponse carInfo = memberCarService.searchCarByMemberId(loginMemberId);
+        MemberCarResponse carInfo = memberCarService.searchByMemberId(loginMemberId);
         return ResponseEntity.ok(carInfo);
     }
 

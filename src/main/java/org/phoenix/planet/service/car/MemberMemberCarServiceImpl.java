@@ -16,9 +16,15 @@ public class MemberMemberCarServiceImpl implements MemberCarService {
 
 
     @Override
-    public MemberCarResponse searchCarByMemberId(long memberId) {
+    public MemberCarResponse searchByMemberId(long memberId) {
 
         return memberCarMapper.selectByMemberId(memberId);
+    }
+
+    @Override
+    public MemberCarResponse searchByCarNumber(String carNumber) {
+
+        return memberCarMapper.selectByCarNumber(carNumber);
     }
 
     @Override

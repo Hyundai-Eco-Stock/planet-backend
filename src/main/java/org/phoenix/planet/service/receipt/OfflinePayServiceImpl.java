@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.constant.KafkaTopic;
 import org.phoenix.planet.dto.eco_stock_certificate.request.PaperBagNoUseCertificateRequest;
 import org.phoenix.planet.dto.eco_stock_certificate.request.TumblerCertificateRequest;
 import org.phoenix.planet.dto.offline.raw.KafkaOfflinePayInfo;
@@ -17,7 +16,7 @@ import org.phoenix.planet.dto.offline.raw.OfflinePaySaveRequest;
 import org.phoenix.planet.dto.offline.raw.OfflineProduct;
 import org.phoenix.planet.dto.offline.request.OfflinePayload;
 import org.phoenix.planet.dto.offline.request.OfflinePayload.Item;
-import org.phoenix.planet.producer.ReceiptEventProducer;
+import org.phoenix.planet.producer.OfflineEventProducer;
 import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.phoenix.planet.service.offline.OfflinePayHistoryService;
 import org.phoenix.planet.service.offline.OfflinePayProductService;
@@ -35,7 +34,7 @@ public class OfflinePayServiceImpl implements OfflinePayService {
     // 영수증 번호 생성 유틸
     private final ReceiptNoGeneratorUtil receiptNoGeneratorUtil;
     // kafka producer
-    private final ReceiptEventProducer receiptEventProducer;
+    private final OfflineEventProducer offlineEventProducer;
     // 오프라인 결제, 상품 관련
     private final OfflinePayHistoryService offlinePayHistoryService;
     private final OfflinePayProductService offlinePayProductService;
@@ -87,8 +86,7 @@ public class OfflinePayServiceImpl implements OfflinePayService {
                         .build());
             });
 
-        receiptEventProducer.publish(
-            KafkaTopic.OFFLINE_PAY_DETECTED,
+        offlineEventProducer.publishOfflinePayEvent(
             KafkaOfflinePayInfo.builder()
                 .offlinePayHistoryId(offlinePayHistoryId)
                 .posId(payload.posId())
@@ -132,7 +130,7 @@ public class OfflinePayServiceImpl implements OfflinePayService {
         offlinePayHistoryService.updateStockIssueStatusTrue(
             offlinePayHistory.offlinePayHistoryId());
         // 텀블러 에코스톡 발급 (일단 하나만 발급)
-        ecoStockIssueService.publish(
+        ecoStockIssueService.issueStock(
             loginMemberId,
             1L,
             1
@@ -170,7 +168,7 @@ public class OfflinePayServiceImpl implements OfflinePayService {
         offlinePayHistoryService.updateStockIssueStatusTrue(
             offlinePayHistory.offlinePayHistoryId());
         // 종이백 미사용 에코스톡 발급 (일단 하나만 발급)
-        ecoStockIssueService.publish(
+        ecoStockIssueService.issueStock(
             loginMemberId,
             4L,
             1

@@ -4,6 +4,7 @@ import org.phoenix.planet.constant.CarEcoType;
 
 public record MemberCarResponse(
     long memberCarId,
+    long memberId,
     String carNumber,
     CarEcoType carEcoType,
     String createdAt, // YYYY-MM-DD 형식

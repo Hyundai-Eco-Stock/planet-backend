@@ -5,7 +5,10 @@ import org.phoenix.planet.dto.car.response.MemberCarResponse;
 
 public interface MemberCarService {
 
-    MemberCarResponse searchCarByMemberId(long memberId);
+    MemberCarResponse searchByMemberId(long memberId);
+
+    MemberCarResponse searchByCarNumber(String carNumber);
 
     void registerCar(long memberId, CarRegisterRequest carRegisterRequest);
+
 }

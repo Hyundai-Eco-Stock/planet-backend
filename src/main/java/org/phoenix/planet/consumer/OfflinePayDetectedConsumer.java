@@ -76,7 +76,7 @@ public class OfflinePayDetectedConsumer {
 
             if (ecoStockId != null && fcmMessage != null) {
                 // 에코스톡 발급
-                ecoStockIssueService.publish(memberId, ecoStockId, 1);
+                ecoStockIssueService.issueStock(memberId, ecoStockId, 1);
                 // FCM 토큰 목록 가져오기
                 List<String> memberTokens = memberDeviceTokenService.getTokens(
                     memberId);
@@ -102,4 +102,5 @@ public class OfflinePayDetectedConsumer {
 
         log.error("DLT received: {}", record);
     }
+
 }

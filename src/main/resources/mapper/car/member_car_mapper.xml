@@ -15,6 +15,33 @@
         <result column="updated_at" property="updatedAt" jdbcType="DATE"/>
     </resultMap>
     
+    <select id="selectByMemberId"
+        parameterType="long"
+        resultMap="MemberCarResultMap">
+        SELECT
+        member_car_id AS memberCarId,
+        member_id AS memberId,
+        car_number AS carNumber,
+        car_eco_type AS carEcoType,
+        TO_CHAR(created_at, 'YYYY-MM-DD') AS createdAt,
+        TO_CHAR(updated_at, 'YYYY-MM-DD') AS updatedAt
+        FROM member_car
+        WHERE member_id = #{memberId}
+    </select>
+    
+    <select id="selectByCarNumber"
+        resultType="org.phoenix.planet.dto.car.response.MemberCarResponse">
+        SELECT
+        member_car_id AS memberCarId,
+        member_id AS memberId,
+        car_number AS carNumber,
+        car_eco_type AS carEcoType,
+        TO_CHAR(created_at, 'YYYY-MM-DD') AS createdAt,
+        TO_CHAR(updated_at, 'YYYY-MM-DD') AS updatedAt
+        FROM member_car
+        WHERE car_number = #{carNumber}
+    </select>
+    
     <insert id="insert" parameterType="map">
         <selectKey keyProperty="memberCarId" resultType="long" order="BEFORE">
             SELECT seq_member_car.NEXTVAL FROM dual
@@ -35,18 +62,5 @@
         SYSDATE
         )
     </insert>
-    
-    <select id="selectByMemberId"
-        parameterType="long"
-        resultMap="MemberCarResultMap">
-        SELECT
-        member_car_id,
-        car_number AS carNumber,
-        car_eco_type AS carEcoType,
-        TO_CHAR(created_at, 'YYYY-MM-DD') AS createdAt,
-        TO_CHAR(updated_at, 'YYYY-MM-DD') AS updatedAt
-        FROM member_car
-        WHERE member_id = #{memberId}
-    </select>
 
 </mapper>

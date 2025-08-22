@@ -11,8 +11,13 @@ public interface MemberCarMapper {
     MemberCarResponse selectByMemberId(
         @Param("memberId") long memberId);
 
+    MemberCarResponse selectByCarNumber(
+        @Param("carNumber") String carNumber);
+
     void insert(
         @Param("memberId") long memberId,
         @Param("carNumber") String carNumber,
         @Param("carEcoType") CarEcoType carEcoType);
+
+
 }

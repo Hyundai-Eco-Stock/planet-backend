@@ -38,97 +38,97 @@ public class EsClient {
     }
 
     /* 유사 상품 추천 */
-    public List<String> searchSimilarIds(String anchorName, String anchorCategoryId,
-            String anchorId, Integer size) {
-        int k = (size == null || size <= 0) ? defaultSize : size;
+//    public List<String> searchSimilarIds(String anchorName, String anchorCategoryId,
+//            String anchorId, Integer size) {
+//        int k = (size == null || size <= 0) ? defaultSize : size;
+//
+//        // Helpers
+//        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
+//        String likeText = safeJson(anchorName); // "\"상품명\"" 형태
+//
+//        // category_id filter (numeric if possible)
+//        String catTerm = "";
+//        if (anchorCategoryId != null && !anchorCategoryId.isBlank()) {
+//            boolean catIsNumeric = anchorCategoryId.matches("-?\\d+");
+//            String catValue = catIsNumeric ? anchorCategoryId : safeJson(anchorCategoryId);
+//            catTerm = String.format("{ \"term\": { \"category_id\": %s } }", catValue);
+//        }
+//
+//        // self exclusion (product_id) - numeric if possible
+//        String mustNotTerm = "";
+//        if (anchorId != null && !anchorId.isBlank()) {
+//            boolean idIsNumeric = anchorId.matches("-?\\d+");
+//            String idValue = idIsNumeric ? anchorId : safeJson(anchorId);
+//            mustNotTerm = String.format("{ \"term\": { \"product_id\": %s } }", idValue);
+//        }
+//
+//        // rescore like-clause: prefer document by _id when available, else text
+//        String likeClause;
+//        if (anchorId != null && !anchorId.isBlank()) {
+//            // _index and _id must be strings in the like doc
+//            likeClause = String.format("{ \"_index\": %s, \"_id\": %s }", safeJson(idx),
+//                    safeJson(anchorId));
+//        } else {
+//            likeClause = likeText; // use raw text
+//        }
+//
+//        String query = String.format("""
+//                {
+//                  "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
+//                  "size": %d,
+//                  "query": {
+//                    "bool": {
+//                      "filter": [ %s ],
+//                      "must_not": [ %s ]
+//                    }
+//                  },
+//                  "rescore": [
+//                    {
+//                      "window_size": 200,
+//                      "query": {
+//                        "rescore_query": {
+//                          "more_like_this": {
+//                            "fields": ["product_name"],
+//                            "like": [ %s ],
+//                            "min_term_freq": 1,
+//                            "min_doc_freq": 1,
+//                            "max_query_terms": 50
+//                          }
+//                        },
+//                        "query_weight": 0.2,
+//                        "rescore_query_weight": 2.0
+//                      }
+//                    }
+//                  ]
+//                }
+//                """, k, catTerm, mustNotTerm, likeClause);
+//
+//        JsonNode resp = webClient.post()
+//                .uri("/" + idx + "/_search")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .bodyValue(query)
+//                .retrieve()
+//                .bodyToMono(JsonNode.class)
+//                .block();
+//
+//        if (resp == null || resp.get("hits") == null) {
+//            return Collections.emptyList();
+//        }
+//        return toIds(resp);
+//    }
 
-        // Helpers
-        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
-        String likeText = safeJson(anchorName); // "\"상품명\"" 형태
+//
+//    /* 검색 (기존 시그니처 유지: 카테고리 필터 없음) */
+//    public List<String> searchMltMatchAll(String likeText, Integer size) {
+//        return searchMltMatchAll(likeText, null, size);
+//    }
 
-        // category_id filter (numeric if possible)
-        String catTerm = "";
-        if (anchorCategoryId != null && !anchorCategoryId.isBlank()) {
-            boolean catIsNumeric = anchorCategoryId.matches("-?\\d+");
-            String catValue = catIsNumeric ? anchorCategoryId : safeJson(anchorCategoryId);
-            catTerm = String.format("{ \"term\": { \"category_id\": %s } }", catValue);
-        }
-
-        // self exclusion (product_id) - numeric if possible
-        String mustNotTerm = "";
-        if (anchorId != null && !anchorId.isBlank()) {
-            boolean idIsNumeric = anchorId.matches("-?\\d+");
-            String idValue = idIsNumeric ? anchorId : safeJson(anchorId);
-            mustNotTerm = String.format("{ \"term\": { \"product_id\": %s } }", idValue);
-        }
-
-        // rescore like-clause: prefer document by _id when available, else text
-        String likeClause;
-        if (anchorId != null && !anchorId.isBlank()) {
-            // _index and _id must be strings in the like doc
-            likeClause = String.format("{ \"_index\": %s, \"_id\": %s }", safeJson(idx),
-                    safeJson(anchorId));
-        } else {
-            likeClause = likeText; // use raw text
-        }
-
-        String query = String.format("""
-                {
-                  "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
-                  "size": %d,
-                  "query": {
-                    "bool": {
-                      "filter": [ %s ],
-                      "must_not": [ %s ]
-                    }
-                  },
-                  "rescore": [
-                    {
-                      "window_size": 200,
-                      "query": {
-                        "rescore_query": {
-                          "more_like_this": {
-                            "fields": ["product_name"],
-                            "like": [ %s ],
-                            "min_term_freq": 1,
-                            "min_doc_freq": 1,
-                            "max_query_terms": 50
-                          }
-                        },
-                        "query_weight": 0.2,
-                        "rescore_query_weight": 2.0
-                      }
-                    }
-                  ]
-                }
-                """, k, catTerm, mustNotTerm, likeClause);
-
-        JsonNode resp = webClient.post()
-                .uri("/" + idx + "/_search")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(query)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
-
-        if (resp == null || resp.get("hits") == null) {
-            return Collections.emptyList();
-        }
-        return toIds(resp);
-    }
-
-
-    /* 검색 (기존 시그니처 유지: 카테고리 필터 없음) */
-    public List<String> searchMltMatchAll(String likeText, Integer size) {
-        return searchMltMatchAll(likeText, null, size);
-    }
-
-    /* 검색 (카테고리 필터 추가 버전) */
+    /* 검색 */
     public List<String> searchMltMatchAll(String likeText, String categoryId, Integer size) {
         int k = (size == null || size <= 0) ? 10 : size;
         String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
 
-        // category_id filter (numeric if possible)
+        // 카테고리 필터 (카테고리 필터가 있는 경우 추가할 쿼리)
         String catTerm = "";
         if (categoryId != null && !categoryId.isBlank()) {
             boolean catIsNumeric = categoryId.matches("-?\\d+");
@@ -180,6 +180,7 @@ public class EsClient {
         return toIds(resp);
     }
 
+    /* es 에 요청 보낼 때 json 으로 키워드 파싱 */
     private String safeJson(String s) {
         try {
             return om.writeValueAsString(s == null ? "" : s);
@@ -188,6 +189,7 @@ public class EsClient {
         }
     }
 
+    /* es 에서 받은 반환값을 List<String> 형태로 파싱 */
     private List<String> toIds(JsonNode resp) {
         JsonNode hits = resp.path("hits").path("hits");
         if (!hits.isArray()) {

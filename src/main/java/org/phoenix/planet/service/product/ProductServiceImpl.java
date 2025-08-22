@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.raw.ProductCategory;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
+import org.phoenix.planet.dto.product.response.ProductResponse;
 import org.phoenix.planet.mapper.ProductMapper;
 import org.phoenix.planet.util.file.EsClient;
 import org.springframework.stereotype.Component;
@@ -37,7 +38,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> findByCategory(Long categoryId) {
+    public List<ProductResponse> findByCategory(Long categoryId) {
         return productMapper.findByCategoryId(categoryId);
     }
 

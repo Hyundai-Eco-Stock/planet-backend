@@ -4,6 +4,7 @@ import java.util.List;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.raw.ProductCategory;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
+import org.phoenix.planet.dto.product.response.ProductResponse;
 
 public interface ProductService {
 
@@ -13,7 +14,7 @@ public interface ProductService {
 
     List<ProductCategory> getCategories();
 
-    List<Product> findByCategory(Long categoryId);
+    List<ProductResponse> findByCategory(Long categoryId);
 
     /* 상품 검색 */
     List<Product> searchByMlt(String keyword, String categoryId, Integer size);

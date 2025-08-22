@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.raw.ProductCategory;
+import org.phoenix.planet.dto.product.response.ProductResponse;
 import org.phoenix.planet.service.product.ProductService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,14 +31,13 @@ public class ProductController {
 
     /* 카테고리별 상품 조회 */
     @GetMapping
-    public List<Product> findByCategory(@RequestParam(required = false) Long categoryId) {
+    public List<ProductResponse> findByCategory(@RequestParam(required = false) Long categoryId) {
         return productService.findByCategory(categoryId);
     }
 
     /* 카테고리 목록 조회 */
     @GetMapping("/categories")
     public List<ProductCategory> getCategories() {
-        log.info("여기까좡ㅆ다");
         return productService.getCategories();
     }
 

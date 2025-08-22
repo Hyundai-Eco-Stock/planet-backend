@@ -39,7 +39,9 @@ public class OfflinePayDetectedConsumer {
     private final OfflineProductService offlineProductService;
 
     @Transactional
-    @KafkaListener(topics = KafkaTopic.OFFLINE_PAY_DETECTED_VALUE)
+    @KafkaListener(
+        topics = "#{T(org.phoenix.planet.constant.KafkaTopic).OFFLINE_PAY_DETECTED.getTopicName()}"
+    )
     public void onMessage(String message) throws JsonProcessingException {
 
         KafkaOfflinePayInfo event = objectMapper.readValue(
@@ -76,7 +78,7 @@ public class OfflinePayDetectedConsumer {
 
             if (ecoStockId != null && fcmMessage != null) {
                 // 에코스톡 발급
-                ecoStockIssueService.publish(memberId, ecoStockId, 1);
+                ecoStockIssueService.issueStock(memberId, ecoStockId, 1);
                 // FCM 토큰 목록 가져오기
                 List<String> memberTokens = memberDeviceTokenService.getTokens(
                     memberId);
@@ -102,4 +104,5 @@ public class OfflinePayDetectedConsumer {
 
         log.error("DLT received: {}", record);
     }
+
 }

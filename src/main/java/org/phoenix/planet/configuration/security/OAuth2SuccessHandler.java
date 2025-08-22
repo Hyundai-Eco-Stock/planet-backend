@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.service.auth.AuthService;
 import org.phoenix.planet.util.cookie.CookieUtil;
+import org.phoenix.planet.util.file.CloudFrontFileUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -28,6 +29,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final AuthService authService;
 
     private final CookieProperties cookieProps;
+
+    private final CloudFrontFileUtil cloudFrontFileUtil;
 
     @Override
     public void onAuthenticationSuccess(
@@ -48,11 +51,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             StandardCharsets.UTF_8);
         String encodedName = URLEncoder.encode(principalDetails.member().getName(),
             StandardCharsets.UTF_8);
-        String encodedProfileUrl = URLEncoder.encode(principalDetails.member().getProfileUrl(),
-            StandardCharsets.UTF_8);
+
+        String profileUrl = principalDetails.member().getProfileUrl();
+        if (!profileUrl.startsWith("http")) {
+            profileUrl = cloudFrontFileUtil.generateSignedUrl(profileUrl, 60);
+        }
+        log.info("profileUrl: {}", profileUrl);
+        String encodedProfileUrl = URLEncoder.encode(profileUrl, StandardCharsets.UTF_8);
 
         String redirectUrl;
-        log.info("pwdHash: {}", principalDetails.member().getPwdHash());
+//        log.info("pwdHash: {}", principalDetails.member().getPwdHash());
         if (principalDetails.member().getPwdHash() == null) {
             redirectUrl = UriComponentsBuilder
                 .fromUriString(frontendOrigin)

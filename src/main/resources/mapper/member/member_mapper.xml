@@ -69,9 +69,17 @@
         WHERE member_id = #{memberId}
     </update>
     
-    <update id="updatePwdHash" parameterType="map">
+    <update id="update" parameterType="map">
         UPDATE MEMBER
-        SET pwd_hash = #{pwdHash},
+        SET
+        pwd_hash = #{pwdHash},
+        sex = #{sex,
+                javaType=org.phoenix.planet.constant.Sex,
+                typeHandler=org.apache.ibatis.type.EnumTypeHandler,
+                jdbcType=VARCHAR},
+        birth = TO_DATE(#{birth}, 'YYYY-MM-DD'),
+        address = #{address},
+        detail_address = #{detailAddress},
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>

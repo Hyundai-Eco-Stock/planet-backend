@@ -28,6 +28,10 @@ jwt:
   access-token-expire-millis: 60000
   refresh-token-expire-millis: 2592000000
 
+kafka:
+  topic:
+    prefix: "dev."
+
 spring:
   application:
     name: planet-backend

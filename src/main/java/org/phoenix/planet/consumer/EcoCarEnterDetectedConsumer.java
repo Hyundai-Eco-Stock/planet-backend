@@ -53,6 +53,7 @@ public class EcoCarEnterDetectedConsumer {
         MemberCarResponse car = memberCarService.searchByCarNumber(event.carNumber());
         // 에코스톡 정보
         long ecoCarStockId = 3L;
+        String targetUrl = "/my-page/my-eco-stock";
         EcoStock ecoStock = ecoStockService.searchById(ecoCarStockId);
         // 에코스톡 발급
         ecoStockIssueService.issueStock(car.memberId(), ecoStock.id(), 1);
@@ -62,7 +63,8 @@ public class EcoCarEnterDetectedConsumer {
         fcmService.sendNotificationToMany(
             tokens,
             "\uD83C\uDF89 에코스톡 지급 완료!",
-            "친환경 차량 입차가 감지되어 에코스톡 1주가 발급되었습니다.");
+            "친환경 차량 입차가 감지되어 에코스톡 1주가 발급되었습니다.",
+            targetUrl);
     }
 
     @DltHandler

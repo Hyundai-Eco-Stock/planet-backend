@@ -55,28 +55,9 @@ public class OfflinePayDetectedConsumer {
             event.cardNumber());
 
         if (memberId != null) { // 등록된 카드이면
-//            List<Long> tumblerDiscountProductIdList = offlineProductService.searchTumblerProductIdList();
-//            boolean hasTumbler = event.items().stream()
-//                .anyMatch(it -> tumblerDiscountProductIdList.contains(it.productId()));
-//
-//            List<Long> paperBagProductIdList = offlineProductService.searchPaperBagProductIdList();
-//            boolean hasPaperBag = event.items().stream()
-//                .anyMatch(it -> paperBagProductIdList.contains(it.productId()));
-
-            // 에코스톡 발급 될 것 있나 확인
-//            Long ecoStockId = null;
-//            String fcmMessage = null;
-            // 가게 타입에 따른 에코스톡 발급 여부 확인
-//            String shopType = offlineShopService.searchTypeById(event.shopId());
-//            if ("CAFE".equals(shopType) && hasTumbler) {
-//                ecoStockId = 1L; // 텀블러 에코스톡 id
-//                fcmMessage = "텀블러 사용으로 에코스톡 1주가 발급되었습니다.";
-//            } else if ("FOOD_MALL".equals(shopType) && !hasPaperBag) {
-//                ecoStockId = 4L; // 종이백 미사용 에코스톡 id
-//                fcmMessage = "종이백 미사용으로 에코스톡 1주가 발급되었습니다.";
-//            }
             Long ecoStockId = null;
             String fcmMessage = null;
+            String targetUrl = "/my-page/my-eco-stock";
             if ("TUMBLER_DISCOUNT".equals(event.eventName())) {
                 ecoStockId = 1L; // 텀블러 에코스톡 id
                 fcmMessage = "텀블러 사용으로 에코스톡 1주가 발급되었습니다.";
@@ -98,7 +79,8 @@ public class OfflinePayDetectedConsumer {
                 fcmService.sendNotificationToMany(
                     memberTokens,
                     "\uD83C\uDF89 에코스톡 지급 완료!",
-                    fcmMessage);
+                    fcmMessage,
+                    targetUrl);
                 log.info("{} 에코스톡 발급 완료", ecoStock.name());
             }
 

@@ -124,9 +124,16 @@
   </select>
 
 
-  <select id="findByIdIn" resultMap="ProductResultMap">
-    SELECT PRODUCT_ID, NAME, CATEGORY_ID, PRICE, IMAGE_URL
-    FROM PRODUCT
+  <select id="findByIdIn" resultType="org.phoenix.planet.dto.product.response.ProductResponse">
+    SELECT
+    PRODUCT_ID,
+    P.NAME AS PRODUCT_NAME,
+    CATEGORY_ID,
+    PRICE,
+    P.IMAGE_URL,
+    B.NAME as brand_name
+    FROM PRODUCT P
+    JOIN BRAND B on P.BRAND_ID = B.BRAND_ID
     WHERE PRODUCT_ID IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">
       #{id}
@@ -182,6 +189,26 @@
     <foreach collection="productIds" item="id" open="(" separator="," close=")">
       #{id}
     </foreach>
+  </select>
+
+  <!--  상품상세-->
+  <select id="getProductDetail" parameterType="long"
+    resultType="org.phoenix.planet.dto.product.response.ProductDetailResponse">
+    select
+    P.PRODUCT_ID,
+    P.NAME as PRODUCT_NAME,
+    P.PRICE,
+    P.IMAGE_URL,
+    P.CATEGORY_ID,
+    P.BRAND_ID,
+    PI.PRODUCT_IMAGE_ID,
+    PI.IMAGE_URL as PRODUCT_IMAGE_URL,
+    B.NAME as BRAND_NAME
+    from PRODUCT P
+    join PRODUCT_IMAGE PI on P.PRODUCT_ID = PI.PRODUCT_ID
+    join BRAND B on P.BRAND_ID = B.BRAND_ID
+    where P.PRODUCT_ID = #{productId}
+    order by PRODUCT_IMAGE_ID
   </select>
 
 </mapper>

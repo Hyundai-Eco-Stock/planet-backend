@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.eco_stock_certificate.request.PaperBagNoUseCertificateRequest;
 import org.phoenix.planet.dto.eco_stock_certificate.request.TumblerCertificateRequest;
-import org.phoenix.planet.service.offline.OfflinePayService;
+import org.phoenix.planet.service.offline.CertificateService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CertificateController {
 
-    private final OfflinePayService offlinePayService;
+    private final CertificateService certificateService;
 
     @PostMapping("/tumbler")
     public ResponseEntity<?> certificateTumbler(
@@ -24,7 +24,7 @@ public class CertificateController {
         @RequestBody TumblerCertificateRequest tumblerCertificateRequest
     ) {
 
-        offlinePayService.certificateTumbler(loginMemberId, tumblerCertificateRequest);
+        certificateService.certificateTumbler(loginMemberId, tumblerCertificateRequest);
 
         return ResponseEntity.ok()
             .build();
@@ -36,7 +36,7 @@ public class CertificateController {
         @RequestBody PaperBagNoUseCertificateRequest paperBagNoUseCertificateRequest
     ) {
 
-        offlinePayService.certificatePaperBagNoUse(loginMemberId, paperBagNoUseCertificateRequest);
+        certificateService.certificatePaperBagNoUse(loginMemberId, paperBagNoUseCertificateRequest);
 
         return ResponseEntity.ok()
             .build();

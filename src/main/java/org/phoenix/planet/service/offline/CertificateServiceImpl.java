@@ -14,12 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OfflinePayServiceImpl implements OfflinePayService {
+public class CertificateServiceImpl implements CertificateService {
 
     // 오프라인 결제, 상품 관련
     private final OfflinePayHistoryService offlinePayHistoryService;
     private final OfflinePayProductService offlinePayProductService;
-    private final OfflineProductService offlineProductService;
     private final OfflineShopService offlineShopService;
     // 에코 스톡
     private final EcoStockIssueService ecoStockIssueService;

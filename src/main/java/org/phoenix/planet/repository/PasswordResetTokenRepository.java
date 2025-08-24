@@ -22,4 +22,20 @@ public class PasswordResetTokenRepository {
         redis.opsForValue()
             .set(redisKey, String.valueOf(memberId), expiration);
     }
+
+    public long findMemberIdByToken(String token) {
+
+        String redisKey = redisKeyPrefix + token;
+        String value = redis.opsForValue().get(redisKey);
+        if (value == null) {
+            throw new IllegalArgumentException("해당 토큰 없습니다.");
+        }
+        return Long.parseLong(value);
+    }
+
+    public boolean exist(String token) {
+
+        String redisKey = redisKeyPrefix + token;
+        return redis.hasKey(redisKey);
+    }
 }

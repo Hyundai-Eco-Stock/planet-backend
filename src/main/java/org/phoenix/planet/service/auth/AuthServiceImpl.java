@@ -21,6 +21,7 @@ import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.request.LoginRequest;
+import org.phoenix.planet.dto.member.request.PwResetTokenRequest;
 import org.phoenix.planet.dto.member.request.SendPasswordResetRequest;
 import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.mapper.MemberMapper;
@@ -228,6 +229,15 @@ public class AuthServiceImpl implements AuthService {
 
         // 5) SMTP 전송 (간단한 텍스트 메일)
         mailService.sendPasswordReset(request.email(), member.getName(), resetUrl);
+    }
+
+    @Override
+    public void validatePwResetToken(PwResetTokenRequest request) {
+
+        boolean isExist = passwordResetTokenRepository.exist(request.token());
+        if (!isExist) {
+            throw new IllegalStateException("Password reset token이 존재하지 않습니다.");
+        }
     }
 
     /**

@@ -86,7 +86,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> localLogin(
         HttpServletResponse response,
-        @RequestBody LoginRequest loginRequest
+        @RequestBody @Valid LoginRequest loginRequest
     ) {
 
         Authentication authentication = authService.login(loginRequest);
@@ -120,7 +120,7 @@ public class AuthController {
      */
     @PostMapping("/password-change-mail")
     public ResponseEntity<Void> sendPasswordChangeMail(
-        @RequestBody SendPasswordChangeRequest request
+        @RequestBody @Valid SendPasswordChangeRequest request
     ) {
 
         authService.sendPasswordChangeMail(request);
@@ -135,7 +135,7 @@ public class AuthController {
      */
     @PostMapping("/password-change-token/valid")
     public ResponseEntity<Void> validatePasswordChangeToken(
-        @RequestBody PasswordChangeTokenRequest request
+        @RequestBody @Valid PasswordChangeTokenRequest request
     ) {
 
         authService.validatePasswordChangeToken(request);
@@ -150,7 +150,7 @@ public class AuthController {
      */
     @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(
-        @RequestBody PasswordChangeRequest request
+        @RequestBody @Valid PasswordChangeRequest request
     ) {
 
         authService.changePassword(request);

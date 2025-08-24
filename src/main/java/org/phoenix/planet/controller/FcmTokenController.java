@@ -1,5 +1,6 @@
 package org.phoenix.planet.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.LoginMemberId;
@@ -21,7 +22,7 @@ public class FcmTokenController {
 
     @PostMapping
     public ResponseEntity<Void> registerFcmToken(
-        @RequestBody FcmTokenRegisterRequest fcmTokenRegisterRequest,
+        @RequestBody @Valid FcmTokenRegisterRequest fcmTokenRegisterRequest,
         @LoginMemberId long loginMemberId
     ) {
 

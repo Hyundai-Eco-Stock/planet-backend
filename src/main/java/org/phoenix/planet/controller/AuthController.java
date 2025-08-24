@@ -12,6 +12,7 @@ import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.request.LoginRequest;
+import org.phoenix.planet.dto.member.request.PasswordResetRequest;
 import org.phoenix.planet.dto.member.request.PwResetTokenRequest;
 import org.phoenix.planet.dto.member.request.SendPasswordResetRequest;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
@@ -127,6 +128,15 @@ public class AuthController {
     ) {
 
         authService.validatePwResetToken(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+        @RequestBody PasswordResetRequest request
+    ) {
+
+        authService.ResetPassword(request);
         return ResponseEntity.ok().build();
     }
 

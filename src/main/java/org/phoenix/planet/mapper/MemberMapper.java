@@ -32,4 +32,8 @@ public interface MemberMapper {
         @Param("birth") String birth,
         @Param("address") String address,
         @Param("detailAddress") String detailAddress);
+
+    void updatePassword(
+        @Param("memberId") long memberId,
+        @Param("pwdHash") String pwdHash);
 }

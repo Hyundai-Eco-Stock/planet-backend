@@ -38,4 +38,10 @@ public class PasswordResetTokenRepository {
         String redisKey = redisKeyPrefix + token;
         return redis.hasKey(redisKey);
     }
+
+    public void deleteToken(String token) {
+
+        String redisKey = redisKeyPrefix + token;
+        redis.delete(redisKey);
+    }
 }

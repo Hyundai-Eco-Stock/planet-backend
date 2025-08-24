@@ -21,12 +21,14 @@ import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.request.LoginRequest;
+import org.phoenix.planet.dto.member.request.PasswordResetRequest;
 import org.phoenix.planet.dto.member.request.PwResetTokenRequest;
 import org.phoenix.planet.dto.member.request.SendPasswordResetRequest;
 import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.mapper.MemberMapper;
 import org.phoenix.planet.repository.PasswordResetTokenRepository;
 import org.phoenix.planet.service.mail.MailService;
+import org.phoenix.planet.service.member.MemberService;
 import org.phoenix.planet.util.cookie.CookieUtil;
 import org.phoenix.planet.util.token.TokenUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +46,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
+    private final MemberService memberService;
     @Value("${jwt.key}")
     private String key;
 
@@ -238,6 +241,15 @@ public class AuthServiceImpl implements AuthService {
         if (!isExist) {
             throw new IllegalStateException("Password reset token이 존재하지 않습니다.");
         }
+    }
+
+    @Override
+    @Transactional
+    public void ResetPassword(PasswordResetRequest request) {
+
+        long memberId = passwordResetTokenRepository.findMemberIdByToken(request.token());
+        memberService.updatePassword(memberId, request.password());
+        passwordResetTokenRepository.deleteToken(request.token());
     }
 
     /**

@@ -88,7 +88,8 @@ public class SecurityConfig {
                         new AntPathRequestMatcher("/auth/access-token/regenerate"),
                         new AntPathRequestMatcher("/auth/login"),
                         new AntPathRequestMatcher("/auth/password-reset-mail"),
-                        new AntPathRequestMatcher("/auth/password-reset-token/valid")
+                        new AntPathRequestMatcher("/auth/password-reset-token/valid"),
+                        new AntPathRequestMatcher("/auth/reset-password")
 
                     ).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

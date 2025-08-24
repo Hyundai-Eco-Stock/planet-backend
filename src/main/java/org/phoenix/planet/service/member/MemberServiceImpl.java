@@ -49,4 +49,11 @@ public class MemberServiceImpl implements MemberService {
 
         return memberMapper.findAll();
     }
+
+    @Override
+    public void updatePassword(long memberId, String password) {
+
+        String pwdHash = passwordEncoder.encode(password);
+        memberMapper.updatePassword(memberId, pwdHash);
+    }
 }

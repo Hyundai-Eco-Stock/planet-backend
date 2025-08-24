@@ -10,4 +10,6 @@ public interface MemberService {
     void signUp(long loginMemberId, SignUpRequest request, MultipartFile profileImage);
 
     List<MemberListResponse> searchAllMembers();
+
+    void updatePassword(long memberId, String password);
 }

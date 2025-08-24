@@ -12,6 +12,7 @@ import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.request.LoginRequest;
+import org.phoenix.planet.dto.member.request.SendPasswordResetRequest;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.LoginResponse;
 import org.phoenix.planet.service.auth.AuthService;
@@ -107,6 +108,16 @@ public class AuthController {
             .name(principalDetails.member().getName())
             .profileUrl(profileUrl)
             .build());
+    }
+
+    @PostMapping("/password-reset-mail")
+    public ResponseEntity<Void> sendPasswordResetMail(
+        @RequestBody SendPasswordResetRequest request
+    ) {
+
+        authService.sendPasswordResetMail(request);
+
+        return ResponseEntity.ok().build();
     }
 
     private String resolveRefreshTokenFromCookie(HttpServletRequest request) {

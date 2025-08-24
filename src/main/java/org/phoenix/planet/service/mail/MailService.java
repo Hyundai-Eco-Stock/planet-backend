@@ -2,5 +2,5 @@ package org.phoenix.planet.service.mail;
 
 public interface MailService {
 
-    void sendPasswordReset(String to, String name, String resetUrl);
+    void sendPasswordChange(String to, String name, String resetUrl);
 }

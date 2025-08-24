@@ -11,7 +11,7 @@ public class MailServiceImpl implements MailService {
     private final MailUtil mailUtil;
 
     @Override
-    public void sendPasswordReset(String to, String name, String resetUrl) {
+    public void sendPasswordChange(String to, String name, String resetUrl) {
 
         String subject = "[Planet] 비밀번호 재설정 안내";
         String body = """

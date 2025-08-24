@@ -12,9 +12,9 @@ import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.request.LoginRequest;
-import org.phoenix.planet.dto.member.request.PasswordResetRequest;
-import org.phoenix.planet.dto.member.request.PwResetTokenRequest;
-import org.phoenix.planet.dto.member.request.SendPasswordResetRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
+import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.LoginResponse;
 import org.phoenix.planet.service.auth.AuthService;
@@ -112,31 +112,48 @@ public class AuthController {
             .build());
     }
 
-    @PostMapping("/password-reset-mail")
-    public ResponseEntity<Void> sendPasswordResetMail(
-        @RequestBody SendPasswordResetRequest request
+    /**
+     * 비밀번호 변경 메일 전송
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/password-change-mail")
+    public ResponseEntity<Void> sendPasswordChangeMail(
+        @RequestBody SendPasswordChangeRequest request
     ) {
 
-        authService.sendPasswordResetMail(request);
-
+        authService.sendPasswordChangeMail(request);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/password-reset-token/valid")
-    public ResponseEntity<Void> validatePwResetToken(
-        @RequestBody PwResetTokenRequest request
+    /**
+     * 비밀번호 변경에 필요한 token 유효성 체크 (비밀번호 재설정 페이지 진입시 확인)
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/password-change-token/valid")
+    public ResponseEntity<Void> validatePasswordChangeToken(
+        @RequestBody PasswordChangeTokenRequest request
     ) {
 
-        authService.validatePwResetToken(request);
+        authService.validatePasswordChangeToken(request);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(
-        @RequestBody PasswordResetRequest request
+    /**
+     * (이메일을 통한) 비밀번호 변경 요청
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+        @RequestBody PasswordChangeRequest request
     ) {
 
-        authService.ResetPassword(request);
+        authService.changePassword(request);
         return ResponseEntity.ok().build();
     }
 

@@ -2,9 +2,9 @@ package org.phoenix.planet.service.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.phoenix.planet.dto.member.request.LoginRequest;
-import org.phoenix.planet.dto.member.request.PasswordResetRequest;
-import org.phoenix.planet.dto.member.request.PwResetTokenRequest;
-import org.phoenix.planet.dto.member.request.SendPasswordResetRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
+import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
 import org.springframework.security.core.Authentication;
 
 public interface AuthService {
@@ -47,9 +47,9 @@ public interface AuthService {
 
     Authentication login(LoginRequest loginRequest);
 
-    void sendPasswordResetMail(SendPasswordResetRequest request);
+    void sendPasswordChangeMail(SendPasswordChangeRequest request);
 
-    void validatePwResetToken(PwResetTokenRequest request);
+    void validatePasswordChangeToken(PasswordChangeTokenRequest request);
 
-    void ResetPassword(PasswordResetRequest request);
+    void changePassword(PasswordChangeRequest request);
 }

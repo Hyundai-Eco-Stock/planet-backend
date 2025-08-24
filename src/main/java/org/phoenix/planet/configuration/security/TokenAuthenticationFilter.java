@@ -52,9 +52,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             || path.equals("/auth/login")
             || path.equals("/health")
             || path.startsWith("/oauth2/authorization")
-            || path.equals("/auth/password-reset-mail")
-            || path.equals("/auth/password-reset-token/valid")
-            || path.equals("/auth/reset-password");
+            || path.equals("/auth/password-change-mail")
+            || path.equals("/auth/password-change-token/valid")
+            || path.equals("/auth/change-password");
     }
 
     @Override

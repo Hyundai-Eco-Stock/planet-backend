@@ -21,9 +21,9 @@ import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.request.LoginRequest;
-import org.phoenix.planet.dto.member.request.PasswordResetRequest;
-import org.phoenix.planet.dto.member.request.PwResetTokenRequest;
-import org.phoenix.planet.dto.member.request.SendPasswordResetRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
+import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
 import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.mapper.MemberMapper;
 import org.phoenix.planet.repository.PasswordResetTokenRepository;
@@ -210,7 +210,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void sendPasswordResetMail(SendPasswordResetRequest request) {
+    public void sendPasswordChangeMail(SendPasswordChangeRequest request) {
 
         // 1) 해당 이메일이 존재하는지 확인 (없어도 에러 X, 200 OK)
         Member member = memberMapper.findByEmail(request.email())
@@ -225,17 +225,17 @@ public class AuthServiceImpl implements AuthService {
         String token = TokenUtil.generateRandomToken();
 
         // 3) 비밀번호 초기화 페이지 URL 생성
-        String resetUrl = frontendBaseUrl + "/reset/password?token=" + token;
+        String resetUrl = frontendBaseUrl + "/change/password?token=" + token;
 
         // 4) redis에 토큰 저장
         passwordResetTokenRepository.saveToken(token, member.getId());
 
         // 5) SMTP 전송 (간단한 텍스트 메일)
-        mailService.sendPasswordReset(request.email(), member.getName(), resetUrl);
+        mailService.sendPasswordChange(request.email(), member.getName(), resetUrl);
     }
 
     @Override
-    public void validatePwResetToken(PwResetTokenRequest request) {
+    public void validatePasswordChangeToken(PasswordChangeTokenRequest request) {
 
         boolean isExist = passwordResetTokenRepository.exist(request.token());
         if (!isExist) {
@@ -245,7 +245,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void ResetPassword(PasswordResetRequest request) {
+    public void changePassword(PasswordChangeRequest request) {
 
         long memberId = passwordResetTokenRepository.findMemberIdByToken(request.token());
         memberService.updatePassword(memberId, request.password());

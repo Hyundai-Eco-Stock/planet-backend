@@ -17,6 +17,7 @@ import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
 import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.LoginResponse;
+import org.phoenix.planet.dto.member.response.SignUpResponse;
 import org.phoenix.planet.service.auth.AuthService;
 import org.phoenix.planet.service.member.MemberService;
 import org.phoenix.planet.util.cookie.CookieUtil;
@@ -48,14 +49,14 @@ public class AuthController {
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Void> signUpByKakao(
+    public ResponseEntity<SignUpResponse> signUpByKakao(
         @RequestPart("signUp") @Valid SignUpRequest request,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
         @LoginMemberId long loginMemberId
     ) {
 
-        memberService.signUp(loginMemberId, request, profileImage);
-        return ResponseEntity.ok().build();
+        SignUpResponse signUpResponse = memberService.signUp(loginMemberId, request, profileImage);
+        return ResponseEntity.ok(signUpResponse);
     }
 
     @PostMapping("/logout")

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.EcoStockPriceHistoryMapper">
+
+    <select id="findAllPriceHistory"
+            resultType="org.phoenix.planet.dto.eco_stock.raw.StockData">
+        SELECT
+        sph.stock_price_history_id AS stock_price_history_id,
+        sph.eco_stock_id AS ecoStockId,
+        sph.stock_time AS stockTime,
+        sph.stock_price AS stockPrice,
+        sph.sell_count AS sellCount,
+        sph.buy_count AS buyCount
+        FROM stock_price_history sph
+        WHERE sph.eco_stock_id = #{ecoStockId}
+        ORDER BY sph.stock_time ASC
+    </select>
+</mapper>

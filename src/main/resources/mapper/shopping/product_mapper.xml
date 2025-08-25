@@ -123,6 +123,46 @@
         ORDER BY p.created_at DESC
     </select>
 
+
+  <select id="findByIdIn" resultMap="ProductResultMap">
+    SELECT PRODUCT_ID, NAME, CATEGORY_ID, PRICE, IMAGE_URL
+    FROM PRODUCT
+    WHERE PRODUCT_ID IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </select>
+
+  <select id="findByCategoryId" parameterType="long"
+    resultType="org.phoenix.planet.dto.product.raw.Product">
+    SELECT
+    product_id,
+    image_url,
+    category_id,
+    brand_id,
+    name,
+    price,
+    quantity,
+    eco_deal_status,
+    sale_percent,
+    created_at,
+    updated_at
+    FROM PRODUCT
+    <where>
+      <if test="categoryId != null">
+        category_id = #{categoryId}
+      </if>
+    </where>
+    ORDER BY product_id DESC
+  </select>
+
+  <select id="findAllCategories"
+    resultType="org.phoenix.planet.dto.product.raw.ProductCategory">
+    SELECT *
+    FROM product_category
+    ORDER BY category_id
+  </select>
+
     <select id="findByIds" parameterType="list" resultType="org.phoenix.planet.dto.product.raw.Product">
         SELECT
         product_id as id,

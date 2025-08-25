@@ -59,3 +59,10 @@ cloudfront:
   distribution-domain: ${CLOUDFRONT_DISTRIBUTION_DOMAIN}
   key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID}
   private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH}
+
+es:
+  endpoint: ${ES_ENDPOINT}
+  index: "planet_product_1"
+  apiKey: ${ES_API_KEY}
+  inferenceId: "my-elser"
+  defaultSize: 20

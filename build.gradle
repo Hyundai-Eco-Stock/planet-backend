@@ -95,6 +95,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     // 분산락
     implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    // Websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {

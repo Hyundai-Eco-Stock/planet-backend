@@ -52,8 +52,8 @@ public class MemberController {
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateProfile(
         @LoginMemberId long loginMemberId,
-        @RequestPart("updateProfile") @RequestBody @Valid ProfileUpdateRequest profileUpdateRequest,
-        @RequestPart(value = "profileImage", required = false) MultipartFile profileImageFile
+        @RequestPart("updateProfile") @Valid ProfileUpdateRequest profileUpdateRequest,
+        @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile
     ) {
 
         memberService.updateMemberInfo(loginMemberId, profileUpdateRequest, profileImageFile);

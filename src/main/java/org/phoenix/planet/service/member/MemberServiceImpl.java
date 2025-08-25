@@ -61,7 +61,7 @@ public class MemberServiceImpl implements MemberService {
             request.address(),
             request.detailAddress());
 
-        if (!profileImageFile.isEmpty()) {
+        if (profileImageFile != null && !profileImageFile.isEmpty()) {
             String profileFilePath = s3FileUtil.uploadMemberProfile(profileImageFile,
                 loginMemberId);
             memberMapper.updateProfileUrl(loginMemberId, profileFilePath);

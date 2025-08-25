@@ -93,6 +93,8 @@ dependencies {
 
     // elastic search
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    // 분산락
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
 
 tasks.named('test') {

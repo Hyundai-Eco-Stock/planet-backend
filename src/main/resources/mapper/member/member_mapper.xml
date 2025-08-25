@@ -97,8 +97,8 @@
     <update id="updateProfile">
         UPDATE MEMBER
         SET
-        email = #{email},
-        name = #{name},
+        <!--        email = #{email},-->
+        <!--        name = #{name},-->
         sex = #{sex,
                 javaType=org.phoenix.planet.constant.Sex,
                 typeHandler=org.apache.ibatis.type.EnumTypeHandler,

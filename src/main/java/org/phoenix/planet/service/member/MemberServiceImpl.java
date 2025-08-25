@@ -54,8 +54,8 @@ public class MemberServiceImpl implements MemberService {
 
         memberMapper.updateProfile(
             loginMemberId,
-            request.email(),
-            request.name(),
+//            request.email(),
+//            request.name(),
             request.sex(),
             request.birth(),
             request.address(),

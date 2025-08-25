@@ -38,8 +38,8 @@ public interface MemberMapper {
 
     void updateProfile(
         @Param("memberId") long memberId,
-        @Param("email") String email,
-        @Param("name") String name,
+//        @Param("email") String email,
+//        @Param("name") String name,
         @Param("sex") Sex sex,
         @Param("birth") String birth,
         @Param("address") String address,

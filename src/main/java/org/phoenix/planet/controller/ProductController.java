@@ -8,6 +8,7 @@ import org.phoenix.planet.dto.product.request.RecommendRequest;
 import org.phoenix.planet.dto.product.response.ProductDetailResponse;
 import org.phoenix.planet.dto.product.response.ProductResponse;
 import org.phoenix.planet.service.product.ProductService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,34 +25,36 @@ public class ProductController {
 
     /* 유사 상품 추천 */
     @GetMapping("/recommend")
-    public List<ProductResponse> recommend(RecommendRequest req) {
-        return productService.recommend(req);
+    public ResponseEntity<List<ProductResponse>> recommend(RecommendRequest req) {
+        return ResponseEntity.ok(productService.recommend(req));
     }
 
     /* 카테고리별 상품 조회 */
     @GetMapping
-    public List<ProductResponse> findByCategory(@RequestParam(required = false) Long categoryId) {
-        return productService.findByCategory(categoryId);
+    public ResponseEntity<List<ProductResponse>> findByCategory(
+            @RequestParam(required = false) Long categoryId) {
+        return ResponseEntity.ok(productService.findByCategory(categoryId));
     }
 
     /* 카테고리 목록 조회 */
     @GetMapping("/categories")
-    public List<ProductCategory> getCategories() {
-        return productService.getCategories();
+    public ResponseEntity<List<ProductCategory>> getCategories() {
+        return ResponseEntity.ok(productService.getCategories());
     }
 
     /* 상품 검색 */
     @GetMapping("/search")
-    public List<ProductResponse> search(@RequestParam(required = false) String categoryId,
+    public ResponseEntity<List<ProductResponse>> search(
+            @RequestParam(required = false) String categoryId,
             @RequestParam String searchKeyword) {
-        return productService.searchByMlt(searchKeyword, categoryId, 30);
+        return ResponseEntity.ok(productService.searchByMlt(searchKeyword, categoryId, 30));
     }
 
     /* 상품 상세 */
     @GetMapping("/{product-id}")
-    public List<ProductDetailResponse> getProductDetail(
+    public ResponseEntity<List<ProductDetailResponse>> getProductDetail(
             @PathVariable("product-id") long productId) {
         log.info(" 안녕하세요 ");
-        return productService.getProductDetail(productId);
+        return ResponseEntity.ok(productService.getProductDetail(productId));
     }
 }

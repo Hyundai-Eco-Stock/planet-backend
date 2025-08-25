@@ -15,4 +15,6 @@ public interface EcoStockService {
     List<EcoStockUpdatePriceRecord> findAllHistory(String time);
 
     void updateQuantityById(Long stockId, int updateQuantity);
+
+    void sellStock(Long memberId, SellStockRequest sellStockRequest);
 }

@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.raw.ProductCategory;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
+import org.phoenix.planet.dto.product.response.ProductDetailResponse;
+import org.phoenix.planet.dto.product.response.ProductResponse;
 
 @Mapper
 public interface ProductMapper {
@@ -21,12 +23,13 @@ public interface ProductMapper {
 
     List<EcoProductListResponse> findTodayAllEcoProducts();
 
-    List<Product> findByIdIn(List<String> ids);
+    List<ProductResponse> findByIdIn(List<String> ids);
 
-    List<Product> findByCategoryId(Long category);
+    List<ProductResponse> findByCategoryId(Long category);
 
     List<ProductCategory> findAllCategories();
 
     List<Product> findByIds(List<Long> productIds);
 
+    List<ProductDetailResponse> getProductDetail(Long productId);
 }

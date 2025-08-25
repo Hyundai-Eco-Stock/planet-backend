@@ -78,7 +78,7 @@ public class ProductServiceImpl implements ProductService {
         List<String> ids = esClient.searchSimilarIds(
                 req.name(),
                 req.categoryId(),
-                req.id(),
+                req.productId(),
                 req.size()
         );
         if (ids.isEmpty()) {

@@ -2,10 +2,12 @@ package org.phoenix.planet.util.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,30 +18,31 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
+@RequiredArgsConstructor
 public class EsClient {
 
     private final RestTemplate restTemplate;
-    private final String baseUrl;
-    private final HttpHeaders defaultHeaders;
-    private final ObjectMapper om = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
-    private final String index;
-    private final String inferenceId;
-    private final int defaultSize;
+    @Value("${es.endpoint}")
+    private String baseUrl;
 
-    public EsClient(
-            @Value("${es.endpoint}") String endpoint,
-            @Value("${es.api-key}") String apiKey,
-            @Value("${es.index}") String index,
-            @Value("${es.inference-id}") String inferenceId,
-            @Value("${es.default-size:20}") int defaultSize
-    ) {
-        this.restTemplate = new RestTemplate();
-        this.baseUrl = endpoint;
-        this.index = index;
-        this.inferenceId = inferenceId;
-        this.defaultSize = defaultSize;
+    @Value("${es.index}")
+    private String index;
 
+    @Value("${es.inference-id}")
+    private String inferenceId;
+
+    @Value("${es.default-size:20}")
+    private int defaultSize;
+
+    @Value("${es.api-key}")
+    private String apiKey;
+
+    private HttpHeaders defaultHeaders;
+
+    @PostConstruct
+    private void initHeaders() {
         this.defaultHeaders = new HttpHeaders();
         this.defaultHeaders.setContentType(MediaType.APPLICATION_JSON);
         this.defaultHeaders.set("Authorization", "ApiKey " + apiKey);
@@ -99,7 +102,8 @@ public class EsClient {
                     String.class
             );
             String bodyStr = response.getBody();
-            JsonNode resp = (bodyStr == null || bodyStr.isBlank()) ? null : om.readTree(bodyStr);
+            JsonNode resp =
+                    (bodyStr == null || bodyStr.isBlank()) ? null : objectMapper.readTree(bodyStr);
             if (resp == null || resp.get("hits") == null) {
                 return Collections.emptyList();
             }
@@ -161,7 +165,8 @@ public class EsClient {
                     String.class
             );
             String bodyStr = response.getBody();
-            JsonNode resp = (bodyStr == null || bodyStr.isBlank()) ? null : om.readTree(bodyStr);
+            JsonNode resp =
+                    (bodyStr == null || bodyStr.isBlank()) ? null : objectMapper.readTree(bodyStr);
             if (resp == null || resp.get("hits") == null) {
                 return Collections.emptyList();
             }
@@ -174,7 +179,7 @@ public class EsClient {
     /* es 에 요청 보낼 때 json 으로 키워드 파싱 */
     private String safeJson(String s) {
         try {
-            return om.writeValueAsString(s == null ? "" : s);
+            return objectMapper.writeValueAsString(s == null ? "" : s);
         } catch (Exception e) {
             return "\"\"";
         }

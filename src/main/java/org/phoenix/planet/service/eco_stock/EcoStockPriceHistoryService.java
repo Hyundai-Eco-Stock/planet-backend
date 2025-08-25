@@ -12,4 +12,6 @@ public interface EcoStockPriceHistoryService {
     ChartDataResponse findAllPrice(Long ecoStockId);
 
     ChartDataResponse updateRedisData(Long ecoStockId);
+
+    StockCalculationResult calculatePriceHistory(EcoStockUpdatePriceRecord record, LocalDateTime time);
 }

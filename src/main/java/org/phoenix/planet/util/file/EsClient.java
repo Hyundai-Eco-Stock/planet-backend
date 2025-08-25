@@ -2,7 +2,6 @@ package org.phoenix.planet.util.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,15 +37,6 @@ public class EsClient {
 
     @Value("${es.api-key}")
     private String apiKey;
-
-    private HttpHeaders defaultHeaders;
-
-    @PostConstruct
-    private void initHeaders() {
-        this.defaultHeaders = new HttpHeaders();
-        this.defaultHeaders.setContentType(MediaType.APPLICATION_JSON);
-        this.defaultHeaders.set("Authorization", "ApiKey " + apiKey);
-    }
 
     /* 유사 상품 추천 */
     public List<String> searchSimilarIds(String anchorName, String anchorCategoryId,
@@ -94,7 +84,10 @@ public class EsClient {
         );
 
         try {
-            HttpEntity<String> req = new HttpEntity<>(query, defaultHeaders);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "ApiKey " + apiKey);
+            HttpEntity<String> req = new HttpEntity<>(query, headers);
             ResponseEntity<String> response = restTemplate.exchange(
                     baseUrl + "/" + idx + "/_search",
                     HttpMethod.POST,
@@ -157,7 +150,10 @@ public class EsClient {
         );
 
         try {
-            HttpEntity<String> req = new HttpEntity<>(body, defaultHeaders);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "ApiKey " + apiKey);
+            HttpEntity<String> req = new HttpEntity<>(body, headers);
             ResponseEntity<String> response = restTemplate.exchange(
                     baseUrl + "/" + idx + "/_search",
                     HttpMethod.POST,

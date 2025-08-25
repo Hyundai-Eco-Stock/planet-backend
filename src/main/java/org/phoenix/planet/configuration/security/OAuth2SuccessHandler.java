@@ -53,11 +53,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             StandardCharsets.UTF_8);
 
         String profileUrl = principalDetails.member().getProfileUrl();
-        if (!profileUrl.startsWith("http")) {
-            profileUrl = cloudFrontFileUtil.generateSignedUrl(profileUrl, 60);
+        if (profileUrl != null) {
+            if (!profileUrl.startsWith("http")) {
+                profileUrl = cloudFrontFileUtil.generateSignedUrl(profileUrl, 60);
+            }
+            profileUrl = URLEncoder.encode(profileUrl, StandardCharsets.UTF_8);
         }
-        log.info("profileUrl: {}", profileUrl);
-        String encodedProfileUrl = URLEncoder.encode(profileUrl, StandardCharsets.UTF_8);
 
         String redirectUrl;
 //        log.info("pwdHash: {}", principalDetails.member().getPwdHash());
@@ -68,7 +69,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .queryParam("accessToken", accessToken)
                 .queryParam("email", encodedEmail)
                 .queryParam("name", encodedName)
-                .queryParam("profileUrl", encodedProfileUrl)
+                .queryParam("profileUrl", profileUrl)
                 .build(true)
                 .toUriString();
         } else {
@@ -78,7 +79,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .queryParam("accessToken", accessToken)
                 .queryParam("email", encodedEmail)
                 .queryParam("name", encodedName)
-                .queryParam("profileUrl", encodedProfileUrl)
+                .queryParam("profileUrl", profileUrl)
                 .build(true)
                 .toUriString();
         }

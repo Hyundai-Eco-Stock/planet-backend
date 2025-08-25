@@ -12,8 +12,12 @@ import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.request.LoginRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
+import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.LoginResponse;
+import org.phoenix.planet.dto.member.response.SignUpResponse;
 import org.phoenix.planet.service.auth.AuthService;
 import org.phoenix.planet.service.member.MemberService;
 import org.phoenix.planet.util.cookie.CookieUtil;
@@ -45,14 +49,14 @@ public class AuthController {
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Void> signUpByKakao(
+    public ResponseEntity<SignUpResponse> signUpByKakao(
         @RequestPart("signUp") @Valid SignUpRequest request,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
         @LoginMemberId long loginMemberId
     ) {
 
-        memberService.signUp(loginMemberId, request, profileImage);
-        return ResponseEntity.ok().build();
+        SignUpResponse signUpResponse = memberService.signUp(loginMemberId, request, profileImage);
+        return ResponseEntity.ok(signUpResponse);
     }
 
     @PostMapping("/logout")
@@ -83,7 +87,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> localLogin(
         HttpServletResponse response,
-        @RequestBody LoginRequest loginRequest
+        @RequestBody @Valid LoginRequest loginRequest
     ) {
 
         Authentication authentication = authService.login(loginRequest);
@@ -107,6 +111,51 @@ public class AuthController {
             .name(principalDetails.member().getName())
             .profileUrl(profileUrl)
             .build());
+    }
+
+    /**
+     * 비밀번호 변경 메일 전송
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/password-change-mail")
+    public ResponseEntity<Void> sendPasswordChangeMail(
+        @RequestBody @Valid SendPasswordChangeRequest request
+    ) {
+
+        authService.sendPasswordChangeMail(request);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 비밀번호 변경에 필요한 token 유효성 체크 (비밀번호 재설정 페이지 진입시 확인)
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/password-change-token/valid")
+    public ResponseEntity<Void> validatePasswordChangeToken(
+        @RequestBody @Valid PasswordChangeTokenRequest request
+    ) {
+
+        authService.validatePasswordChangeToken(request);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * (이메일을 통한) 비밀번호 변경 요청
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+        @RequestBody @Valid PasswordChangeRequest request
+    ) {
+
+        authService.changePassword(request);
+        return ResponseEntity.ok().build();
     }
 
     private String resolveRefreshTokenFromCookie(HttpServletRequest request) {

@@ -52,7 +52,10 @@ public class ProductServiceImpl implements ProductService {
             return Collections.emptyList();
         }
         // 2) DB 에서 상품 상세 로드
-        List<ProductResponse> fromDb = productMapper.findByIdIn(ids);
+        List<Long> longIds = ids.stream()
+                .map(Long::parseLong)
+                .toList();
+        List<ProductResponse> fromDb = productMapper.findByIdIn(longIds);
         // 3) ES 순서대로 상품 목록 정렬
         Map<Long, Integer> esProductOrder = IntStream.range(0, ids.size())
                 .boxed()
@@ -86,7 +89,10 @@ public class ProductServiceImpl implements ProductService {
         }
 
         // 2) Oracle에서 상세 조회
-        List<ProductResponse> fromDb = productMapper.findByIdIn(ids);
+        List<Long> longIds = ids.stream()
+                .map(Long::parseLong)
+                .toList();
+        List<ProductResponse> fromDb = productMapper.findByIdIn(longIds);
         if (fromDb.isEmpty()) {
             return fromDb;
         }

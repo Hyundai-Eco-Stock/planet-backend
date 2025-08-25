@@ -154,4 +154,10 @@ public class EcoStockPriceHistoryServiceImpl implements EcoStockPriceHistoryServ
                 ? record.initPrice()
                 : record.beforePrice();
     }
+
+    @Override
+    @Transactional
+    public int saveIfNotExists(StockData stockData) {
+        return ecoStockPriceHistoryMapper.saveIfNotExists(stockData);
+    }
 }

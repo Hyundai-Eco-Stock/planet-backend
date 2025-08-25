@@ -18,4 +18,24 @@
         WHERE sph.eco_stock_id = #{ecoStockId}
         ORDER BY sph.stock_time ASC
     </select>
+
+    <insert id="saveIfNotExists" parameterType="org.phoenix.planet.dto.eco_stock.raw.StockData">
+        <selectKey keyProperty="stockPriceHistoryId" resultType="long" order="BEFORE">
+            SELECT SEQ_STOCK_PRICE_HISTORY.NEXTVAL FROM dual
+        </selectKey>
+
+        MERGE INTO stock_price_history target
+        USING (
+        SELECT #{ecoStockId} AS eco_stock_id,
+        CAST(#{stockTime} AS DATE) AS stock_time
+        FROM dual ) src
+        ON ( target.eco_stock_id = src.eco_stock_id AND target.stock_time = src.stock_time )
+        WHEN NOT MATCHED THEN
+        INSERT ( stock_price_history_id, eco_stock_id, stock_time,
+        stock_price, sell_count, buy_count )
+        VALUES ( #{stockPriceHistoryId}, #{ecoStockId}, #{stockTime},
+        #{stockPrice}, #{sellCount}, #{buyCount} )
+    </insert>
+
+
 </mapper>

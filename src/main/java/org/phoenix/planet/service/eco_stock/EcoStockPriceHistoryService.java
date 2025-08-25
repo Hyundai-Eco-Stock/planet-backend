@@ -14,4 +14,6 @@ public interface EcoStockPriceHistoryService {
     ChartDataResponse updateRedisData(Long ecoStockId);
 
     StockCalculationResult calculatePriceHistory(EcoStockUpdatePriceRecord record, LocalDateTime time);
+
+    int saveIfNotExists(StockData stockData);
 }

@@ -1,13 +1,13 @@
+DROP TABLE member_car;
+
 CREATE TABLE member_car
 (
     member_car_id NUMBER PRIMARY KEY,
     member_id     NUMBER               NOT NULL,
     car_number    VARCHAR2(255)        NOT NULL,
-    car_eco_type  VARCHAR2(255)        NOT NULL,
     created_at    DATE DEFAULT SYSDATE NOT NULL,
     updated_at    DATE,
     CONSTRAINT fk_member_car_member FOREIGN KEY (member_id) REFERENCES member (member_id),
-    CONSTRAINT ck_member_car_eco_type CHECK (car_eco_type IN ('HYBRID', 'ELECTRONIC', 'NORMAL')),
     CONSTRAINT ux_member_car_number UNIQUE (car_number)
 );
 

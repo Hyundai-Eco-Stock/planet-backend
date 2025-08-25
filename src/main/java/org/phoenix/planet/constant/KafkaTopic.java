@@ -1,12 +1,12 @@
 package org.phoenix.planet.constant;
 
 import lombok.AllArgsConstructor;
-import org.phoenix.planet.dto.car_access.raw.EcoCarEnterEvent;
-import org.phoenix.planet.dto.offline.raw.KafkaOfflinePayInfo;
+import org.phoenix.planet.event.EcoCarEnterEvent;
+import org.phoenix.planet.event.PayEvent;
 
 @AllArgsConstructor
 public enum KafkaTopic {
-    OFFLINE_PAY_DETECTED("eco.offline-pay-detected", KafkaOfflinePayInfo.class),
+    OFFLINE_PAY_DETECTED("eco.offline-pay-detected", PayEvent.class),
     ECO_CAR_ENTER_DETECTED("eco.car-enter-detected", EcoCarEnterEvent.class),
     DEAD_LETTER("eco.dead-letter", String.class);
 

@@ -8,9 +8,6 @@
     <resultMap id="MemberCarResultMap" type="org.phoenix.planet.dto.car.response.MemberCarResponse">
         <id column="id" property="memberCarId"/>
         <result column="car_number" property="carNumber"/>
-        <result column="car_eco_type" property="carEcoType"
-            javaType="org.phoenix.planet.constant.CarEcoType"
-            typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
         <result column="created_at" property="createdAt" jdbcType="DATE"/>
         <result column="updated_at" property="updatedAt" jdbcType="DATE"/>
     </resultMap>
@@ -22,7 +19,6 @@
         member_car_id AS memberCarId,
         member_id AS memberId,
         car_number AS carNumber,
-        car_eco_type AS carEcoType,
         TO_CHAR(created_at, 'YYYY-MM-DD') AS createdAt,
         TO_CHAR(updated_at, 'YYYY-MM-DD') AS updatedAt
         FROM member_car
@@ -35,7 +31,6 @@
         member_car_id AS memberCarId,
         member_id AS memberId,
         car_number AS carNumber,
-        car_eco_type AS carEcoType,
         TO_CHAR(created_at, 'YYYY-MM-DD') AS createdAt,
         TO_CHAR(updated_at, 'YYYY-MM-DD') AS updatedAt
         FROM member_car
@@ -51,14 +46,11 @@
         member_car_id,
         member_id,
         car_number,
-        car_eco_type,
         created_at
         ) VALUES (
         #{memberCarId},
         #{memberId},
         #{carNumber},
-        #{carEcoType, javaType=org.phoenix.planet.constant.CarEcoType,
-                  typeHandler=org.apache.ibatis.type.EnumTypeHandler},
         SYSDATE
         )
     </insert>

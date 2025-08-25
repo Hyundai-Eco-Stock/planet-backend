@@ -5,20 +5,6 @@
 
 <mapper namespace="org.phoenix.planet.mapper.OfflineShopMapper">
     
-    <select id="selectAll"
-        resultType="org.phoenix.planet.dto.offline.response.OfflineShopListResponse">
-        SELECT
-        s.offline_shop_id AS offlineShopId,
-        s.name AS shopName,
-        s.type AS shopType,
-        ds.department_store_id AS departmentStoreId,
-        ds.name AS departmentStoreName
-        FROM offline_shop s
-        LEFT JOIN department_store ds
-        ON s.department_store_id = ds.department_store_id
-        ORDER BY ds.department_store_id, s.offline_shop_id
-    </select>
-    
     <select id="selectTypeById" parameterType="long" resultType="java.lang.String">
         SELECT
         type

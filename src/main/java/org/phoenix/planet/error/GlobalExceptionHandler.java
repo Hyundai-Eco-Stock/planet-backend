@@ -3,7 +3,6 @@ package org.phoenix.planet.error;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.error.order.OrderException;
 import org.springframework.http.HttpStatus;
@@ -25,9 +24,9 @@ public class GlobalExceptionHandler {
         body.put("message", e.getError().getValue());
 
         return ResponseEntity
-                .status(e.getError().getHttpStatus())
-                .header("X-Error-Code", e.getError().name())
-                .body(body);
+            .status(e.getError().getHttpStatus())
+            .header("X-Error-Code", e.getError().name())
+            .body(body);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -39,20 +38,8 @@ public class GlobalExceptionHandler {
         body.put("message", e.getMessage());
 
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(body);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleException(Exception e) {
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("errorCode", e.getClass().getName());
-        body.put("message", e.getMessage());
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(body);
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(body);
     }
 
     /**
@@ -75,7 +62,9 @@ public class GlobalExceptionHandler {
      * 유효성 검사 실패 처리
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException e) {
+    public ResponseEntity<Map<String, Object>> handleValidationException(
+        MethodArgumentNotValidException e) {
+
         Map<String, Object> body = new HashMap<>();
         List<ObjectError> allErrors = e.getBindingResult().getAllErrors();
         String errorMessage = "입력값이 올바르지 않습니다.";
@@ -89,15 +78,17 @@ public class GlobalExceptionHandler {
         body.put("message", errorMessage);
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(body);
+            .status(HttpStatus.BAD_REQUEST)
+            .body(body);
     }
 
     /**
      * JSON 파싱 예외 처리(잘못된 enum)
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadableException(
+        HttpMessageNotReadableException e) {
+
         Map<String, Object> body = new HashMap<>();
         String errorMessage = "입력값이 올바르지 않습니다.";
 
@@ -105,9 +96,20 @@ public class GlobalExceptionHandler {
         body.put("message", errorMessage);
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(body);
+            .status(HttpStatus.BAD_REQUEST)
+            .body(body);
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleException(Exception e) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", e.getClass().getName());
+        body.put("message", e.getMessage());
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(body);
+    }
 
 }

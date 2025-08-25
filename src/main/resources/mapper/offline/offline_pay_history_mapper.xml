@@ -4,32 +4,6 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="org.phoenix.planet.mapper.OfflinePayHistoryMapper">
-    
-    <insert id="insert" parameterType="org.phoenix.planet.dto.offline.raw.OfflinePaySaveRequest">
-        <selectKey keyProperty="offlinePayHistoryId" resultType="long" order="BEFORE">
-            SELECT seq_offline_pay_history.NEXTVAL FROM dual
-        </selectKey>
-        INSERT INTO offline_pay_history (
-        offline_pay_history_id,
-        shop_id,
-        card_company_id,
-        card_number_last4,
-        total_price,
-        paid_at,
-        barcode,
-        stock_issued
-        ) VALUES (
-        #{offlinePayHistoryId},
-        #{shopId},
-        #{cardCompanyId},
-        #{cardNumberLast4},
-        #{totalPrice},
-        SYSDATE,
-        #{barcode},
-        0
-        )
-    </insert>
-    
     <update id="updateStockIssueStatusTrue" parameterType="long">
         UPDATE offline_pay_history
         SET stock_issued = 1,

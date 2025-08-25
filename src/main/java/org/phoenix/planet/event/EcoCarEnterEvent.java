@@ -1,4 +1,4 @@
-package org.phoenix.planet.dto.car_access.raw;
+package org.phoenix.planet.event;
 
 import lombok.Builder;
 

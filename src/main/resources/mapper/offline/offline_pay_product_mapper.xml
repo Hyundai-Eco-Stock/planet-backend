@@ -39,6 +39,4 @@
         WHERE offline_pay_history_id = #{offlinePayHistoryId}
         ORDER BY offline_pay_product_id
     </select>
-
-
 </mapper>

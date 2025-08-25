@@ -60,11 +60,8 @@ public class EcoCarEnterDetectedConsumer {
 
         // 알림
         List<String> tokens = memberDeviceTokenService.getTokens(car.memberId());
-        fcmService.sendNotificationToMany(
-            tokens,
-            "\uD83C\uDF89 에코스톡 지급 완료!",
-            "친환경 차량 입차가 감지되어 에코스톡 1주가 발급되었습니다.",
-            targetUrl);
+
+        fcmService.SendEcoStockIssueNotification(tokens, "친환경 차량 입차가 감지되어 에코스톡 1주가 발급되었습니다.");
     }
 
     @DltHandler

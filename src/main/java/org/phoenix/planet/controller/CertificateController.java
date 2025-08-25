@@ -1,5 +1,6 @@
 package org.phoenix.planet.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.eco_stock_certificate.request.PaperBagNoUseCertificateRequest;
@@ -21,7 +22,7 @@ public class CertificateController {
     @PostMapping("/tumbler")
     public ResponseEntity<?> certificateTumbler(
         @LoginMemberId long loginMemberId,
-        @RequestBody TumblerCertificateRequest tumblerCertificateRequest
+        @RequestBody @Valid TumblerCertificateRequest tumblerCertificateRequest
     ) {
 
         certificateService.certificateTumbler(loginMemberId, tumblerCertificateRequest);
@@ -33,7 +34,7 @@ public class CertificateController {
     @PostMapping("/paper-bag-no-use")
     public ResponseEntity<?> certificatePaperBagNoUse(
         @LoginMemberId long loginMemberId,
-        @RequestBody PaperBagNoUseCertificateRequest paperBagNoUseCertificateRequest
+        @RequestBody @Valid PaperBagNoUseCertificateRequest paperBagNoUseCertificateRequest
     ) {
 
         certificateService.certificatePaperBagNoUse(loginMemberId, paperBagNoUseCertificateRequest);

@@ -69,18 +69,14 @@ public class OfflinePayDetectedConsumer {
                 // 에코스톡 발급
                 ecoStockIssueService.issueStock(memberId, ecoStockId, 1);
                 // FCM 토큰 목록 가져오기
-                List<String> memberTokens = memberDeviceTokenService.getTokens(
+                List<String> tokens = memberDeviceTokenService.getTokens(
                     memberId);
                 // 에코스톡 정보 가져와 푸시 알림 보내기
                 EcoStock ecoStock = ecoStockService.searchById(ecoStockId);
                 // TODO: 에코스톡 발급 처리 (어떻게 하지?)
 //                offlinePayHistoryService.updateStockIssueStatusTrue(event.offlinePayHistoryId());
                 // 알람 전송
-                fcmService.sendNotificationToMany(
-                    memberTokens,
-                    "\uD83C\uDF89 에코스톡 지급 완료!",
-                    fcmMessage,
-                    targetUrl);
+                fcmService.SendEcoStockIssueNotification(tokens, fcmMessage);
                 log.info("{} 에코스톡 발급 완료", ecoStock.name());
             }
 

@@ -84,6 +84,14 @@
         WHERE member_id = #{memberId}
     </update>
     
+    <update id="updatePassword" parameterType="map">
+        UPDATE MEMBER
+        SET
+        pwd_hash = #{pwdHash},
+        updated_at = SYSDATE
+        WHERE member_id = #{memberId}
+    </update>
+    
     <select id="findById" parameterType="long" resultMap="MemberResultMap">
         SELECT
         member_id,

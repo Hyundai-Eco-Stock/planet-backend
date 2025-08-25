@@ -16,11 +16,13 @@ import lombok.ToString;
 @Builder
 public class ProductCategory {
 
-    private Long id;
+    private Long categoryId;
 
     private String name;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private String imageUrl;
 }

@@ -7,6 +7,7 @@ import org.phoenix.planet.dto.product.response.EcoProductListResponse;
 import org.phoenix.planet.service.product.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,5 +24,10 @@ public class EcoDealController {
 
         List<EcoProductListResponse> ecoProductList = productService.getTodayEcoProductList();
         return ResponseEntity.ok(ecoProductList);
+    }
+
+    @GetMapping("/{product-id}")
+    public ResponseEntity<?> getEcoDealDetail(@PathVariable("product-id") Long productId) {
+        return ResponseEntity.ok(productService.getEcoDealDetail(productId));
     }
 }

@@ -209,4 +209,23 @@
     order by PRODUCT_IMAGE_ID
   </select>
 
+  <!--  에코딜 상세-->
+  <select id="getEcoDealDetail" parameterType="long"
+    resultType="org.phoenix.planet.dto.product.response.EcoProductDetailResponse">
+    select
+    P.PRODUCT_ID,
+    P.NAME as PRODUCT_NAME,
+    P.PRICE,
+    P.QUANTITY,
+    P.SALE_PERCENT,
+    P.IMAGE_URL,
+    DS.DEPARTMENT_STORE_ID,
+    DS.NAME as DEPARTMENT_STORE_NAME,
+    DS.LAT,
+    DS.LNG
+    from PRODUCT P
+    join DEPARTMENT_STORE_PRODUCT DSP on P.PRODUCT_ID = DSP.PRODUCT_ID
+    join DEPARTMENT_STORE DS on DS.DEPARTMENT_STORE_ID = DSP.DEPARTMENT_STORE_ID
+    where P.ECO_DEAL_STATUS = 'Y' AND P.PRODUCT_ID = 330
+  </select>
 </mapper>

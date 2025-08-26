@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.error.order.OrderException;
+import org.phoenix.planet.error.payment.PaymentException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -109,5 +110,20 @@ public class GlobalExceptionHandler {
                 .body(body);
     }
 
+    /**
+     * 결제 관련 예외 처리
+     */
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<Map<String, Object>> handlePaymentException(PaymentException e) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", e.getError().name());
+        body.put("message", e.getError().getValue());
+
+        return ResponseEntity
+                .status(e.getError().getHttpStatus())
+                .header("X-Error-Code", e.getError().name())
+                .body(body);
+    }
 
 }

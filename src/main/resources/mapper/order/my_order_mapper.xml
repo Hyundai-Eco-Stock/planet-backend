@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.MyOrderMapper">
+  <!--  마이페이지 - 구매내역-->
+  <select id="findMyOrders" parameterType="long"
+    resultType="org.phoenix.planet.dto.order.response.MyOrderResponse">
+    select
+    H.ORDER_HISTORY_ID,
+    H.ORDER_NUMBER,
+    H.ORDER_STATUS,
+    H.ORIGIN_PRICE,
+    H.USED_POINT,
+    H.DONATION_PRICE,
+    H.FINAL_PAY_PRICE,
+    H.ECO_DEAL_QR_URL,
+    H.MEMBER_ID,
+    H.CREATED_AT,
+    P.ORDER_PRODUCT_ID,
+    P.PRICE,
+    P.QUANTITY,
+    P.CANCEL_STATUS,
+    P.ORDER_TYPE,
+    P.PRODUCT_ID,
+    P.DISCOUNT_PRICE
+    from ORDER_HISTORY H
+    join ORDER_PRODUCT P on H.ORDER_HISTORY_ID = P.ORDER_HISTORY_ID
+    where H.MEMBER_ID = #{member_id}
+  </select>
+
+</mapper>

@@ -19,6 +19,7 @@ import org.phoenix.planet.dto.order.raw.PickupStoreProductInfo;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.request.OrderProductRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
+import org.phoenix.planet.dto.order.response.MyOrderResponse;
 import org.phoenix.planet.dto.order.response.OrderDraftProductResponse;
 import org.phoenix.planet.dto.order.response.OrderDraftResponse;
 import org.phoenix.planet.dto.product.raw.Product;
@@ -27,6 +28,7 @@ import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.mapper.DepartmentStoreMapper;
 import org.phoenix.planet.mapper.DepartmentStoreProductMapper;
 import org.phoenix.planet.mapper.MemberMapper;
+import org.phoenix.planet.mapper.MyOrderMapper;
 import org.phoenix.planet.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
     private final DepartmentStoreMapper departmentStoreMapper;
     private final MemberMapper memberMapper;
     private final ProductMapper productMapper;
+    private final MyOrderMapper myOrderMapper;
 
     @Override
     @Transactional
@@ -274,4 +277,8 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    /* 마이페이지 - 구매내역 */
+    public List<MyOrderResponse> getMyOrders(Long memberId) {
+        return myOrderMapper.findMyOrders(memberId);
+    }
 }

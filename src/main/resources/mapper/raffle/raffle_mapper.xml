@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.RaffleMapper">
+
+    <select id="findAll" resultType="org.phoenix.planet.dto.raffle.RaffleResponse">
+        SELECT
+        R.RAFFLE_ID AS raffleId,
+        R.ECO_STOCK_AMOUNT AS ecoStockAmount,
+        R.START_DATE AS startDate,
+        R.END_DATE AS endDate,
+
+        P.PRODUCT_ID AS productId,
+        P.NAME AS productName,
+        P.PRICE AS price,
+        P.IMAGE_URL AS imageUrl,
+
+        B.NAME AS brandName,
+
+        ES.ECO_STOCK_ID AS ecoStockId,
+        ES.NAME AS ecoStockName
+
+        FROM RAFFLE R
+        JOIN PRODUCT P ON R.PRODUCT_ID = P.PRODUCT_ID
+        JOIN ECO_STOCK ES ON R.ECO_STOCK_ID = ES.ECO_STOCK_ID
+        JOIN BRAND B ON P.BRAND_ID = B.BRAND_ID
+    </select>
+</mapper>
+

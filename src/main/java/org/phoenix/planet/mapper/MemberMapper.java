@@ -32,6 +32,8 @@ public interface MemberMapper {
         @Param("address") String address,
         @Param("detailAddress") String detailAddress);
 
+    int deductPointsByMemberId(@Param("memberId") Long memberId, @Param("points") int points);
+
     void updatePassword(
         @Param("memberId") long memberId,
         @Param("pwdHash") String pwdHash);
@@ -44,4 +46,5 @@ public interface MemberMapper {
         @Param("birth") String birth,
         @Param("address") String address,
         @Param("detailAddress") String detailAddress);
+
 }

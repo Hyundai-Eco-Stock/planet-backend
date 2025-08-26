@@ -20,6 +20,15 @@
       javaType="java.time.LocalDateTime"/>
   </resultMap>
 
+    <!-- 재고 차감 -->
+    <update id="deductStock">
+        UPDATE product
+        SET quantity = quantity - #{quantity},
+        updated_at = CURRENT_TIMESTAMP
+        WHERE product_id = #{productId}
+        AND quantity >= #{quantity}
+    </update>
+
   <!-- Insert -->
   <insert id="insert" parameterType="org.phoenix.planet.dto.product.raw.Product">
     <selectKey keyProperty="id" resultType="long" order="BEFORE">

@@ -15,7 +15,12 @@ public record SignUpRequest(
     )
     String password,
     @NotNull Sex sex,
-    @NotBlank String birth, // "YYYY-MM-DD" 형식
+    @NotBlank
+    @Pattern(
+        regexp = "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+        message = "생년월일은 YYYY-MM-DD 형식이어야 합니다."
+    )
+    String birth,
     @NotBlank String address,
     @NotBlank String detailAddress
 ) {

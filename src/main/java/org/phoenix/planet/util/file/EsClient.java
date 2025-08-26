@@ -2,7 +2,6 @@ package org.phoenix.planet.util.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,14 +38,57 @@ public class EsClient {
     @Value("${es.api-key}")
     private String apiKey;
 
-    private HttpHeaders defaultHeaders;
+    private static final String searchSimilarIdsQuery = """
+            {
+              "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
+              "size": %d,
+              "query": {
+                "bool": {
+                  "filter": [ { "term": { "category_id": %s } } ],
+                  "must_not": [ { "term": { "product_id": %s } } ]
+                }
+              },
+              "rescore": [
+                {
+                  "window_size": 200,
+                  "query": {
+                    "rescore_query": {
+                      "more_like_this": {
+                        "fields": ["product_name"],
+                        "like": [ { "_index": %s, "_id": %s } ],
+                        "min_term_freq": 1,
+                        "min_doc_freq": 1,
+                        "max_query_terms": 50
+                      }
+                    },
+                    "query_weight": 0.2,
+                    "rescore_query_weight": 2.0
+                  }
+                }
+              ]
+            }
+            """;
 
-    @PostConstruct
-    private void initHeaders() {
-        this.defaultHeaders = new HttpHeaders();
-        this.defaultHeaders.setContentType(MediaType.APPLICATION_JSON);
-        this.defaultHeaders.set("Authorization", "ApiKey " + apiKey);
-    }
+    private static final String searchMltMatchAllQuery = """
+            {
+              "size": %d,
+              "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
+              "query": {
+                "bool": {
+                  "filter": [ %s ],
+                  "must": { "match_all": {} },
+                  "should": [
+                    { "term": { "product_name.keyword": { "value": %s, "boost": 8 } } },
+                    { "match_phrase": { "product_name": { "query": %s, "boost": 5 } } },
+                    { "match": { "product_name": { "query": %s, "operator": "AND", "minimum_should_match": "100%%", "boost": 3 } } },
+                    { "multi_match": { "query": %s, "fields": ["product_name^2","brand_name"], "fuzziness": "AUTO", "boost": 1 } },
+                    { "match_phrase_prefix": { "product_name": { "query": %s, "max_expansions": 50, "boost": 1 } } }
+                  ]
+                }
+              },
+              "sort": ["_score"]
+            }
+            """;
 
     /* 유사 상품 추천 */
     public List<String> searchSimilarIds(String anchorName, String anchorCategoryId,
@@ -55,37 +97,7 @@ public class EsClient {
 
         String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
 
-        String query = String.format(
-                """
-                        {
-                          "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
-                          "size": %d,
-                          "query": {
-                            "bool": {
-                              "filter": [ { "term": { "category_id": %s } } ],
-                              "must_not": [ { "term": { "product_id": %s } } ]
-                            }
-                          },
-                          "rescore": [
-                            {
-                              "window_size": 200,
-                              "query": {
-                                "rescore_query": {
-                                  "more_like_this": {
-                                    "fields": ["product_name"],
-                                    "like": [ { "_index": %s, "_id": %s } ],
-                                    "min_term_freq": 1,
-                                    "min_doc_freq": 1,
-                                    "max_query_terms": 50
-                                  }
-                                },
-                                "query_weight": 0.2,
-                                "rescore_query_weight": 2.0
-                              }
-                            }
-                          ]
-                        }
-                        """,
+        String query = String.format(searchSimilarIdsQuery,
                 k,
                 safeJson(anchorCategoryId),
                 safeJson(anchorId),
@@ -94,7 +106,10 @@ public class EsClient {
         );
 
         try {
-            HttpEntity<String> req = new HttpEntity<>(query, defaultHeaders);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "ApiKey " + apiKey);
+            HttpEntity<String> req = new HttpEntity<>(query, headers);
             ResponseEntity<String> response = restTemplate.exchange(
                     baseUrl + "/" + idx + "/_search",
                     HttpMethod.POST,
@@ -126,27 +141,7 @@ public class EsClient {
             catTerm = String.format("{ \"term\": { \"category_id\": %s } }", catValue);
         }
 
-        String body = String.format(
-                """
-                        {
-                          "size": %d,
-                          "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
-                          "query": {
-                            "bool": {
-                              "filter": [ %s ],
-                              "must": { "match_all": {} },
-                              "should": [
-                                { "term": { "product_name.keyword": { "value": %s, "boost": 8 } } },
-                                { "match_phrase": { "product_name": { "query": %s, "boost": 5 } } },
-                                { "match": { "product_name": { "query": %s, "operator": "AND", "minimum_should_match": "100%%", "boost": 3 } } },
-                                { "multi_match": { "query": %s, "fields": ["product_name^2","brand_name"], "fuzziness": "AUTO", "boost": 1 } },
-                                { "match_phrase_prefix": { "product_name": { "query": %s, "max_expansions": 50, "boost": 1 } } }
-                              ]
-                            }
-                          },
-                          "sort": ["_score"]
-                        }
-                        """,
+        String body = String.format(searchMltMatchAllQuery,
                 k,
                 catTerm,
                 safeJson(likeText),
@@ -157,7 +152,10 @@ public class EsClient {
         );
 
         try {
-            HttpEntity<String> req = new HttpEntity<>(body, defaultHeaders);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "ApiKey " + apiKey);
+            HttpEntity<String> req = new HttpEntity<>(body, headers);
             ResponseEntity<String> response = restTemplate.exchange(
                     baseUrl + "/" + idx + "/_search",
                     HttpMethod.POST,

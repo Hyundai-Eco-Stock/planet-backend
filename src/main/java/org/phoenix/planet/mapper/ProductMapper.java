@@ -23,7 +23,7 @@ public interface ProductMapper {
 
     List<EcoProductListResponse> findTodayAllEcoProducts();
 
-    List<ProductResponse> findByIdIn(List<String> ids);
+    List<ProductResponse> findByIdIn(List<Long> ids);
 
     List<ProductResponse> findByCategoryId(Long category);
 

@@ -46,7 +46,7 @@
     #{ecoDealStatus, jdbcType=VARCHAR},
     #{salePercent, jdbcType=NUMERIC},
     SYSDATE,
-    SYSDATE
+    null
     )
   </insert>
 

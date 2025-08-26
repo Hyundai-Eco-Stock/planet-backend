@@ -18,4 +18,6 @@ public interface EcoStockMapper {
     List<EcoStockUpdatePriceRecord> findAllHistory(@Param("targetTime") String targetTime);
 
     void updateQuantityById(@Param("stockId") Long stockId, @Param(("updateQuantity")) int updateQuantity);
+
+    void callSellStockProcedure(@Param("memberId") Long memberId, @Param("request") SellStockRequest sellStockRequest);
 }

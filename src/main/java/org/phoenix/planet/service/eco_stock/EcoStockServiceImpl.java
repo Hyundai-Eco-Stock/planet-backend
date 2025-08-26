@@ -41,4 +41,29 @@ public class EcoStockServiceImpl implements EcoStockService {
 
         return ecoStockMapper.findAllHistory(targetTime);
     }
+
+    @Override
+    public void sellStock(Long memberId, SellStockRequest sellStockRequest) {
+
+        ecoStockMapper.callSellStockProcedure(memberId, sellStockRequest);
+        // 프로시저 실행 후, DTO에 채워진 OUT 파라미터 값을 확인
+        Integer successCode = sellStockRequest.getPSuccess();
+
+        validateSuccessCode(successCode);
+
+        log.info("판매 성공: {}", sellStockRequest.getPMessage());
+    }
+
+    private void validateSuccessCode(Integer successCode) {
+
+        if (successCode == null || successCode != 1) {
+
+            EcoStockError error = Optional.ofNullable(successCode)
+                    .filter(code -> code < 0)
+                    .map(SellStockErrorCode::getEcoStockError)
+                    .orElse(EcoStockError.INTERNAL_SERVER_ERROR);
+
+            throw new EcoStockException(error);
+        }
+    }
 }

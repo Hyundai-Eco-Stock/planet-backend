@@ -65,4 +65,15 @@
         GROUP BY es.eco_stock_id, es.quantity, es.init_price
         ORDER BY es.eco_stock_id ASC
     </select>
+
+    <update id="callSellStockProcedure" statementType="CALLABLE">
+        {call SELL_STOCK_TRANSACTION(
+        #{memberId, mode=IN, jdbcType=NUMERIC},
+        #{request.ecoStockId, mode=IN, jdbcType=NUMERIC},
+        #{request.sellCount, mode=IN, jdbcType=NUMERIC},
+        #{request.sellPrice, mode=IN, jdbcType=NUMERIC},
+        #{request.pSuccess, mode=OUT, jdbcType=NUMERIC, javaType=Integer},
+        #{request.pMessage, mode=OUT, jdbcType=VARCHAR}
+        )}
+    </update>
 </mapper>

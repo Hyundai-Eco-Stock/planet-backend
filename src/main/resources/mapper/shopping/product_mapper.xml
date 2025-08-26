@@ -108,13 +108,11 @@
     resultType="org.phoenix.planet.dto.product.response.EcoProductListResponse">
     SELECT
     p.product_id AS productId,
-    p.category_id AS categoryId,
-    c.name AS categoryName,
-    p.brand_id AS brandId,
     p.name AS name,
     p.price AS price,
     p.quantity AS quantity,
-    p.sale_percent AS salePercent
+    p.sale_percent AS salePercent,
+    p.image_url AS imageUrl
     FROM product p
     LEFT JOIN product_category c
     ON c.category_id = p.category_id

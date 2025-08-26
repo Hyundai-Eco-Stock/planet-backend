@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.RaffleHistoryMapper">
+
+    <resultMap id="RaffleHistoryWithDetailMap" type="org.phoenix.planet.dto.raffle.raw.RaffleHistoryWithDetail">
+        <id property="raffleId" column="raffleId"/>
+        <result property="raffleName" column="raffleName"/>
+        <result property="productId" column="productId"/>
+
+        <!-- raffleHistories 컬렉션 -->
+        <collection property="raffleHistories"
+                    javaType="java.util.ArrayList"
+                    ofType="org.phoenix.planet.dto.raffle.raw.RaffleHistory"
+                    notNullColumn="raffleHistoryId">
+            <id property="raffleHistoryId" column="raffleHistoryId"/>
+            <result property="memberId" column="memberId"/>
+        </collection>
+    </resultMap>
+
+    <select id="findEndedYesterday" resultMap="RaffleHistoryWithDetailMap">
+        SELECT
+            r.RAFFLE_ID          AS raffleId,
+            p.PRODUCT_ID         AS productId,
+            p.NAME               AS raffleName,
+            rh.RAFFLE_HISTORY_ID AS raffleHistoryId,
+            rh.MEMBER_ID         AS memberId
+        FROM RAFFLE r
+        JOIN RAFFLE_HISTORY rh ON r.RAFFLE_ID = rh.RAFFLE_ID
+        JOIN PRODUCT p ON p.PRODUCT_ID = r.PRODUCT_ID
+        WHERE TRUNC(r.END_DATE) = #{yesterday}
+            and r.UPDATED_AT is null
+    </select>
+</mapper>
+

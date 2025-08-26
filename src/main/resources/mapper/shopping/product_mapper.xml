@@ -143,4 +143,13 @@
         </foreach>
     </select>
 
+    <!-- 재고 차감 -->
+    <update id="deductStock">
+        UPDATE product
+        SET quantity = quantity - #{quantity},
+        updated_at = CURRENT_TIMESTAMP
+        WHERE product_id = #{productId}
+        AND quantity >= #{quantity}
+    </update>
+
 </mapper>

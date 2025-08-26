@@ -32,4 +32,7 @@ public interface MemberMapper {
         @Param("birth") String birth,
         @Param("address") String address,
         @Param("detailAddress") String detailAddress);
+
+    int deductPointsByMemberId(@Param("memberId") Long memberId, @Param("points") int points);
+
 }

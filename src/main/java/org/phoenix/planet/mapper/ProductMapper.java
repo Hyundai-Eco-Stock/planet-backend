@@ -2,6 +2,7 @@ package org.phoenix.planet.mapper;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
 
@@ -21,5 +22,9 @@ public interface ProductMapper {
     List<EcoProductListResponse> findTodayAllEcoProducts();
 
     List<Product> findByIds(List<Long> productIds);
+
+    int deductStock(@Param("productId") Long productId, @Param("quantity") int quantity);
+
+    Integer getStock(@Param("productId") Long productId);
 
 }

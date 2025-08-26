@@ -93,5 +93,14 @@
             #{result, mode=OUT, jdbcType=NUMERIC}
         )}
     </update>
+
+    <update id="bulkUpdateRaffleUpdatedAt">
+        UPDATE RAFFLE
+        SET UPDATED_AT = sysdate
+        WHERE RAFFLE_ID IN
+        <foreach collection="raffleIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
 </mapper>
 

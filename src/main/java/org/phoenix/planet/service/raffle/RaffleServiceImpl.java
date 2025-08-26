@@ -28,6 +28,9 @@ import java.util.Map;
 public class RaffleServiceImpl implements RaffleService {
 
     private final RaffleMapper raffleMapper;
+    private final RaffleHistoryService raffleHistoryService;
+    private final MemberDeviceTokenService memberDeviceTokenService;
+    private final FcmService fcmService;
     private static final SecureRandom secureRandom = new SecureRandom();
 
 
@@ -99,6 +102,50 @@ public class RaffleServiceImpl implements RaffleService {
             default: // 예상치 못한 결과값
                 log.error("예상치 못한 프로시저 결과값: {}", response.getResult());
                 throw new RaffleException(RaffleError.RAFFLE_SYSTEM_ERROR);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void raffleWinningProcess(LocalDate yesterday) {
+
+        //래플 당철 처리 할 데이터 조회 및 지원자 조회
+        List<RaffleHistoryWithDetail> raffleHistories = raffleHistoryService.findEndedYesterday(yesterday);
+
+        log.info("지원자들 {}", raffleHistories);
+
+        // 랜덤 당첨자 추출
+        List<WinnerInfo> winnerInfos = drawRaffleWinners(raffleHistories);
+
+        log.info("당첨자들 {}", winnerInfos);
+
+        if (winnerInfos == null || winnerInfos.isEmpty()) {
+            return; // bulkUpdate 호출 안 함
+        }
+
+        // 당첨 처리 벌크 업데이트
+        raffleHistoryService.bulkUpdateWinners(winnerInfos);
+
+        List<Long> raffleIds=  raffleHistories.stream()
+                .map(RaffleHistoryWithDetail::getRaffleId)
+                .toList();
+
+        raffleMapper.bulkUpdateRaffleUpdatedAt(raffleIds);
+        // 당첨된 사람 FCM 토큰 조회
+        Map<Long, List<String>> tokenMap =
+                memberDeviceTokenService.findFcmTokensByMemberIds(winnerInfos);
+
+        for (WinnerInfo winner : winnerInfos) {
+
+            List<String> tokens = tokenMap.get(winner.getMemberId());
+
+            if (tokens == null || tokens.isEmpty())
+                continue;
+
+            String body = String.format("축하합니다! %s 래플에 당첨되셨습니다.", winner.getRaffleName());
+
+            //당첨자 알림 전송
+            fcmService.sendRaffleWinNotification(tokens, body);
         }
     }
 

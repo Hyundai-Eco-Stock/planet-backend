@@ -83,5 +83,15 @@
         WHERE R.RAFFLE_ID = #{raffleId}
         ORDER BY PI.SORT_ORDER
     </select>
+
+    <update id="callParticipateRaffleProcedure"
+            parameterType="org.phoenix.planet.dto.raffle.response.ParticipateRaffleResponse"
+            statementType="CALLABLE">
+        {call PARTICIPATE_RAFFLE(
+            #{raffleId, mode=IN, jdbcType=NUMERIC},
+            #{memberId, mode=IN, jdbcType=NUMERIC},
+            #{result, mode=OUT, jdbcType=NUMERIC}
+        )}
+    </update>
 </mapper>
 

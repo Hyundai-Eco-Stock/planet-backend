@@ -1,14 +1,13 @@
 package org.phoenix.planet.dto.member.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import org.phoenix.planet.constant.Sex;
 
 public record SignUpRequest(
-    @Email @NotBlank String email,
-    @NotBlank String name,
+//    @Email @NotBlank String email,
+//    @NotBlank String name,
     @NotBlank
     @Pattern(
         regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\W).{10,}$",

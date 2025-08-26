@@ -32,7 +32,7 @@ public class MemberMemberCarServiceImpl implements MemberCarService {
 
         memberCarMapper.insert(
             memberId,
-            carRegisterRequest.carNumber(),
-            carRegisterRequest.carEcoType());
+            carRegisterRequest.carNumber());
     }
+
 }

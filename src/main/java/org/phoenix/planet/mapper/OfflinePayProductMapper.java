@@ -10,5 +10,6 @@ public interface OfflinePayProductMapper {
 
     void insert(OfflinePayProductSaveRequest offlinePayProductSaveRequest);
 
+    // TODO 삭제 예정
     List<OfflinePayProduct> selectByPayHistoryId(long offlinePayHistoryId);
 }

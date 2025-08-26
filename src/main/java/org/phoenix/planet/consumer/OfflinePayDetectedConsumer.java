@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.phoenix.planet.constant.KafkaTopic;
 import org.phoenix.planet.dto.eco_stock.raw.EcoStock;
-import org.phoenix.planet.dto.offline.raw.KafkaOfflinePayInfo;
+import org.phoenix.planet.event.PayEvent;
 import org.phoenix.planet.service.card.MemberCardService;
 import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.phoenix.planet.service.eco_stock.EcoStockService;
@@ -44,7 +44,7 @@ public class OfflinePayDetectedConsumer {
     )
     public void onMessage(String message) throws JsonProcessingException {
 
-        KafkaOfflinePayInfo event = objectMapper.readValue(
+        PayEvent event = objectMapper.readValue(
             message,
             KafkaTopic.OFFLINE_PAY_DETECTED.getPayloadType());
         log.info("Successfully deserialized event: {}", event);
@@ -55,42 +55,28 @@ public class OfflinePayDetectedConsumer {
             event.cardNumber());
 
         if (memberId != null) { // 등록된 카드이면
-            List<Long> tumblerDiscountProductIdList = offlineProductService.searchTumblerProductIdList();
-            boolean hasTumbler = event.items().stream()
-                .anyMatch(it -> tumblerDiscountProductIdList.contains(it.productId()));
-
-            List<Long> paperBagProductIdList = offlineProductService.searchPaperBagProductIdList();
-            boolean hasPaperBag = event.items().stream()
-                .anyMatch(it -> paperBagProductIdList.contains(it.productId()));
-
-            // 에코스톡 발급 될 것 있나 확인
             Long ecoStockId = null;
             String fcmMessage = null;
-            // 가게 타입에 따른 에코스톡 발급 여부 확인
-            String shopType = offlineShopService.searchTypeById(event.shopId());
-            if ("CAFE".equals(shopType) && hasTumbler) {
+            String targetUrl = "/my-page/my-eco-stock";
+            if ("TUMBLER_DISCOUNT".equals(event.eventName())) {
                 ecoStockId = 1L; // 텀블러 에코스톡 id
                 fcmMessage = "텀블러 사용으로 에코스톡 1주가 발급되었습니다.";
-            } else if ("FOOD_MALL".equals(shopType) && !hasPaperBag) {
+            } else if ("PAPER_BAG_NO_USE".equals(event.eventName())) {
                 ecoStockId = 4L; // 종이백 미사용 에코스톡 id
                 fcmMessage = "종이백 미사용으로 에코스톡 1주가 발급되었습니다.";
             }
-
-            if (ecoStockId != null && fcmMessage != null) {
+            if (ecoStockId != null) {
                 // 에코스톡 발급
                 ecoStockIssueService.issueStock(memberId, ecoStockId, 1);
                 // FCM 토큰 목록 가져오기
-                List<String> memberTokens = memberDeviceTokenService.getTokens(
+                List<String> tokens = memberDeviceTokenService.getTokens(
                     memberId);
                 // 에코스톡 정보 가져와 푸시 알림 보내기
                 EcoStock ecoStock = ecoStockService.searchById(ecoStockId);
-                // 에코스톡 발급 처리
-                offlinePayHistoryService.updateStockIssueStatusTrue(event.offlinePayHistoryId());
+                // TODO: 에코스톡 발급 처리 (어떻게 하지?)
+//                offlinePayHistoryService.updateStockIssueStatusTrue(event.offlinePayHistoryId());
                 // 알람 전송
-                fcmService.sendNotificationToMany(
-                    memberTokens,
-                    "\uD83C\uDF89 에코스톡 지급 완료!",
-                    fcmMessage);
+                fcmService.SendEcoStockIssueNotification(tokens, fcmMessage);
                 log.info("{} 에코스톡 발급 완료", ecoStock.name());
             }
 

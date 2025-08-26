@@ -8,8 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.phoenix.planet.constant.KafkaTopic;
 import org.phoenix.planet.dto.car.response.MemberCarResponse;
-import org.phoenix.planet.dto.car_access.raw.EcoCarEnterEvent;
 import org.phoenix.planet.dto.eco_stock.raw.EcoStock;
+import org.phoenix.planet.event.EcoCarEnterEvent;
 import org.phoenix.planet.service.car.MemberCarService;
 import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.phoenix.planet.service.eco_stock.EcoStockService;
@@ -53,16 +53,15 @@ public class EcoCarEnterDetectedConsumer {
         MemberCarResponse car = memberCarService.searchByCarNumber(event.carNumber());
         // 에코스톡 정보
         long ecoCarStockId = 3L;
+        String targetUrl = "/my-page/my-eco-stock";
         EcoStock ecoStock = ecoStockService.searchById(ecoCarStockId);
         // 에코스톡 발급
         ecoStockIssueService.issueStock(car.memberId(), ecoStock.id(), 1);
 
         // 알림
         List<String> tokens = memberDeviceTokenService.getTokens(car.memberId());
-        fcmService.sendNotificationToMany(
-            tokens,
-            "\uD83C\uDF89 에코스톡 지급 완료!",
-            "친환경 차량 입차가 감지되어 에코스톡 1주가 발급되었습니다.");
+
+        fcmService.SendEcoStockIssueNotification(tokens, "친환경 차량 입차가 감지되어 에코스톡 1주가 발급되었습니다.");
     }
 
     @DltHandler

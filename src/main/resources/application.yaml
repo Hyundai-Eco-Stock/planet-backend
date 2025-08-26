@@ -10,6 +10,7 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 12MB
+
   kafka:
     bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
 
@@ -32,6 +33,18 @@ spring:
     listener:
       ack-mode: RECORD
       concurrency: 1
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GOOGLE_MAIL_EMAIL}
+    password: ${GOOGLE_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 mybatis:
   mapper-locations: classpath:/mapper/**/*.xml
@@ -64,3 +77,11 @@ toss:
   payments:
     api-url: https://api.tosspayments.com
     secret-key: ${TOSS_SECRET_KEY}
+
+es:
+  endpoint: ${ES_ENDPOINT}
+  index: "planet_product_1"
+  apiKey: ${ES_API_KEY}
+  inferenceId: "my-elser"
+  defaultSize: 20
+

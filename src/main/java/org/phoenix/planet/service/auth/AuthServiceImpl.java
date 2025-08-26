@@ -8,6 +8,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -20,8 +21,16 @@ import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.request.LoginRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
+import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
+import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
 import org.phoenix.planet.error.auth.TokenException;
+import org.phoenix.planet.mapper.MemberMapper;
+import org.phoenix.planet.repository.PasswordResetTokenRepository;
+import org.phoenix.planet.service.mail.MailService;
+import org.phoenix.planet.service.member.MemberService;
 import org.phoenix.planet.util.cookie.CookieUtil;
+import org.phoenix.planet.util.token.TokenUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,6 +38,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Slf4j
@@ -36,6 +46,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
+    private final MemberService memberService;
     @Value("${jwt.key}")
     private String key;
 
@@ -45,6 +56,9 @@ public class AuthServiceImpl implements AuthService {
     @Value("${jwt.refresh-token-expire-millis}")
     private long REFRESH_TOKEN_EXPIRE_TIME;
 
+    @Value("${frontend.origin}")
+    private String frontendBaseUrl;
+
     private SecretKey secretKey;
 
     private final String KEY_ROLE = "role";
@@ -52,7 +66,12 @@ public class AuthServiceImpl implements AuthService {
 
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManager authenticationManager;
+    private final SecureRandom secureRandom;
 
+    private final MemberMapper memberMapper;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+
+    private final MailService mailService;
 
     @PostConstruct
     private void setSecretKey() {
@@ -187,6 +206,50 @@ public class AuthServiceImpl implements AuthService {
             loginRequest.email(),
             loginRequest.password());
         return authenticationManager.authenticate(authentication);
+    }
+
+    @Override
+    @Transactional
+    public void sendPasswordChangeMail(SendPasswordChangeRequest request) {
+
+        // 1) 해당 이메일이 존재하는지 확인 (없어도 에러 X, 200 OK)
+        Member member = memberMapper.findByEmail(request.email())
+            .orElse(null);
+        if (member == null) {
+            // 존재 여부 노출 방지: 동일한 응답 타이밍을 맞추고 바로 종료
+            log.info("[PasswordReset] Non-existing email requested: {}", request.email());
+            return;
+        }
+
+        // 2) SecureRandom 기반 32바이트 랜덤 토큰 생성
+        String token = TokenUtil.generateRandomToken();
+
+        // 3) 비밀번호 초기화 페이지 URL 생성
+        String resetUrl = frontendBaseUrl + "/change/password?token=" + token;
+
+        // 4) redis에 토큰 저장
+        passwordResetTokenRepository.saveToken(token, member.getId());
+
+        // 5) SMTP 전송 (간단한 텍스트 메일)
+        mailService.sendPasswordChange(request.email(), member.getName(), resetUrl);
+    }
+
+    @Override
+    public void validatePasswordChangeToken(PasswordChangeTokenRequest request) {
+
+        boolean isExist = passwordResetTokenRepository.exist(request.token());
+        if (!isExist) {
+            throw new IllegalStateException("Password reset token이 존재하지 않습니다.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(PasswordChangeRequest request) {
+
+        long memberId = passwordResetTokenRepository.findMemberIdByToken(request.token());
+        memberService.updatePassword(memberId, request.password());
+        passwordResetTokenRepository.deleteToken(request.token());
     }
 
     /**

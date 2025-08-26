@@ -33,5 +33,14 @@
         WHERE TRUNC(r.END_DATE) = #{yesterday}
             and r.UPDATED_AT is null
     </select>
+
+    <update id="bulkUpdateWinners" parameterType="list">
+        UPDATE RAFFLE_HISTORY
+        SET WIN_STATUS = 'Y'
+        WHERE RAFFLE_HISTORY_ID IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
 </mapper>
 

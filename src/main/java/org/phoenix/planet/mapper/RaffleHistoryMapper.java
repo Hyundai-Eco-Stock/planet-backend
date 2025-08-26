@@ -9,4 +9,6 @@ import java.util.List;
 @Mapper
 public interface RaffleHistoryMapper {
     List<RaffleHistoryWithDetail> findEndedYesterday(LocalDate yesterday);
+
+    void bulkUpdateWinners(List<Long> raffleHistoryIdList);
 }

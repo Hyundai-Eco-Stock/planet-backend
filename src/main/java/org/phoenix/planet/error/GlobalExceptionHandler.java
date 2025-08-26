@@ -1,9 +1,8 @@
 package org.phoenix.planet.error;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.error.auth.TokenException;
+import org.phoenix.planet.error.ecoStock.EcoStockException;
 import org.phoenix.planet.error.order.OrderException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +12,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(TokenException.class)
@@ -110,6 +114,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(body);
+    }
+
+    @ExceptionHandler(EcoStockException.class)
+    public ResponseEntity<Map<String, Object>> handleOrderException(EcoStockException e) {
+        log.info("EcoStockException occurred", e); // <-- 원인과 stack trace 전부 로깅됨
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", e.getError().name()); // enum 이름 쓰는 게 더 직관적일 수도 있음
+        body.put("message", e.getError().getValue());
+
+        return ResponseEntity
+                .status(e.getError().getHttpStatus())
+                .body(body);
     }
 
 }

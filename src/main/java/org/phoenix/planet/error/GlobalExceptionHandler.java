@@ -116,6 +116,7 @@ public class GlobalExceptionHandler {
                 .status(e.getError().getHttpStatus())
                 .header("X-Error-Code", e.getError().name())
                 .body(body);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception e) {

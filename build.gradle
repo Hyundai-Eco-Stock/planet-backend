@@ -90,9 +90,6 @@ dependencies {
 
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // elastic search
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 tasks.named('test') {

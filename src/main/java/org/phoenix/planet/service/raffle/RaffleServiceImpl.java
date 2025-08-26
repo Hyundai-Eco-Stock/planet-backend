@@ -2,6 +2,7 @@ package org.phoenix.planet.service.raffle;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.dto.raffle.RaffleDetailResponse;
 import org.phoenix.planet.dto.raffle.RaffleResponse;
 import org.phoenix.planet.mapper.RaffleMapper;
 import org.springframework.stereotype.Service;
@@ -18,5 +19,10 @@ public class RaffleServiceImpl implements RaffleService {
     @Override
     public List<RaffleResponse> findAll() {
         return raffleMapper.findAll();
+    }
+
+    @Override
+    public List<RaffleDetailResponse> findDetailById(Long raffleId) {
+        return raffleMapper.findDetailById(raffleId);
     }
 }

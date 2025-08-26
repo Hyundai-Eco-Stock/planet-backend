@@ -1,5 +1,12 @@
 package org.phoenix.planet.service.order;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.OrderError;
@@ -24,9 +31,6 @@ import org.phoenix.planet.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.*;
-
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -43,7 +47,8 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public CreateOrderResponse createOrder(CreateOrderRequest request, Long memberId) {
         // 상품 검증
-        OrderValidationResult validationResult = orderValidationService.validateAndCalculate(request.products(), null);
+        OrderValidationResult validationResult = orderValidationService.validateAndCalculate(
+                request.products(), null);
         String orderNumber = orderNumberService.generateOrderNumber();
 
         // 사용자 보유 포인트 조회
@@ -111,18 +116,20 @@ public class OrderServiceImpl implements OrderService {
         List<Product> products = productMapper.findByIds(productIds);
         Map<Long, Product> productMap = new HashMap<>();
         for (Product product : products) {
-            productMap.put(product.getId(), product);
+            productMap.put(product.getProductId(), product);
         }
 
         // 픽업 매장 정보 일괄 조회 (PICKUP 타입인 경우에만)
         Map<Long, List<PickupStoreInfo>> storeMap = new HashMap<>();
         if (orderDraft.getOrderType() == OrderType.PICKUP) {
-            List<PickupStoreProductInfo> storeInfos = departmentStoreProductMapper.findPickupStoresByProductIds(productIds);
+            List<PickupStoreProductInfo> storeInfos = departmentStoreProductMapper.findPickupStoresByProductIds(
+                    productIds);
 
             // 상품별 매장 리스트로 그룹핑
             for (PickupStoreProductInfo storeInfo : storeInfos) {
                 Long productId = storeInfo.productId();
-                PickupStoreInfo pickupStore = new PickupStoreInfo(storeInfo.storeId(), storeInfo.storeName());
+                PickupStoreInfo pickupStore = new PickupStoreInfo(storeInfo.storeId(),
+                        storeInfo.storeName());
 
                 storeMap.computeIfAbsent(productId, key -> new ArrayList<>()).add(pickupStore);
             }
@@ -131,7 +138,8 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDraftProductResponse> productResponses = new ArrayList<>();
         for (OrderProductRequest orderProduct : orderDraft.products()) {
             Product product = productMap.get(orderProduct.productId());
-            List<PickupStoreInfo> availableStores = storeMap.getOrDefault(orderProduct.productId(), new ArrayList<>());
+            List<PickupStoreInfo> availableStores = storeMap.getOrDefault(orderProduct.productId(),
+                    new ArrayList<>());
 
             OrderDraftProductResponse productResponse = convertToOrderDraftProductResponse(
                     orderProduct,
@@ -237,8 +245,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderDraft createOrderDraft(String orderNumber, Long memberId,
-                                        List<OrderProductRequest> products, Long productAmount, Long departmentStoreId,
-                                        Long usedPoint, Long donationPrice) {
+            List<OrderProductRequest> products, Long productAmount, Long departmentStoreId,
+            Long usedPoint, Long donationPrice) {
 
         LocalDateTime now = LocalDateTime.now();
 

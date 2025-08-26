@@ -59,3 +59,8 @@ cloudfront:
   distribution-domain: ${CLOUDFRONT_DISTRIBUTION_DOMAIN}
   key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID}
   private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH}
+
+toss:
+  payments:
+    api-url: https://api.tosspayments.com
+    secret-key: ${TOSS_SECRET_KEY}

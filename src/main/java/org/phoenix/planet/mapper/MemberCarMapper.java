@@ -18,4 +18,6 @@ public interface MemberCarMapper {
         @Param("carNumber") String carNumber);
 
 
+    void deleteByMemberId(
+        @Param("memberId") long memberId);
 }

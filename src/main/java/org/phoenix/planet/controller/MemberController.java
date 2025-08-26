@@ -13,6 +13,7 @@ import org.phoenix.planet.service.car.MemberCarService;
 import org.phoenix.planet.service.member.MemberService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -76,6 +77,13 @@ public class MemberController {
     ) {
 
         memberCarService.registerCar(loginMemberId, carRegisterRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/me/cars")
+    public ResponseEntity<Void> unregisterMyCar(@LoginMemberId long loginMemberId) {
+
+        memberCarService.unregisterCar(loginMemberId);
         return ResponseEntity.ok().build();
     }
 }

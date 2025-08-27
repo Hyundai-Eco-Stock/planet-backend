@@ -40,12 +40,12 @@ public class EsClient {
 
     private static final String searchSimilarIdsQuery = """
             {
-              "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
+              "_source": ["productId","productName","brandName","categoryName","categoryId","imageUrl"],
               "size": %d,
               "query": {
                 "bool": {
-                  "filter": [ { "term": { "category_id": %s } } ],
-                  "must_not": [ { "term": { "product_id": %s } } ]
+                  "filter": [ { "term": { "categoryId": %s } } ],
+                  "must_not": [ { "term": { "productId": %s } } ]
                 }
               },
               "rescore": [
@@ -54,7 +54,7 @@ public class EsClient {
                   "query": {
                     "rescore_query": {
                       "more_like_this": {
-                        "fields": ["product_name"],
+                        "fields": ["productName"],
                         "like": [ { "_index": %s, "_id": %s } ],
                         "min_term_freq": 1,
                         "min_doc_freq": 1,
@@ -72,17 +72,17 @@ public class EsClient {
     private static final String searchMltMatchAllQuery = """
             {
               "size": %d,
-              "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
+              "_source": ["productId","productName","brandName","categoryName","categoryId","imageUrl"],
               "query": {
                 "bool": {
                   "filter": [ %s ],
                   "must": { "match_all": {} },
                   "should": [
-                    { "term": { "product_name.keyword": { "value": %s, "boost": 8 } } },
-                    { "match_phrase": { "product_name": { "query": %s, "boost": 5 } } },
-                    { "match": { "product_name": { "query": %s, "operator": "AND", "minimum_should_match": "100%%", "boost": 3 } } },
-                    { "multi_match": { "query": %s, "fields": ["product_name^2","brand_name"], "fuzziness": "AUTO", "boost": 1 } },
-                    { "match_phrase_prefix": { "product_name": { "query": %s, "max_expansions": 50, "boost": 1 } } }
+                    { "term": { "productName.keyword": { "value": %s, "boost": 8 } } },
+                    { "match_phrase": { "productName": { "query": %s, "boost": 5 } } },
+                    { "match": { "productName": { "query": %s, "operator": "AND", "minimum_should_match": "100%%", "boost": 3 } } },
+                    { "multi_match": { "query": %s, "fields": ["productName^2","brandName"], "fuzziness": "AUTO", "boost": 1 } },
+                    { "match_phrase_prefix": { "productName": { "query": %s, "max_expansions": 50, "boost": 1 } } }
                   ]
                 }
               },
@@ -95,7 +95,8 @@ public class EsClient {
             String anchorId, Integer size) {
         int k = (size == null || size <= 0) ? defaultSize : size;
 
-        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
+        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_csv_3_pn_001"
+                : this.index;
 
         String query = String.format(searchSimilarIdsQuery,
                 k,
@@ -131,14 +132,13 @@ public class EsClient {
     /* 검색 */
     public List<String> searchMltMatchAll(String likeText, String categoryId, Integer size) {
         int k = (size == null || size <= 0) ? 10 : size;
-        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
+        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_csv_3_pn_001"
+                : this.index;
 
         // 카테고리 필터 (카테고리 필터가 있는 경우 추가할 쿼리)
         String catTerm = "";
         if (categoryId != null && !categoryId.isBlank()) {
-            boolean catIsNumeric = categoryId.matches("-?\\d+");
-            String catValue = catIsNumeric ? categoryId : safeJson(categoryId);
-            catTerm = String.format("{ \"term\": { \"category_id\": %s } }", catValue);
+            catTerm = String.format("{ \"term\": { \"categoryId\": %s } }", safeJson(categoryId));
         }
 
         String body = String.format(searchMltMatchAllQuery,
@@ -192,8 +192,10 @@ public class EsClient {
         List<String> ids = new ArrayList<>();
         for (JsonNode h : hits) {
             JsonNode source = h.path("_source");
-            String id = Optional.ofNullable(source.path("product_id").asText(null))
-                    .orElse(Optional.ofNullable(source.path("id").asText(null)).orElse(null));
+            String id = Optional.ofNullable(source.path("productId").asText(null))
+                    .orElse(Optional.ofNullable(source.path("product_id").asText(null))
+                            .orElse(Optional.ofNullable(source.path("id").asText(null))
+                                    .orElse(null)));
             if (id != null) {
                 ids.add(id);
             }

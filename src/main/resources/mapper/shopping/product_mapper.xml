@@ -20,14 +20,14 @@
       javaType="java.time.LocalDateTime"/>
   </resultMap>
 
-    <!-- 재고 차감 -->
-    <update id="deductStock">
-        UPDATE product
-        SET quantity = quantity - #{quantity},
-        updated_at = CURRENT_TIMESTAMP
-        WHERE product_id = #{productId}
-        AND quantity >= #{quantity}
-    </update>
+  <!-- 재고 차감 -->
+  <update id="deductStock">
+    UPDATE product
+    SET quantity = quantity - #{quantity},
+    updated_at = CURRENT_TIMESTAMP
+    WHERE product_id = #{productId}
+    AND quantity >= #{quantity}
+  </update>
 
   <!-- Insert -->
   <insert id="insert" parameterType="org.phoenix.planet.dto.product.raw.Product">
@@ -212,7 +212,7 @@
     PI.IMAGE_URL as PRODUCT_IMAGE_URL,
     B.NAME as BRAND_NAME
     from PRODUCT P
-    join PRODUCT_IMAGE PI on P.PRODUCT_ID = PI.PRODUCT_ID
+    left join PRODUCT_IMAGE PI on P.PRODUCT_ID = PI.PRODUCT_ID
     join BRAND B on P.BRAND_ID = B.BRAND_ID
     where P.PRODUCT_ID = #{productId}
     order by PRODUCT_IMAGE_ID

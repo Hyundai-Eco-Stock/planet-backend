@@ -1,27 +1,20 @@
 package org.phoenix.planet.dto.product.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-public class EcoProductListResponse {
+public class EcoProductDetailResponse {
 
     private long productId;
-    
-    private String name;
-
+    private String productName;
     private int price;
-
     private int quantity;
-
     private int salePercent;
-
     private String imageUrl;
+    private long departmentStoreId;
+    private String departmentStoreName;
+    private double lat;
+    private double lng;
 }

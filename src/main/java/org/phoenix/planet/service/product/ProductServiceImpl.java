@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.product.raw.ProductCategory;
 import org.phoenix.planet.dto.product.request.RecommendRequest;
+import org.phoenix.planet.dto.product.response.EcoProductDetailResponse;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
 import org.phoenix.planet.dto.product.response.ProductDetailResponse;
 import org.phoenix.planet.dto.product.response.ProductResponse;
@@ -112,5 +113,10 @@ public class ProductServiceImpl implements ProductService {
         }));
 
         return fromDb;
+    }
+
+    /* 에코딜 상품 상세 */
+    public List<EcoProductDetailResponse> getEcoDealDetail(Long productId) {
+        return productMapper.getEcoDealDetail(productId);
     }
 }

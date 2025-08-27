@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.dto.product.raw.ProductCategory;
+import org.phoenix.planet.dto.product.response.EcoProductDetailResponse;
 import org.phoenix.planet.dto.product.response.EcoProductListResponse;
 import org.phoenix.planet.dto.product.response.ProductDetailResponse;
 import org.phoenix.planet.dto.product.response.ProductResponse;
@@ -37,4 +38,6 @@ public interface ProductMapper {
     Integer getStock(@Param("productId") Long productId);
 
     List<ProductDetailResponse> getProductDetail(Long productId);
+
+    List<EcoProductDetailResponse> getEcoDealDetail(Long productId);
 }

@@ -2,8 +2,11 @@ package org.phoenix.planet.service.member;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.phoenix.planet.dto.member.raw.Member;
+import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
+import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.SignUpResponse;
 import org.phoenix.planet.mapper.MemberMapper;
 import org.phoenix.planet.util.file.CloudFrontFileUtil;
@@ -23,6 +26,47 @@ public class MemberServiceImpl implements MemberService {
     private final CloudFrontFileUtil cloudFrontFileUtil;
     private final PasswordEncoder passwordEncoder;
     private final S3FileUtil s3FileUtil;
+
+    @Override
+    public MemberProfileResponse searchProfile(long memberId) {
+
+        Member member = memberMapper.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        return MemberProfileResponse.builder()
+            .email(member.getEmail())
+            .name(member.getName())
+            .sex(member.getSex())
+            .birth(member.getBirth())
+            .profileUrl(member.getProfileUrl() != null
+                ? cloudFrontFileUtil.generateSignedUrl(member.getProfileUrl(), 60) : null)
+            .address(member.getAddress())
+            .detailAddress(member.getDetailAddress())
+            .build();
+    }
+
+    @Override
+    @Transactional
+    public void updateMemberInfo(
+        long loginMemberId,
+        ProfileUpdateRequest request,
+        MultipartFile profileImageFile) {
+
+        memberMapper.updateProfile(
+            loginMemberId,
+//            request.email(),
+//            request.name(),
+            request.sex(),
+            request.birth(),
+            request.address(),
+            request.detailAddress());
+
+        if (profileImageFile != null && !profileImageFile.isEmpty()) {
+            String profileFilePath = s3FileUtil.uploadMemberProfile(profileImageFile,
+                loginMemberId);
+            memberMapper.updateProfileUrl(loginMemberId, profileFilePath);
+        }
+    }
 
     @Override
     @Transactional
@@ -50,7 +94,7 @@ public class MemberServiceImpl implements MemberService {
             request.address(),
             request.detailAddress()
         );
-        
+
         return SignUpResponse.builder()
             .profileUrl(
                 (savedFilePath != null) ?

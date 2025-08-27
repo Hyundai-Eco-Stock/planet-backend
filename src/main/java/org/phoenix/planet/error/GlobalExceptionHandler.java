@@ -2,7 +2,9 @@ package org.phoenix.planet.error;
 
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.error.auth.TokenException;
+import org.phoenix.planet.error.ecoStock.EcoStockException;
 import org.phoenix.planet.error.order.OrderException;
+import org.phoenix.planet.error.payment.PaymentException;
 import org.phoenix.planet.error.raffle.RaffleException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -106,6 +108,23 @@ public class GlobalExceptionHandler {
             .body(body);
     }
 
+
+    /**
+     * 결제 관련 예외 처리
+     */
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<Map<String, Object>> handlePaymentException(PaymentException e) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", e.getError().name());
+        body.put("message", e.getError().getValue());
+
+        return ResponseEntity
+                .status(e.getError().getHttpStatus())
+                .header("X-Error-Code", e.getError().name())
+                .body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception e) {
 
@@ -119,6 +138,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(body);
+
+    }
+
+    @ExceptionHandler(EcoStockException.class)
+    public ResponseEntity<Map<String, Object>> handleOrderException(EcoStockException e) {
+        log.info("EcoStockException occurred", e); // <-- 원인과 stack trace 전부 로깅됨
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", e.getError().name()); // enum 이름 쓰는 게 더 직관적일 수도 있음
+        body.put("message", e.getError().getValue());
+
+        return ResponseEntity
+                .status(e.getError().getHttpStatus())
+                .body(body);
     }
 
     @ExceptionHandler(RaffleException.class)

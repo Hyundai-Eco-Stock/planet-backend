@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.phoenix.planet.constant.PaymentMethod;
 import org.phoenix.planet.constant.PaymentStatus;
+import org.phoenix.planet.dto.payment.response.TossPaymentResponse;
 
 import java.time.LocalDateTime;
 
@@ -16,17 +17,65 @@ import java.time.LocalDateTime;
 public class PaymentHistory {
 
     private Long paymentId;
-
-    private String paymentKey;  // TossPayments 결제 키 (결제 조회/취소 시 사용)
-
-    private PaymentMethod paymentMethod;
-
-    private PaymentStatus paymentStatus;
-
     private Long orderHistoryId;
 
-    private LocalDateTime createdAt;
+    // === TossPayments 핵심 정보 ===
+    private String paymentKey;
+    private String orderId;
+    private Integer totalAmount;
+    private PaymentMethod method;
+    private PaymentStatus status;
 
+    // === 시간 정보 ===
+    private LocalDateTime requestedAt;
+    private LocalDateTime approvedAt;
+
+    // === 취소 관련 ===
+    private Integer balanceAmount;
+
+    // === 부가 정보 ===
+    private String receiptUrl;
+    private String failureCode;
+    private String failureMessage;
+
+    // === 시스템 정보 ===
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    /**
+     * TossPaymentResponse로부터 PaymentHistory 생성
+     */
+    public static PaymentHistory fromTossResponse(TossPaymentResponse response, Long orderHistoryId) {
+        return PaymentHistory.builder()
+                .orderHistoryId(orderHistoryId)
+                .paymentKey(response.paymentKey())
+                .orderId(response.orderId())
+                .totalAmount(response.totalAmount())
+                .method(PaymentMethod.fromKoreanName(response.method()))
+                .status(PaymentStatus.valueOf(response.status()))
+                .requestedAt(response.requestedAt() != null ? response.requestedAt().toLocalDateTime() : null)
+                .approvedAt(response.approvedAt() != null ? response.approvedAt().toLocalDateTime() : null)
+                .balanceAmount(response.balanceAmount())
+                .receiptUrl(response.receipt() != null ? response.receipt().url() : null)
+                .failureCode(response.failure() != null ? response.failure().code() : null)
+                .failureMessage(response.failure() != null ? response.failure().message() : null)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    /**
+     * 결제 완료 여부
+     */
+    public boolean isPaymentCompleted() {
+        return PaymentStatus.DONE.equals(this.status);
+    }
+
+    /**
+     * 취소 가능 여부
+     */
+    public boolean isCancelable() {
+        return isPaymentCompleted() && (this.balanceAmount != null && this.balanceAmount > 0);
+    }
 
 }

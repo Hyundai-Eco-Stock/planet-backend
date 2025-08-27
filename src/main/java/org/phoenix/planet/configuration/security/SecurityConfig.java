@@ -89,7 +89,10 @@ public class SecurityConfig {
                         new AntPathRequestMatcher("/auth/login"),
                         new AntPathRequestMatcher("/auth/password-change-mail"),
                         new AntPathRequestMatcher("/auth/password-change-token/valid"),
-                        new AntPathRequestMatcher("/auth/change-password")
+                        new AntPathRequestMatcher("/auth/change-password"),
+                        new AntPathRequestMatcher("/eco-stock/history/**"),
+                        new AntPathRequestMatcher("/eco-stock/list/**"),
+                        new AntPathRequestMatcher("/ws/**")
 
                     ).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

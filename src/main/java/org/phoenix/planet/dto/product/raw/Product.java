@@ -16,7 +16,7 @@ import lombok.ToString;
 @Builder
 public class Product {
 
-    private long id;
+    private long productId;
 
     private long categoryId;
 

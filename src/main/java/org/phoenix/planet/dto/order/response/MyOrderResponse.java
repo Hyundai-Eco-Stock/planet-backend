@@ -24,4 +24,7 @@ public class MyOrderResponse {
     private String orderType;
     private Long productId;
     private int discountPrice;
+    private String ecoDealStatus;
+    private String productName;
+    private String productImageUrl;
 }

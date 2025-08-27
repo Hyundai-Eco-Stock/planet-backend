@@ -73,9 +73,15 @@ cloudfront:
   key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID}
   private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH}
 
+toss:
+  payments:
+    api-url: https://api.tosspayments.com
+    secret-key: ${TOSS_SECRET_KEY}
+
 es:
   endpoint: ${ES_ENDPOINT}
   index: "planet_product_1"
   apiKey: ${ES_API_KEY}
   inferenceId: "my-elser"
   defaultSize: 20
+

@@ -20,15 +20,6 @@
       javaType="java.time.LocalDateTime"/>
   </resultMap>
 
-    <!-- 재고 차감 -->
-    <update id="deductStock">
-        UPDATE product
-        SET quantity = quantity - #{quantity},
-        updated_at = CURRENT_TIMESTAMP
-        WHERE product_id = #{productId}
-        AND quantity >= #{quantity}
-    </update>
-
   <!-- Insert -->
   <insert id="insert" parameterType="org.phoenix.planet.dto.product.raw.Product">
     <selectKey keyProperty="id" resultType="long" order="BEFORE">
@@ -113,6 +104,7 @@
     FROM PRODUCT
     ORDER BY product_id DESC
   </select>
+
   <select id="findTodayAllEcoProducts"
     resultType="org.phoenix.planet.dto.product.response.EcoProductListResponse">
     SELECT
@@ -131,7 +123,6 @@
     AND TRUNC(p.created_at) = TRUNC(SYSDATE)
     ORDER BY p.created_at DESC
   </select>
-
 
   <select id="findByIdIn" resultType="org.phoenix.planet.dto.product.response.ProductResponse">
     SELECT
@@ -219,5 +210,22 @@
     where P.PRODUCT_ID = #{productId}
     order by PRODUCT_IMAGE_ID
   </select>
+
+  <!-- 재고 차감 -->
+  <update id="deductStock">
+    UPDATE product
+    SET quantity = quantity - #{quantity},
+    updated_at = CURRENT_TIMESTAMP
+    WHERE product_id = #{productId}
+    AND quantity >= #{quantity}
+  </update>
+
+  <!-- 재고 복구 -->
+  <update id="restoreStock" parameterType="map">
+    UPDATE product
+    SET quantity = quantity + #{quantity},
+    updated_at = SYSDATE
+    WHERE product_id = #{productId}
+  </update>
 
 </mapper>

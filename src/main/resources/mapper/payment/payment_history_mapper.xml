@@ -88,4 +88,11 @@
         WHERE order_history_id = #{orderHistoryId}
     </select>
 
+    <update id="updatePaymentStatus" parameterType="map">
+        UPDATE payment_history
+        SET status = #{paymentStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+        updated_at = SYSDATE
+        WHERE payment_id = #{paymentId}
+    </update>
+
 </mapper>

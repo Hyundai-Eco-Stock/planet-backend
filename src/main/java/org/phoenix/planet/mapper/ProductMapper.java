@@ -37,4 +37,7 @@ public interface ProductMapper {
     Integer getStock(@Param("productId") Long productId);
 
     List<ProductDetailResponse> getProductDetail(Long productId);
+
+    int restoreStock(@Param("productId") Long productId, @Param("quantity") int quantity);
+
 }

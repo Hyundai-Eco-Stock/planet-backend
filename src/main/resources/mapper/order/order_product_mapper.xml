@@ -32,4 +32,28 @@
         )
     </insert>
 
+    <select id="findOrderProductsByOrderHistoryId" parameterType="long" resultType="org.phoenix.planet.dto.order.raw.OrderProduct">
+        SELECT
+        order_product_id,
+        price,
+        quantity,
+        cancel_status,
+        order_type,
+        order_history_id,
+        product_id,
+        created_at,
+        updated_at
+        FROM order_product
+        WHERE order_history_id = #{orderHistoryId}
+        ORDER BY order_product_id
+    </select>
+
+    <!-- 주문 내 모든 상품 취소 상태 업데이트 -->
+    <update id="updateAllOrderProductsCancelStatus" parameterType="map">
+        UPDATE order_product
+        SET cancel_status = #{cancelStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
+        updated_at = SYSDATE
+        WHERE order_history_id = #{orderHistoryId}
+    </update>
+
 </mapper>

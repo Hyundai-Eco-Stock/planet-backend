@@ -120,13 +120,13 @@ pipeline {
             INSTANCE_IDS=$(aws ec2 describe-instances \
               --filters "Name=tag:aws:autoscaling:groupName,Values=planet" "Name=instance-state-name,Values=running" \
               --query "Reservations[].Instances[].InstanceId" --output text)
-            
-            echo "[INFO] Deploying to instances: $INSTANCE_IDS"
-            
+
             if [ -z "$INSTANCE_IDS" ]; then
-              echo "[ERROR] No running instances found in ASG: planet"
-              exit 1
+              echo "[INFO] ✅ No running instances found in ASG: planet (0개 입니다)"
+              exit 0   # 성공으로 종료
             fi
+
+            echo "[INFO] Deploying to instances: $INSTANCE_IDS"
             
             echo "[INFO] Sending deployment command via SSM..."
             aws ssm send-command \

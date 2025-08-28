@@ -10,7 +10,8 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 12MB
-
+  jackson:
+    time-zone: Asia/Seoul
   kafka:
     bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
 
@@ -80,7 +81,7 @@ toss:
 
 es:
   endpoint: ${ES_ENDPOINT}
-  index: "planet_product_1"
+  index: "planet_product_csv_3_pn_001"
   apiKey: ${ES_API_KEY}
   inferenceId: "my-elser"
   defaultSize: 20

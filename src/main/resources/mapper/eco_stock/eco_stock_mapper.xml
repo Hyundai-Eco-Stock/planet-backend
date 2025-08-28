@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.EcoStockMapper">
+
+    <select id="selectById" parameterType="long"
+        resultType="org.phoenix.planet.dto.eco_stock.raw.EcoStock">
+        SELECT
+        eco_stock_id AS id,
+        name,
+        quantity,
+        image_url AS imageUrl
+        FROM eco_stock
+        WHERE eco_stock_id = #{id}
+    </select>
+
+
+    <select id="findAll"
+            resultType="org.phoenix.planet.dto.eco_stock.raw.EcoStock">
+        SELECT
+        es.eco_stock_id AS id,
+        es.name AS name,
+        es.quantity AS quantity,
+        es.image_url AS imageUrl
+        FROM eco_stock es
+        ORDER BY es.eco_stock_id ASC
+    </select>
+
+    <update id="updateQuantityById">
+        UPDATE ECO_STOCK
+        SET QUANTITY = #{updateQuantity},
+        UPDATED_AT = SYSDATE
+        WHERE ECO_STOCK_ID = #{stockId}
+    </update>
+
+
+    <!-- 실제 쿼리 -->
+    <select id="findAllHistory"
+            resultType="org.phoenix.planet.dto.eco_stock.raw.EcoStockUpdatePriceRecord">
+        SELECT
+        es.eco_stock_id AS ecoStockId,
+        COUNT(si.stock_issue_id) AS stockIssueCount,
+        COALESCE((
+        SELECT SUM(th.sell_count)
+        FROM stock_price_history sph
+        JOIN transaction_history th ON sph.stock_price_history_id = th.stock_price_history_id
+        WHERE sph.eco_stock_id = es.eco_stock_id
+        AND sph.stock_time = TO_DATE(#{targetTime}, 'YYYY-MM-DD HH24:MI:SS')
+        AND th.created_at >= TO_DATE(#{targetTime}, 'YYYY-MM-DD HH24:MI:SS')
+        ), 0) AS transactionHistoryCount,
+        (
+        SELECT stock_price
+        FROM stock_price_history
+        WHERE eco_stock_id = es.eco_stock_id
+        AND TO_DATE(#{targetTime}, 'YYYY-MM-DD HH24:MI:SS') >= stock_time
+        ORDER BY stock_time DESC
+        FETCH FIRST 1 ROW ONLY
+        ) AS beforePrice,
+        es.quantity,
+        es.init_price AS initPrice
+        FROM eco_stock es
+        LEFT JOIN stock_issue si ON es.eco_stock_id = si.eco_stock_id
+        GROUP BY es.eco_stock_id, es.quantity, es.init_price
+        ORDER BY es.eco_stock_id ASC
+    </select>
+
+    <update id="callSellStockProcedure" statementType="CALLABLE">
+        {call SELL_STOCK_TRANSACTION(
+        #{memberId, mode=IN, jdbcType=NUMERIC},
+        #{request.ecoStockId, mode=IN, jdbcType=NUMERIC},
+        #{request.sellCount, mode=IN, jdbcType=NUMERIC},
+        #{request.sellPrice, mode=IN, jdbcType=NUMERIC},
+        #{request.pSuccess, mode=OUT, jdbcType=NUMERIC, javaType=Integer},
+        #{request.pMessage, mode=OUT, jdbcType=VARCHAR}
+        )}
+    </update>
+</mapper>

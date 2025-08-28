@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.phoenix.planet.constant.Sex;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
 
@@ -23,8 +24,27 @@ public interface MemberMapper {
         @Param("profileUrl") String profileUrl
     );
 
-    void updatePwdHash(
+    void update(
         @Param("memberId") long memberId,
-        @Param("pwdHash") String pwdHash
-    );
+        @Param("pwdHash") String pwdHash,
+        @Param("sex") Sex sex,
+        @Param("birth") String birth,
+        @Param("address") String address,
+        @Param("detailAddress") String detailAddress);
+
+    int deductPointsByMemberId(@Param("memberId") Long memberId, @Param("points") int points);
+
+    void updatePassword(
+        @Param("memberId") long memberId,
+        @Param("pwdHash") String pwdHash);
+
+    void updateProfile(
+        @Param("memberId") long memberId,
+//        @Param("email") String email,
+//        @Param("name") String name,
+        @Param("sex") Sex sex,
+        @Param("birth") String birth,
+        @Param("address") String address,
+        @Param("detailAddress") String detailAddress);
+
 }

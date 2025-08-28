@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.MemberCarMapper">
+    
+    <resultMap id="MemberCarResultMap" type="org.phoenix.planet.dto.car.response.MemberCarResponse">
+        <id column="id" property="memberCarId"/>
+        <result column="car_number" property="carNumber"/>
+        <result column="created_at" property="createdAt" jdbcType="DATE"/>
+        <result column="updated_at" property="updatedAt" jdbcType="DATE"/>
+    </resultMap>
+    
+    <select id="selectByMemberId"
+        parameterType="long"
+        resultMap="MemberCarResultMap">
+        SELECT
+        member_car_id AS memberCarId,
+        member_id AS memberId,
+        car_number AS carNumber,
+        TO_CHAR(created_at, 'YYYY-MM-DD') AS createdAt,
+        TO_CHAR(updated_at, 'YYYY-MM-DD') AS updatedAt
+        FROM member_car
+        WHERE member_id = #{memberId}
+    </select>
+    
+    <select id="selectByCarNumber"
+        resultType="org.phoenix.planet.dto.car.response.MemberCarResponse">
+        SELECT
+        member_car_id AS memberCarId,
+        member_id AS memberId,
+        car_number AS carNumber,
+        TO_CHAR(created_at, 'YYYY-MM-DD') AS createdAt,
+        TO_CHAR(updated_at, 'YYYY-MM-DD') AS updatedAt
+        FROM member_car
+        WHERE car_number = #{carNumber}
+    </select>
+    
+    <insert id="insert" parameterType="map">
+        <selectKey keyProperty="memberCarId" resultType="long" order="BEFORE">
+            SELECT seq_member_car.NEXTVAL FROM dual
+        </selectKey>
+        
+        INSERT INTO member_car (
+        member_car_id,
+        member_id,
+        car_number,
+        created_at
+        ) VALUES (
+        #{memberCarId},
+        #{memberId},
+        #{carNumber},
+        SYSDATE
+        )
+    </insert>
+
+</mapper>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.phoenix.planet.mapper.PaymentHistoryMapper">
+
+    <!-- 결제 내역 삽입 -->
+    <insert id="insert" parameterType="org.phoenix.planet.dto.payment.raw.PaymentHistory">
+        <selectKey keyProperty="paymentId" resultType="Long" order="BEFORE">
+            SELECT SEQ_PAYMENT_HISTORY.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO payment_history (
+        payment_id,
+        order_history_id,
+        payment_key,
+        order_id,
+        total_amount,
+        method,
+        status,
+        requested_at,
+        approved_at,
+        balance_amount,
+        receipt_url,
+        failure_code,
+        failure_message,
+        created_at,
+        updated_at
+        ) VALUES (
+        #{paymentId, jdbcType=NUMERIC},
+        #{orderHistoryId, jdbcType=NUMERIC},
+        #{paymentKey, jdbcType=VARCHAR},
+        #{orderId, jdbcType=VARCHAR},
+        #{totalAmount, jdbcType=NUMERIC},
+        #{method, typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
+        #{status, typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
+        #{requestedAt, jdbcType=TIMESTAMP},
+        #{approvedAt, jdbcType=TIMESTAMP},
+        #{balanceAmount, jdbcType=NUMERIC},
+        #{receiptUrl, jdbcType=VARCHAR},
+        #{failureCode, jdbcType=VARCHAR},
+        #{failureMessage, jdbcType=VARCHAR},
+        #{createdAt, jdbcType=TIMESTAMP},
+        #{updatedAt, jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <!-- 결제 키로 조회 -->
+    <select id="findByPaymentKey" parameterType="String" resultType="org.phoenix.planet.dto.payment.raw.PaymentHistory">
+        SELECT
+        payment_id as paymentId,
+        order_history_id as orderHistoryId,
+        payment_key as paymentKey,
+        order_id as orderId,
+        total_amount as totalAmount,
+        method,
+        status,
+        requested_at as requestedAt,
+        approved_at as approvedAt,
+        balance_amount as balanceAmount,
+        receipt_url as receiptUrl,
+        failure_code as failureCode,
+        failure_message as failureMessage,
+        created_at as createdAt,
+        updated_at as updatedAt
+        FROM payment_history
+        WHERE payment_key = #{paymentKey}
+    </select>
+
+    <!-- 주문 ID로 조회 -->
+    <select id="findByOrderHistoryId" parameterType="Long" resultType="org.phoenix.planet.dto.payment.raw.PaymentHistory">
+        SELECT
+        payment_id as paymentId,
+        order_history_id as orderHistoryId,
+        payment_key as paymentKey,
+        order_id as orderId,
+        total_amount as totalAmount,
+        method,
+        status,
+        requested_at as requestedAt,
+        approved_at as approvedAt,
+        balance_amount as balanceAmount,
+        receipt_url as receiptUrl,
+        failure_code as failureCode,
+        failure_message as failureMessage,
+        created_at as createdAt,
+        updated_at as updatedAt
+        FROM payment_history
+        WHERE order_history_id = #{orderHistoryId}
+    </select>
+
+</mapper>

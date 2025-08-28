@@ -14,13 +14,7 @@ import lombok.ToString;
 public class EcoProductListResponse {
 
     private long productId;
-
-    private Long categoryId;
-
-    private String categoryName;
-
-    private Long brandId;
-
+    
     private String name;
 
     private int price;
@@ -28,4 +22,6 @@ public class EcoProductListResponse {
     private int quantity;
 
     private int salePercent;
+
+    private String imageUrl;
 }

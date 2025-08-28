@@ -1,6 +1,7 @@
 package org.phoenix.planet.configuration.kafka;
 
 import org.apache.kafka.common.TopicPartition;
+import org.phoenix.planet.constant.KafkaTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,7 +18,8 @@ public class KafkaErrorHandlerConfig {
         DeadLetterPublishingRecoverer recoverer =
             new DeadLetterPublishingRecoverer(
                 template,
-                (cr, ex) -> new TopicPartition("eco.dead-letter", cr.partition())
+                (cr, ex) -> new TopicPartition(KafkaTopic.DEAD_LETTER.getTopicName(),
+                    cr.partition())
             );
 
         // 3회, 2초 간격 재시도 후 DLT

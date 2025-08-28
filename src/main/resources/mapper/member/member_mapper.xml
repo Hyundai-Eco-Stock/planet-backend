@@ -12,6 +12,7 @@
         <result column="profile_url" property="profileUrl"/>
         <result column="pwd_hash" property="pwdHash"/>
         <result column="provider" property="provider"/>
+        <result column="birth" property="birth"/>
         <result column="address" property="address"/>
         <result column="detail_address" property="detailAddress"/>
         
@@ -21,6 +22,7 @@
         <result column="SEX" property="sex"
             javaType="org.phoenix.planet.constant.Sex"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="point" property="point"/>
         
         <result column="created_at" property="createdAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
@@ -69,9 +71,41 @@
         WHERE member_id = #{memberId}
     </update>
     
-    <update id="updatePwdHash" parameterType="map">
+    <update id="update" parameterType="map">
         UPDATE MEMBER
-        SET pwd_hash = #{pwdHash},
+        SET
+        pwd_hash = #{pwdHash},
+        sex = #{sex,
+                javaType=org.phoenix.planet.constant.Sex,
+                typeHandler=org.apache.ibatis.type.EnumTypeHandler,
+                jdbcType=VARCHAR},
+        birth = TO_DATE(#{birth}, 'YYYY-MM-DD'),
+        address = #{address},
+        detail_address = #{detailAddress},
+        updated_at = SYSDATE
+        WHERE member_id = #{memberId}
+    </update>
+    
+    <update id="updatePassword" parameterType="map">
+        UPDATE MEMBER
+        SET
+        pwd_hash = #{pwdHash},
+        updated_at = SYSDATE
+        WHERE member_id = #{memberId}
+    </update>
+    
+    <update id="updateProfile">
+        UPDATE MEMBER
+        SET
+        <!--        email = #{email},-->
+        <!--        name = #{name},-->
+        sex = #{sex,
+                javaType=org.phoenix.planet.constant.Sex,
+                typeHandler=org.apache.ibatis.type.EnumTypeHandler,
+                jdbcType=VARCHAR},
+        birth = #{birth},
+        address = #{address},
+        detail_address = #{detailAddress},
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
@@ -84,10 +118,12 @@
         profile_url,
         pwd_hash,
         provider,
+        TO_CHAR(birth, 'YYYY-MM-DD') AS birth,
         address,
         detail_address,
         "ROLE",
         "SEX",
+        point,
         created_at,
         updated_at
         FROM MEMBER
@@ -121,5 +157,14 @@
         FROM MEMBER
         WHERE role = 'USER'
     </select>
+
+    <!-- 포인트 차감 -->
+    <update id="deductPointsByMemberId">
+        UPDATE member
+        SET point = point - #{points},
+        updated_at = CURRENT_TIMESTAMP
+        WHERE member_id = #{memberId}
+        AND point >= #{points}
+    </update>
 
 </mapper>

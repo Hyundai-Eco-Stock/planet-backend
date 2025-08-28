@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class OrderHistory {
 
-    private Long orderHistroyId;
+    private Long orderHistoryId;
 
     private String orderNumber;  // 주문번호 (TossPayments orderId로 사용)
 

@@ -16,28 +16,19 @@ import org.phoenix.planet.constant.Sex;
 public class Member {
 
     private long id;
-
     private String email;
-
     private String name;
-
     private String profileUrl;
-
     @Setter
     private String pwdHash;
-
     private String provider;
-
+    private String birth;
     private String address;
-
     private String detailAddress;
-
     private Role role;
-
     private Sex sex;
-
+    private Long point;
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 
     public void updateProfile(String profileUrl) {

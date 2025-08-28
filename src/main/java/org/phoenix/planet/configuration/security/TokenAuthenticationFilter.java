@@ -41,11 +41,23 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 
         String path = request.getRequestURI();
-        path = path.replaceFirst("/api", "");
 
-        return path.equals("/auth/access-token/regenerate")
+        return path.equals("/")
+            || path.equals("/error")
+            || path.equals("/favicon.ico")
+            || path.startsWith("/h2-console")
+            || path.startsWith("/swagger-ui")
+            || path.startsWith("/v3/api-docs")
+            || path.equals("/auth/access-token/regenerate")
             || path.equals("/auth/login")
-            || path.startsWith("/oauth2/authorization");
+            || path.equals("/health")
+            || path.startsWith("/oauth2/authorization")
+            || path.equals("/auth/password-change-mail")
+            || path.equals("/auth/password-change-token/valid")
+            || path.equals("/auth/change-password")
+            || path.startsWith("/eco-stock/list")
+            || path.startsWith("/eco-stock/history")
+            || path.startsWith("/ws");
     }
 
     @Override

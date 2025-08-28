@@ -167,4 +167,12 @@
         AND point >= #{points}
     </update>
 
+    <!-- 포인트 복구 -->
+    <update id="restorePointsByMemberId">
+        UPDATE member
+        SET points = points + #{points},
+        updated_at = SYSDATE
+        WHERE id = #{memberId}
+    </update>
+
 </mapper>

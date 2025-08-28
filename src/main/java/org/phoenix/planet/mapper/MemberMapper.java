@@ -47,4 +47,6 @@ public interface MemberMapper {
         @Param("address") String address,
         @Param("detailAddress") String detailAddress);
 
+    int restorePointsByMemberId(@Param("memberId") Long memberId, @Param("points") int points);
+
 }

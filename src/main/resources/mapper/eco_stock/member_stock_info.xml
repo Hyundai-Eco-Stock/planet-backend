@@ -20,4 +20,39 @@
         AND msi.ECO_STOCK_ID = #{ecoStockId}
         WHERE m.MEMBER_ID = #{memberId}
     </select>
+    
+    <!-- 회원 스톡 정보 신규 생성 -->
+    <insert id="insertMemberStockInfo">
+        <selectKey keyProperty="memberStockInfoId" resultType="Long" order="BEFORE">
+            SELECT SEQ_ORDER_HISTORY.NEXTVAL FROM dual
+        </selectKey>
+        
+        INSERT INTO member_stock_info (
+        member_stock_info_id,
+        member_id,
+        eco_stock_id,
+        current_total_quantity,
+        current_total_amount,
+        created_at,
+        updated_at
+        ) VALUES (
+        #{memberStockInfoId},
+        #{memberId},
+        #{ecoStockId},
+        #{quantity},
+        #{amount},
+        SYSDATE,
+        SYSDATE
+        )
+    </insert>
+    
+    <!-- 회원 스톡 정보 업데이트 -->
+    <update id="updateMemberStockInfo">
+        UPDATE member_stock_info
+        SET current_total_quantity = #{newQuantity},
+        current_total_amount = #{newAmount},
+        updated_at = SYSDATE
+        WHERE member_stock_info_id = #{memberStockInfoId}
+    </update>
+    
 </mapper>

@@ -15,10 +15,10 @@ import org.phoenix.planet.service.fcm.FcmService;
 import org.phoenix.planet.service.fcm.MemberDeviceTokenService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -52,9 +52,9 @@ public class RaffleServiceImpl implements RaffleService {
 
             ParticipateRaffleResponse response =
                     ParticipateRaffleResponse.builder()
-                    .memberId(memberId)
-                    .raffleId(raffleId)
-                    .build();
+                            .memberId(memberId)
+                            .raffleId(raffleId)
+                            .build();
 
             raffleMapper.callParticipateRaffleProcedure(response);
 
@@ -126,7 +126,7 @@ public class RaffleServiceImpl implements RaffleService {
         // 당첨 처리 벌크 업데이트
         raffleHistoryService.bulkUpdateWinners(winnerInfos);
 
-        List<Long> raffleIds=  raffleHistories.stream()
+        List<Long> raffleIds = raffleHistories.stream()
                 .map(RaffleHistoryWithDetail::getRaffleId)
                 .toList();
 
@@ -152,31 +152,25 @@ public class RaffleServiceImpl implements RaffleService {
 
     public List<WinnerInfo> drawRaffleWinners(List<RaffleHistoryWithDetail> raffleHistories) {
 
-        List<WinnerInfo> winners = new ArrayList<>();
-
-        for (RaffleHistoryWithDetail raffle : raffleHistories) {
-
-            List<RaffleHistory> applicants = raffle.getRaffleHistories();
-
-            if (applicants == null || applicants.isEmpty()) {
-
-                log.info("Raffle {} ({}) : 지원자가 없음", raffle.getRaffleId(), raffle.getRaffleName());
-
-                continue;
-            }
-
-            WinnerInfo winnerInfo = pickRandomWinner(applicants, raffle);
-
-            winners.add(winnerInfo);
-
-            log.info("Raffle {} ({}) 당첨자: {}", raffle.getRaffleId(), raffle.getRaffleName(), winnerInfo);
-        }
-
-        return winners;
+        return raffleHistories.stream()
+                .map(r ->
+                        CollectionUtils.isEmpty(r.getRaffleHistories())
+                                ? noWinner(r)                // 지원자 없으면
+                                : pickRandomWinner(r))       // 지원자 있으면
+                .toList();
     }
 
-    private WinnerInfo pickRandomWinner(List<RaffleHistory> applicants,
-                                        RaffleHistoryWithDetail raffle) {
+    private WinnerInfo noWinner(RaffleHistoryWithDetail raffle) {
+        return WinnerInfo.builder()
+                .raffleHistoryId(null)
+                .memberId(null)
+                .raffleName(raffle.getRaffleName())
+                .build();
+    }
+
+    private WinnerInfo pickRandomWinner(RaffleHistoryWithDetail raffle) {
+
+        List<RaffleHistory> applicants = raffle.getRaffleHistories();
 
         RaffleHistory winner =
                 applicants.get(secureRandom.nextInt(applicants.size())); // SecureRandom 권장

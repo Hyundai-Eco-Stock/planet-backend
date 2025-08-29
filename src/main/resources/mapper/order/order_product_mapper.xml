@@ -56,4 +56,45 @@
         WHERE order_history_id = #{orderHistoryId}
     </update>
 
+    <select id="findByOrderProductId">
+        SELECT
+        order_product_id,
+        price,
+        quantity,
+        cancel_status,
+        order_type,
+        discount_price,
+        order_history_id,
+        product_id,
+        created_at,
+        updated_at
+        FROM order_product
+        WHERE order_product_id = #{orderProductId}
+    </select>
+
+
+    <update id="updateCancelStatus">
+        UPDATE order_product
+        SET cancel_status = #{cancelStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
+        updated_at = SYSDATE
+        WHERE order_product_id = #{orderProductId}
+    </update>
+
+    <select id="findActiveOrderProducts" parameterType="long" resultType="org.phoenix.planet.dto.order.raw.OrderProduct">
+        SELECT
+        order_product_id,
+        price,
+        quantity,
+        cancel_status,
+        order_type,
+        order_history_id,
+        product_id,
+        created_at,
+        updated_at
+        FROM order_product
+        WHERE order_history_id = #{orderHistoryId}
+        AND cancel_status = 'N'
+        ORDER BY order_product_id
+    </select>
+
 </mapper>

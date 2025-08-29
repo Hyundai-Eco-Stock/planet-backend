@@ -21,7 +21,7 @@ public class RaffleController {
     private final RaffleService raffleService;
 
     @GetMapping("/list")
-    public ResponseEntity<?> getRaffleList() {
+    public ResponseEntity<List<RaffleResponse>> getRaffleList() {
 
         List<RaffleResponse> raffleList = raffleService.findAll();
 
@@ -31,7 +31,7 @@ public class RaffleController {
     }
 
     @GetMapping("/{raffleId}/detail")
-    public ResponseEntity<?> getRaffleList(@PathVariable Long raffleId) {
+    public ResponseEntity<List<RaffleDetailResponse>> getRaffleList(@PathVariable Long raffleId) {
 
         List<RaffleDetailResponse> raffleList = raffleService.findDetailById(raffleId);
 

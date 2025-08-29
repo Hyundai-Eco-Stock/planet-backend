@@ -85,14 +85,21 @@ dependencies {
     // FCM
     implementation 'com.google.firebase:firebase-admin:9.2.0'
 
+    // QR 코드 생성 (ZXing)
+    implementation 'com.google.zxing:core:3.5.2'
+    implementation 'com.google.zxing:javase:3.5.2'
+
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // elastic search
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    // 분산락
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    // Websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {

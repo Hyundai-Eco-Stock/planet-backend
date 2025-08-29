@@ -2,6 +2,7 @@ package org.phoenix.planet.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.raffle.RaffleDetailResponse;
 import org.phoenix.planet.dto.raffle.RaffleResponse;
 import org.phoenix.planet.service.raffle.RaffleService;
@@ -38,5 +39,13 @@ public class RaffleController {
         log.info("raffleList: {}", raffleList);
 
         return ResponseEntity.ok(raffleList);
+    }
+
+    @GetMapping("/{raffleId}/participate")
+    public ResponseEntity<Void> getRaffleParticipate(@PathVariable Long raffleId, @LoginMemberId Long memberId) {
+
+        raffleService.participateRaffle(raffleId, memberId);
+
+        return ResponseEntity.ok().build();
     }
 }

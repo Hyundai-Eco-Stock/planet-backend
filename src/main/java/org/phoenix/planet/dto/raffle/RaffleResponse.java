@@ -16,5 +16,6 @@ public record RaffleResponse(
         String brandName,
 
         Long ecoStockId,
-        String ecoStockName
+        String ecoStockName,
+        Integer participateCount
 ) {}

@@ -11,6 +11,14 @@ spring:
       max-file-size: 10MB
       max-request-size: 12MB
 
+  jackson:
+    time-zone: Asia/Seoul
+
+  elasticsearch:
+    uris: ${ES_ENDPOINT}
+    username: ${ES_USERNAME}
+    password: ${ES_PASSWORD}
+
   kafka:
     bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
 
@@ -73,9 +81,8 @@ cloudfront:
   key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID}
   private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH}
 
-es:
-  endpoint: ${ES_ENDPOINT}
-  index: "planet_product_1"
-  apiKey: ${ES_API_KEY}
-  inferenceId: "my-elser"
-  defaultSize: 20
+toss:
+  payments:
+    api-url: https://api.tosspayments.com
+    secret-key: ${TOSS_SECRET_KEY}
+

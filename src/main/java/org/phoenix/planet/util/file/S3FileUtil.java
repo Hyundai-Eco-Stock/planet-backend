@@ -1,5 +1,6 @@
 package org.phoenix.planet.util.file;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,4 +131,26 @@ public class S3FileUtil {
             throw new IllegalArgumentException("허용되지 않은 파일 확장자입니다. (jpg, png, pdf만 가능)");
         }
     }
+
+    /**
+     * QR 코드 바이트 배열을 S3에 업로드
+     */
+    public String uploadBytes(String filePath, byte[] imageBytes, String contentType) {
+        try {
+            // ByteArrayInputStream으로 변환하여 업로드
+            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes)) {
+                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                        .bucket(BUCKET_NAME)
+                        .key(filePath)
+                        .build();
+
+                s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, imageBytes.length));
+            }
+
+            return filePath;
+        } catch (Exception e) {
+            throw new RuntimeException("S3 업로드에 실패했습니다: " + e.getMessage(), e);
+        }
+    }
+
 }

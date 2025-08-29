@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.phoenix.planet.mapper.OrderProductMapper">
+
+    <!-- 주문 상품 삽입 -->
+    <insert id="insert" parameterType="org.phoenix.planet.dto.order.raw.OrderProduct" useGeneratedKeys="true" keyProperty="orderProductId">
+        <selectKey keyProperty="orderProductId" resultType="long" order="BEFORE">
+            SELECT SEQ_ORDER_PRODUCT.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO order_product (
+        order_product_id,
+        price,
+        quantity,
+        cancel_status,
+        order_type,
+        order_history_id,
+        product_id,
+        created_at,
+        updated_at
+        ) VALUES (
+        #{orderProductId},
+        #{price},
+        #{quantity},
+        #{cancelStatus},
+        #{orderType},
+        #{orderHistoryId},
+        #{productId},
+        #{createdAt},
+        #{updatedAt}
+        )
+    </insert>
+
+    <select id="findOrderProductsByOrderHistoryId" parameterType="long" resultType="org.phoenix.planet.dto.order.raw.OrderProduct">
+        SELECT
+        order_product_id,
+        price,
+        quantity,
+        cancel_status,
+        order_type,
+        order_history_id,
+        product_id,
+        created_at,
+        updated_at
+        FROM order_product
+        WHERE order_history_id = #{orderHistoryId}
+        ORDER BY order_product_id
+    </select>
+
+    <!-- 주문 내 모든 상품 취소 상태 업데이트 -->
+    <update id="updateAllOrderProductsCancelStatus" parameterType="map">
+        UPDATE order_product
+        SET cancel_status = #{cancelStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
+        updated_at = SYSDATE
+        WHERE order_history_id = #{orderHistoryId}
+    </update>
+
+</mapper>

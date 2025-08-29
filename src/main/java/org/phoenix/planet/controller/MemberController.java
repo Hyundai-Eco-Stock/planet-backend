@@ -9,6 +9,9 @@ import org.phoenix.planet.dto.car.response.MemberCarResponse;
 import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
+import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
+import org.phoenix.planet.dto.member.response.MyOrderResponse;
+import org.phoenix.planet.dto.member.response.MyRaffleResponse;
 import org.phoenix.planet.service.car.MemberCarService;
 import org.phoenix.planet.service.member.MemberService;
 import org.springframework.http.MediaType;
@@ -85,5 +88,31 @@ public class MemberController {
 
         memberCarService.unregisterCar(loginMemberId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me/orders")
+    public ResponseEntity<List<MyOrderResponse>> getMyOrders(
+        @LoginMemberId Long memberId
+    ) {
+
+        List<MyOrderResponse> list = memberService.getMyOrders(memberId);
+        return ResponseEntity.ok(memberService.getMyOrders(memberId));
+    }
+
+    @GetMapping("/me/eco-deals")
+    public ResponseEntity<List<MyEcoDealResponse>> getMyEcoDeals(
+        @LoginMemberId Long memberId
+    ) {
+
+        return ResponseEntity.ok(memberService.getMyEcoDeals(memberId));
+    }
+
+    @GetMapping("/me/raffles")
+    public ResponseEntity<List<MyRaffleResponse>> getMyRaffles(
+        @LoginMemberId Long memberId
+    ) {
+
+        System.out.println("여기까지 와요");
+        return ResponseEntity.ok(memberService.getMyRaffles(memberId));
     }
 }

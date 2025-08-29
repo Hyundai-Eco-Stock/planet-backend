@@ -3,6 +3,7 @@ package org.phoenix.planet.configuration.cache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -21,6 +22,7 @@ public class RedisConfig {
     private String password;
 
     @Bean
+    @Primary
     public RedisConnectionFactory redisConnectionFactory() {
 
         RedisStandaloneConfiguration conf = new RedisStandaloneConfiguration(host, port);
@@ -31,6 +33,7 @@ public class RedisConfig {
     }
 
     @Bean
+    @Primary
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory cf) {
 
         return new StringRedisTemplate(cf);

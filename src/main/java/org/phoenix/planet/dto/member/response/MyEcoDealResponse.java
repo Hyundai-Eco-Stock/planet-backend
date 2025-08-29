@@ -1,4 +1,4 @@
-package org.phoenix.planet.dto.order.response;
+package org.phoenix.planet.dto.member.response;
 
 import lombok.Getter;
 import lombok.Setter;

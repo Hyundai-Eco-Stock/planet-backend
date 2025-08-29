@@ -5,6 +5,7 @@ import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.error.ecoStock.EcoStockException;
 import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.error.payment.PaymentException;
+import org.phoenix.planet.error.raffle.RaffleException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,8 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RestControllerAdvice
 @Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(TokenException.class)
@@ -37,10 +38,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
         IllegalArgumentException e) {
+        log.error("IllegalArgumentException", e);
+        String errorMessage = "인자가 잘못되었을 되었습니다.";
 
         Map<String, Object> body = new HashMap<>();
         body.put("errorCode", e.getClass().getName());
-        body.put("message", e.getMessage());
+        body.put("message", errorMessage);
 
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -125,12 +128,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception e) {
 
+        log.error("몬지모를 에러", e);
+        String errorMessage = "서버쪽 에러입니다.";
+
         Map<String, Object> body = new HashMap<>();
         body.put("errorCode", e.getClass().getName());
-        body.put("message", e.getMessage());
+        body.put("message", errorMessage);
 
         return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(body);
 
     }
@@ -148,4 +154,15 @@ public class GlobalExceptionHandler {
                 .body(body);
     }
 
+    @ExceptionHandler(RaffleException.class)
+     public ResponseEntity<Map<String, Object>> handleRaffleException(RaffleException e) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", e.getError().name());
+        body.put("message", e.getError().getValue());
+
+        return ResponseEntity
+                .status(e.getError().getHttpStatus())
+                .body(body);
+     }
 }

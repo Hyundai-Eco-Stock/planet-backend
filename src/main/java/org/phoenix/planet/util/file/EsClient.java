@@ -6,122 +6,127 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
 @Component
+@RequiredArgsConstructor
 public class EsClient {
 
-    private final WebClient webClient;
-    private final ObjectMapper om = new ObjectMapper();
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
-    private final String index;
-    private final String inferenceId;
-    private final int defaultSize;
+    @Value("${es.endpoint}")
+    private String baseUrl;
 
-    public EsClient(
-            @Value("${es.endpoint}") String endpoint,
-            @Value("${es.api-key}") String apiKey,
-            @Value("${es.index}") String index,
-            @Value("${es.inference-id}") String inferenceId,
-            @Value("${es.default-size:20}") int defaultSize
-    ) {
-        this.webClient = WebClient.builder()
-                .baseUrl(endpoint)
-                .defaultHeader("Authorization", "ApiKey " + apiKey) // Elastic Cloud API 키
-                .build();
-        this.index = index;
-        this.inferenceId = inferenceId;
-        this.defaultSize = defaultSize;
-    }
+    @Value("${es.index}")
+    private String index;
+
+    @Value("${es.inference-id}")
+    private String inferenceId;
+
+    @Value("${es.default-size:20}")
+    private int defaultSize;
+
+    @Value("${es.api-key}")
+    private String apiKey;
+
+    private static final String searchSimilarIdsQuery = """
+            {
+              "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
+              "size": %d,
+              "query": {
+                "bool": {
+                  "filter": [ { "term": { "category_id": %s } } ],
+                  "must_not": [ { "term": { "product_id": %s } } ]
+                }
+              },
+              "rescore": [
+                {
+                  "window_size": 200,
+                  "query": {
+                    "rescore_query": {
+                      "more_like_this": {
+                        "fields": ["product_name"],
+                        "like": [ { "_index": %s, "_id": %s } ],
+                        "min_term_freq": 1,
+                        "min_doc_freq": 1,
+                        "max_query_terms": 50
+                      }
+                    },
+                    "query_weight": 0.2,
+                    "rescore_query_weight": 2.0
+                  }
+                }
+              ]
+            }
+            """;
+
+    private static final String searchMltMatchAllQuery = """
+            {
+              "size": %d,
+              "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
+              "query": {
+                "bool": {
+                  "filter": [ %s ],
+                  "must": { "match_all": {} },
+                  "should": [
+                    { "term": { "product_name.keyword": { "value": %s, "boost": 8 } } },
+                    { "match_phrase": { "product_name": { "query": %s, "boost": 5 } } },
+                    { "match": { "product_name": { "query": %s, "operator": "AND", "minimum_should_match": "100%%", "boost": 3 } } },
+                    { "multi_match": { "query": %s, "fields": ["product_name^2","brand_name"], "fuzziness": "AUTO", "boost": 1 } },
+                    { "match_phrase_prefix": { "product_name": { "query": %s, "max_expansions": 50, "boost": 1 } } }
+                  ]
+                }
+              },
+              "sort": ["_score"]
+            }
+            """;
 
     /* 유사 상품 추천 */
-//    public List<String> searchSimilarIds(String anchorName, String anchorCategoryId,
-//            String anchorId, Integer size) {
-//        int k = (size == null || size <= 0) ? defaultSize : size;
-//
-//        // Helpers
-//        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
-//        String likeText = safeJson(anchorName); // "\"상품명\"" 형태
-//
-//        // category_id filter (numeric if possible)
-//        String catTerm = "";
-//        if (anchorCategoryId != null && !anchorCategoryId.isBlank()) {
-//            boolean catIsNumeric = anchorCategoryId.matches("-?\\d+");
-//            String catValue = catIsNumeric ? anchorCategoryId : safeJson(anchorCategoryId);
-//            catTerm = String.format("{ \"term\": { \"category_id\": %s } }", catValue);
-//        }
-//
-//        // self exclusion (product_id) - numeric if possible
-//        String mustNotTerm = "";
-//        if (anchorId != null && !anchorId.isBlank()) {
-//            boolean idIsNumeric = anchorId.matches("-?\\d+");
-//            String idValue = idIsNumeric ? anchorId : safeJson(anchorId);
-//            mustNotTerm = String.format("{ \"term\": { \"product_id\": %s } }", idValue);
-//        }
-//
-//        // rescore like-clause: prefer document by _id when available, else text
-//        String likeClause;
-//        if (anchorId != null && !anchorId.isBlank()) {
-//            // _index and _id must be strings in the like doc
-//            likeClause = String.format("{ \"_index\": %s, \"_id\": %s }", safeJson(idx),
-//                    safeJson(anchorId));
-//        } else {
-//            likeClause = likeText; // use raw text
-//        }
-//
-//        String query = String.format("""
-//                {
-//                  "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
-//                  "size": %d,
-//                  "query": {
-//                    "bool": {
-//                      "filter": [ %s ],
-//                      "must_not": [ %s ]
-//                    }
-//                  },
-//                  "rescore": [
-//                    {
-//                      "window_size": 200,
-//                      "query": {
-//                        "rescore_query": {
-//                          "more_like_this": {
-//                            "fields": ["product_name"],
-//                            "like": [ %s ],
-//                            "min_term_freq": 1,
-//                            "min_doc_freq": 1,
-//                            "max_query_terms": 50
-//                          }
-//                        },
-//                        "query_weight": 0.2,
-//                        "rescore_query_weight": 2.0
-//                      }
-//                    }
-//                  ]
-//                }
-//                """, k, catTerm, mustNotTerm, likeClause);
-//
-//        JsonNode resp = webClient.post()
-//                .uri("/" + idx + "/_search")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .bodyValue(query)
-//                .retrieve()
-//                .bodyToMono(JsonNode.class)
-//                .block();
-//
-//        if (resp == null || resp.get("hits") == null) {
-//            return Collections.emptyList();
-//        }
-//        return toIds(resp);
-//    }
+    public List<String> searchSimilarIds(String anchorName, String anchorCategoryId,
+            String anchorId, Integer size) {
+        int k = (size == null || size <= 0) ? defaultSize : size;
 
-//
-//    /* 검색 (기존 시그니처 유지: 카테고리 필터 없음) */
-//    public List<String> searchMltMatchAll(String likeText, Integer size) {
-//        return searchMltMatchAll(likeText, null, size);
-//    }
+        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_1" : this.index;
+
+        String query = String.format(searchSimilarIdsQuery,
+                k,
+                safeJson(anchorCategoryId),
+                safeJson(anchorId),
+                safeJson(idx),
+                safeJson(anchorId)
+        );
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "ApiKey " + apiKey);
+            HttpEntity<String> req = new HttpEntity<>(query, headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    baseUrl + "/" + idx + "/_search",
+                    HttpMethod.POST,
+                    req,
+                    String.class
+            );
+            String bodyStr = response.getBody();
+            JsonNode resp =
+                    (bodyStr == null || bodyStr.isBlank()) ? null : objectMapper.readTree(bodyStr);
+            if (resp == null || resp.get("hits") == null) {
+                return Collections.emptyList();
+            }
+            return toIds(resp);
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
 
     /* 검색 */
     public List<String> searchMltMatchAll(String likeText, String categoryId, Integer size) {
@@ -136,27 +141,7 @@ public class EsClient {
             catTerm = String.format("{ \"term\": { \"category_id\": %s } }", catValue);
         }
 
-        String body = String.format(
-                """
-                        {
-                          "size": %d,
-                          "_source": ["product_id","product_name","brand_name","category_name","category_id","image_url"],
-                          "query": {
-                            "bool": {
-                              "filter": [ %s ],
-                              "must": { "match_all": {} },
-                              "should": [
-                                { "term": { "product_name.keyword": { "value": %s, "boost": 8 } } },
-                                { "match_phrase": { "product_name": { "query": %s, "boost": 5 } } },
-                                { "match": { "product_name": { "query": %s, "operator": "AND", "minimum_should_match": "100%%", "boost": 3 } } },
-                                { "multi_match": { "query": %s, "fields": ["product_name^2","brand_name"], "fuzziness": "AUTO", "boost": 1 } },
-                                { "match_phrase_prefix": { "product_name": { "query": %s, "max_expansions": 50, "boost": 1 } } }
-                              ]
-                            }
-                          },
-                          "sort": ["_score"]
-                        }
-                        """,
+        String body = String.format(searchMltMatchAllQuery,
                 k,
                 catTerm,
                 safeJson(likeText),
@@ -166,24 +151,33 @@ public class EsClient {
                 safeJson(likeText)
         );
 
-        JsonNode resp = webClient.post()
-                .uri("/" + idx + "/_search")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
-
-        if (resp == null || resp.get("hits") == null) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "ApiKey " + apiKey);
+            HttpEntity<String> req = new HttpEntity<>(body, headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    baseUrl + "/" + idx + "/_search",
+                    HttpMethod.POST,
+                    req,
+                    String.class
+            );
+            String bodyStr = response.getBody();
+            JsonNode resp =
+                    (bodyStr == null || bodyStr.isBlank()) ? null : objectMapper.readTree(bodyStr);
+            if (resp == null || resp.get("hits") == null) {
+                return Collections.emptyList();
+            }
+            return toIds(resp);
+        } catch (Exception e) {
             return Collections.emptyList();
         }
-        return toIds(resp);
     }
 
     /* es 에 요청 보낼 때 json 으로 키워드 파싱 */
     private String safeJson(String s) {
         try {
-            return om.writeValueAsString(s == null ? "" : s);
+            return objectMapper.writeValueAsString(s == null ? "" : s);
         } catch (Exception e) {
             return "\"\"";
         }

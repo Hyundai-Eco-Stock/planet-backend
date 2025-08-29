@@ -15,4 +15,6 @@ public interface RaffleMapper {
     List<RaffleDetailResponse> findDetailById(Long raffleId);
 
     void callParticipateRaffleProcedure(ParticipateRaffleResponse response);
+
+    void bulkUpdateRaffleUpdatedAt(List<Long> raffleIds);
 }

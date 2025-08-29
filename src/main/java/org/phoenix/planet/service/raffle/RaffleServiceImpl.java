@@ -5,11 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.RaffleError;
 import org.phoenix.planet.dto.raffle.RaffleDetailResponse;
 import org.phoenix.planet.dto.raffle.RaffleResponse;
+import org.phoenix.planet.dto.raffle.raw.RaffleHistory;
+import org.phoenix.planet.dto.raffle.raw.RaffleHistoryWithDetail;
+import org.phoenix.planet.dto.raffle.raw.WinnerInfo;
 import org.phoenix.planet.dto.raffle.response.ParticipateRaffleResponse;
 import org.phoenix.planet.error.raffle.RaffleException;
 import org.phoenix.planet.mapper.RaffleMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -18,6 +26,9 @@ import java.util.List;
 public class RaffleServiceImpl implements RaffleService {
 
     private final RaffleMapper raffleMapper;
+    private final RaffleHistoryService raffleHistoryService;
+    private static final SecureRandom secureRandom = new SecureRandom();
+
 
     @Override
     public List<RaffleResponse> findAll() {
@@ -37,9 +48,9 @@ public class RaffleServiceImpl implements RaffleService {
 
             ParticipateRaffleResponse response =
                     ParticipateRaffleResponse.builder()
-                    .memberId(memberId)
-                    .raffleId(raffleId)
-                    .build();
+                            .memberId(memberId)
+                            .raffleId(raffleId)
+                            .build();
 
             raffleMapper.callParticipateRaffleProcedure(response);
 
@@ -88,5 +99,67 @@ public class RaffleServiceImpl implements RaffleService {
                 log.error("예상치 못한 프로시저 결과값: {}", response.getResult());
                 throw new RaffleException(RaffleError.RAFFLE_SYSTEM_ERROR);
         }
+    }
+
+    @Override
+    @Transactional
+    public List<WinnerInfo> raffleWinningProcess(LocalDate yesterday) {
+
+        //래플 당철 처리 할 데이터 조회 및 지원자 조회
+        List<RaffleHistoryWithDetail> raffleHistories = raffleHistoryService.findEndedYesterday(yesterday);
+
+        if (raffleHistories.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        log.info("지원자들 {}", raffleHistories);
+
+        // 래플 상태 업데이트 (모든 래플)
+        processRaffleUpdate(raffleHistories);
+
+        // 당첨자 처리
+        return processWinners(raffleHistories);
+    }
+
+    private void processRaffleUpdate(List<RaffleHistoryWithDetail> raffleHistories) {
+
+        List<Long> raffleIds = raffleHistories.stream()
+                .map(RaffleHistoryWithDetail::getRaffleId)
+                .toList();
+
+        raffleMapper.bulkUpdateRaffleUpdatedAt(raffleIds);
+    }
+
+    private List<WinnerInfo> processWinners(List<RaffleHistoryWithDetail> raffleHistories) {
+        // 랜덤 당첨자 추출
+        List<WinnerInfo> winnerInfos = drawRaffleWinners(raffleHistories);
+
+        if (!winnerInfos.isEmpty()) {  // 당첨자가 있으면
+            // 당첨 처리 벌크 업데이트
+            raffleHistoryService.bulkUpdateWinners(winnerInfos);
+        }
+
+        return winnerInfos;  // 항상 winnerInfos 반환
+    }
+
+    private List<WinnerInfo> drawRaffleWinners(List<RaffleHistoryWithDetail> raffleHistories) {
+
+        return raffleHistories.stream()
+                .filter(r -> !CollectionUtils.isEmpty(r.getRaffleHistories())) // 지원자 있는 것만
+                .map(this::pickRandomWinner)
+                .toList();
+    }
+
+    private WinnerInfo pickRandomWinner(RaffleHistoryWithDetail raffle) {
+
+        List<RaffleHistory> applicants = raffle.getRaffleHistories();
+
+        RaffleHistory winner = applicants.get(secureRandom.nextInt(applicants.size()));
+
+        return WinnerInfo.builder()
+                .raffleHistoryId(winner.getRaffleHistoryId())
+                .memberId(winner.getMemberId())
+                .raffleName(raffle.getRaffleName())
+                .build();
     }
 }

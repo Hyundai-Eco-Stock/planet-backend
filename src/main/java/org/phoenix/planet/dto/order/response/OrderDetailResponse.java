@@ -1,7 +1,7 @@
 package org.phoenix.planet.dto.order.response;
 
 import org.phoenix.planet.constant.OrderStatus;
-import org.phoenix.planet.dto.payment.response.PaymentResponse;
+import org.phoenix.planet.dto.payment.response.PaymentConfirmResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +19,6 @@ public record OrderDetailResponse(
         String departmentStoreName,
         LocalDateTime createdAt,
         List<OrderProductResponse> orderProducts,
-        PaymentResponse payment  // 결제 정보
+        PaymentConfirmResponse payment  // 결제 정보
 ) {
 }

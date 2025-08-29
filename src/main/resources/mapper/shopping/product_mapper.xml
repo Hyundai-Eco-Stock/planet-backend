@@ -74,16 +74,16 @@
   <!-- Find by ID -->
   <select id="findById" parameterType="long" resultMap="ProductResultMap">
     SELECT
-    product_id,
-    category_id,
-    brand_id,
+    product_id as productId,
+    category_id as categoryId,
+    brand_id as brandId,
     name,
     price,
     quantity,
-    eco_deal_status,
-    sale_percent,
-    created_at,
-    updated_at
+    eco_deal_status as ecoDealStatus,
+    sale_percent as salePercent,
+    created_at as createdAt,
+    updated_at as updatedAt
     FROM PRODUCT
     WHERE product_id = #{productId}
   </select>

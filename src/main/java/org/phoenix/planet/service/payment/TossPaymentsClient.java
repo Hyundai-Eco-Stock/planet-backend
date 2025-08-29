@@ -149,7 +149,7 @@ public class TossPaymentsClient {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         try {
-            log.info("TossPayments 전체 취소 요청 - paymentKey: {}, amount: {}, reason: {}", paymentKey, cancelAmount, cancelReason);
+            log.info("TossPayments 취소 요청 - paymentKey: {}, amount: {}, reason: {}", paymentKey, cancelAmount, cancelReason);
 
             ResponseEntity<TossPaymentResponse> response = restTemplate.postForEntity(url, request, TossPaymentResponse.class);
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {

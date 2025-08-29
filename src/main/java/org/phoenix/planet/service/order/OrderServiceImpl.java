@@ -10,12 +10,10 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.OrderError;
+import org.phoenix.planet.constant.OrderStatus;
 import org.phoenix.planet.constant.OrderType;
 import org.phoenix.planet.dto.member.raw.Member;
-import org.phoenix.planet.dto.order.raw.OrderDraft;
-import org.phoenix.planet.dto.order.raw.OrderValidationResult;
-import org.phoenix.planet.dto.order.raw.PickupStoreInfo;
-import org.phoenix.planet.dto.order.raw.PickupStoreProductInfo;
+import org.phoenix.planet.dto.order.raw.*;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.request.OrderProductRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
@@ -24,10 +22,7 @@ import org.phoenix.planet.dto.order.response.OrderDraftResponse;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.error.auth.AuthException;
 import org.phoenix.planet.error.order.OrderException;
-import org.phoenix.planet.mapper.DepartmentStoreMapper;
-import org.phoenix.planet.mapper.DepartmentStoreProductMapper;
-import org.phoenix.planet.mapper.MemberMapper;
-import org.phoenix.planet.mapper.ProductMapper;
+import org.phoenix.planet.mapper.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +37,7 @@ public class OrderServiceImpl implements OrderService {
     private final DepartmentStoreMapper departmentStoreMapper;
     private final MemberMapper memberMapper;
     private final ProductMapper productMapper;
+    private final OrderHistoryMapper orderHistoryMapper;
 
     @Override
     @Transactional
@@ -103,6 +99,35 @@ public class OrderServiceImpl implements OrderService {
 
         // 추가 정보 조회 및 변환
         return convertToOrderDraftResponse(orderDraft);
+    }
+
+    @Override
+    public OrderConfirmResult confirmPurchase(Long orderHistoryId, Long memberId) {
+        OrderHistory orderHistory = orderHistoryMapper.findById(orderHistoryId);
+        if (orderHistory == null) {
+            throw new OrderException(OrderError.ORDER_NOT_FOUND);
+        }
+
+        if (!orderHistory.getMemberId().equals(memberId)) {
+            throw new OrderException(OrderError.UNAUTHORIZED_ORDER_ACCESS);
+        }
+
+        if (orderHistory.getOrderStatus() == OrderStatus.DONE) {
+            throw new OrderException(OrderError.ORDER_ALREADY_CONFIRMED);
+        }
+
+        // 주문 상태를 DONE으로 변경
+        int updatedRows = orderHistoryMapper.updateOrderStatus(orderHistoryId, OrderStatus.DONE, LocalDateTime.now());
+        if (updatedRows == 0) {
+            throw new OrderException(OrderError.ORDER_STATUS_UPDATE_FAILED);
+        }
+
+        return OrderConfirmResult.builder()
+                .orderHistoryId(orderHistoryId)
+                .orderNumber(orderHistory.getOrderNumber())
+                .donationPrice(orderHistory.getDonationPrice())
+                .confirmedAt(LocalDateTime.now())
+                .build();
     }
 
     private OrderDraftResponse convertToOrderDraftResponse(OrderDraft orderDraft) {

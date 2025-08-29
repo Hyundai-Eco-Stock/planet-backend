@@ -6,9 +6,10 @@ import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
+import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
+import org.phoenix.planet.dto.member.response.MyOrderResponse;
+import org.phoenix.planet.dto.member.response.MyRaffleResponse;
 import org.phoenix.planet.dto.member.response.SignUpResponse;
-import org.phoenix.planet.dto.order.response.MyEcoDealResponse;
-import org.phoenix.planet.dto.order.response.MyOrderResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberService {
@@ -27,4 +28,6 @@ public interface MemberService {
     List<MyOrderResponse> getMyOrders(Long memberId);
 
     List<MyEcoDealResponse> getMyEcoDeals(Long memberId);
+
+    List<MyRaffleResponse> getMyRaffles(Long memberId);
 }

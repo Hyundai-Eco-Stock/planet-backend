@@ -27,7 +27,6 @@ import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.mapper.DepartmentStoreMapper;
 import org.phoenix.planet.mapper.DepartmentStoreProductMapper;
 import org.phoenix.planet.mapper.MemberMapper;
-import org.phoenix.planet.mapper.MyOrderMapper;
 import org.phoenix.planet.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +42,6 @@ public class OrderServiceImpl implements OrderService {
     private final DepartmentStoreMapper departmentStoreMapper;
     private final MemberMapper memberMapper;
     private final ProductMapper productMapper;
-    private final MyOrderMapper myOrderMapper;
 
     @Override
     @Transactional

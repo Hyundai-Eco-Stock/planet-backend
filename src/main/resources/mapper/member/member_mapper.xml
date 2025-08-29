@@ -170,7 +170,7 @@
 
   <!--  마이페이지 - 구매내역 -->
   <select id="findMyOrders" parameterType="long"
-    resultType="org.phoenix.planet.dto.order.response.MyOrderResponse">
+    resultType="org.phoenix.planet.dto.member.response.MyOrderResponse">
     select
     H.ORDER_HISTORY_ID,
     H.ORDER_NUMBER,
@@ -204,7 +204,7 @@
 
   <!-- 마이페이지 - 에약한 에코딜 상품 -->
   <select id="reservedEcoDeal" parameterType="long"
-    resultType="org.phoenix.planet.dto.order.response.MyEcoDealResponse">
+    resultType="org.phoenix.planet.dto.member.response.MyEcoDealResponse">
     select
     OH.ORDER_HISTORY_ID,
     OH.ORDER_NUMBER,
@@ -228,5 +228,22 @@
     join ORDER_PRODUCT OP on OP.ORDER_HISTORY_ID = OH.ORDER_HISTORY_ID
     join PRODUCT P on P.PRODUCT_ID = OP.PRODUCT_ID
     where MEMBER_ID = 9 and P.ECO_DEAL_STATUS = 'Y'
+  </select>
+
+  <select id="getMyRaffles" parameterType="long"
+    resultType="org.phoenix.planet.dto.member.response.MyRaffleResponse">
+    select
+    RH.RAFFLE_HISTORY_ID,
+    RH.WIN_STATUS,
+    RH.raffle_id,
+    R.START_DATE,
+    R.END_DATE,
+    P.NAME as product_name,
+    P.IMAGE_URL as productImageUrl
+    from raffle_history RH
+    join RAFFLE R on RH.RAFFLE_ID = R.RAFFLE_ID
+    join PRODUCT P on R.PRODUCT_ID = P.PRODUCT_ID
+    where MEMBER_ID = #{memberId}
+    order by RAFFLE_ID desc
   </select>
 </mapper>

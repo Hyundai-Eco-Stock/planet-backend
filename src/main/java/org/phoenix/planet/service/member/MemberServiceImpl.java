@@ -7,9 +7,10 @@ import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
 import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
+import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
+import org.phoenix.planet.dto.member.response.MyOrderResponse;
+import org.phoenix.planet.dto.member.response.MyRaffleResponse;
 import org.phoenix.planet.dto.member.response.SignUpResponse;
-import org.phoenix.planet.dto.order.response.MyEcoDealResponse;
-import org.phoenix.planet.dto.order.response.MyOrderResponse;
 import org.phoenix.planet.mapper.MemberMapper;
 import org.phoenix.planet.util.file.CloudFrontFileUtil;
 import org.phoenix.planet.util.file.S3FileUtil;
@@ -125,5 +126,10 @@ public class MemberServiceImpl implements MemberService {
     /* 마이페이지 - 에코딜 */
     public List<MyEcoDealResponse> getMyEcoDeals(Long memberId) {
         return memberMapper.reservedEcoDeal(memberId);
+    }
+
+    /* 마이페이지 - 래플 응모내역 */
+    public List<MyRaffleResponse> getMyRaffles(Long memberId) {
+        return memberMapper.getMyRaffles(memberId);
     }
 }

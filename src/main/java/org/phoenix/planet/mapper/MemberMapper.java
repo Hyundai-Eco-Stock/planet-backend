@@ -7,8 +7,9 @@ import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.constant.Sex;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
-import org.phoenix.planet.dto.order.response.MyEcoDealResponse;
-import org.phoenix.planet.dto.order.response.MyOrderResponse;
+import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
+import org.phoenix.planet.dto.member.response.MyOrderResponse;
+import org.phoenix.planet.dto.member.response.MyRaffleResponse;
 
 @Mapper
 public interface MemberMapper {
@@ -53,5 +54,7 @@ public interface MemberMapper {
     List<MyOrderResponse> findMyOrders(Long memberId);
 
     List<MyEcoDealResponse> reservedEcoDeal(Long memberId);
+
+    List<MyRaffleResponse> getMyRaffles(Long memberId);
 
 }

@@ -20,4 +20,22 @@
         AND msi.ECO_STOCK_ID = #{ecoStockId}
         WHERE m.MEMBER_ID = #{memberId}
     </select>
+
+    <select id="findAllPersonalStockInfoByMemberId"
+            resultType="org.phoenix.planet.dto.eco_stock_info.response.MemberStockInfoWithDetail">
+        SELECT
+            msi.MEMBER_STOCK_INFO_ID as memberStockInfoId,
+            msi.MEMBER_ID as memberId,
+            msi.ECO_STOCK_ID as ecoStockId,
+            msi.CURRENT_TOTAL_QUANTITY as currentTotalQuantity,
+            msi.CURRENT_TOTAL_AMOUNT as currentTotalAmount,
+            m.POINT as point,
+            es.NAME as ecoStockName
+        FROM MEMBER m
+        JOIN MEMBER_STOCK_INFO msi
+          ON m.MEMBER_ID = msi.MEMBER_ID
+        JOIN ECO_STOCK es
+          ON msi.ECO_STOCK_ID = es.ECO_STOCK_ID
+        WHERE m.MEMBER_ID = #{memberId}
+    </select>
 </mapper>

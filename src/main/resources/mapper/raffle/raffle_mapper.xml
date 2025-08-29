@@ -7,25 +7,33 @@
 
     <select id="findAll" resultType="org.phoenix.planet.dto.raffle.RaffleResponse">
         SELECT
-        R.RAFFLE_ID AS raffleId,
-        R.ECO_STOCK_AMOUNT AS ecoStockAmount,
-        R.START_DATE AS startDate,
-        R.END_DATE AS endDate,
+            R.RAFFLE_ID       AS raffleId,
+            R.ECO_STOCK_AMOUNT AS ecoStockAmount,
+            R.START_DATE      AS startDate,
+            R.END_DATE        AS endDate,
 
-        P.PRODUCT_ID AS productId,
-        P.NAME AS productName,
-        P.PRICE AS price,
-        P.IMAGE_URL AS imageUrl,
+            P.PRODUCT_ID      AS productId,
+            P.NAME            AS productName,
+            P.PRICE           AS price,
+            P.IMAGE_URL       AS imageUrl,
 
-        B.NAME AS brandName,
+            B.NAME            AS brandName,
 
-        ES.ECO_STOCK_ID AS ecoStockId,
-        ES.NAME AS ecoStockName
+            ES.ECO_STOCK_ID   AS ecoStockId,
+            ES.NAME           AS ecoStockName,
+
+            COUNT(RH.RAFFLE_HISTORY_ID) AS participantCount   -- 참여 인원 수
 
         FROM RAFFLE R
-        JOIN PRODUCT P ON R.PRODUCT_ID = P.PRODUCT_ID
-        JOIN ECO_STOCK ES ON R.ECO_STOCK_ID = ES.ECO_STOCK_ID
-        JOIN BRAND B ON P.BRAND_ID = B.BRAND_ID
+            JOIN PRODUCT P ON R.PRODUCT_ID = P.PRODUCT_ID
+            JOIN ECO_STOCK ES ON R.ECO_STOCK_ID = ES.ECO_STOCK_ID
+            JOIN BRAND B ON P.BRAND_ID = B.BRAND_ID
+            LEFT JOIN RAFFLE_HISTORY RH ON RH.RAFFLE_ID = R.RAFFLE_ID
+        GROUP BY
+            R.RAFFLE_ID, R.ECO_STOCK_AMOUNT, R.START_DATE, R.END_DATE,
+            P.PRODUCT_ID, P.NAME, P.PRICE, P.IMAGE_URL,
+            B.NAME,
+            ES.ECO_STOCK_ID, ES.NAME
     </select>
 
     <resultMap id="RaffleDetailMap" type="org.phoenix.planet.dto.raffle.RaffleDetailResponse">

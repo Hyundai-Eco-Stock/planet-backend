@@ -27,4 +27,5 @@ public class MyOrderResponse {
     private String ecoDealStatus;
     private String productName;
     private String productImageUrl;
+    private String paymentStatus;
 }

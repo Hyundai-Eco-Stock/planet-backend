@@ -4,35 +4,5 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="org.phoenix.planet.mapper.MyOrderMapper">
-  <!--  마이페이지 - 구매내역-->
-  <select id="findMyOrders" parameterType="long"
-    resultType="org.phoenix.planet.dto.order.response.MyOrderResponse">
-    select
-    H.ORDER_HISTORY_ID,
-    H.ORDER_NUMBER,
-    H.ORDER_STATUS,
-    H.ORIGIN_PRICE,
-    H.USED_POINT,
-    H.DONATION_PRICE,
-    H.FINAL_PAY_PRICE,
-    H.ECO_DEAL_QR_URL,
-    H.MEMBER_ID,
-    H.CREATED_AT,
-    OP.ORDER_PRODUCT_ID,
-    OP.PRICE,
-    OP.QUANTITY,
-    OP.CANCEL_STATUS,
-    OP.ORDER_TYPE,
-    OP.PRODUCT_ID,
-    OP.DISCOUNT_PRICE,
-    P.ECO_DEAL_STATUS,
-    P.NAME as PRODUCT_NAME,
-    P.IMAGE_URL as PRODUCT_IMAGE_URL
-    from ORDER_HISTORY H
-    join ORDER_PRODUCT OP on H.ORDER_HISTORY_ID = OP.ORDER_HISTORY_ID
-    join PRODUCT P on OP.PRODUCT_ID = P.PRODUCT_ID
-    where H.MEMBER_ID = #{memberId}
-    order by H.ORDER_HISTORY_ID desc, OP.ORDER_PRODUCT_ID desc
-  </select>
 
 </mapper>

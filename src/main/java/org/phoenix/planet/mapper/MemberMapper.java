@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.constant.Sex;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
+import org.phoenix.planet.dto.order.response.MyEcoDealResponse;
+import org.phoenix.planet.dto.order.response.MyOrderResponse;
 
 @Mapper
 public interface MemberMapper {
@@ -20,31 +22,36 @@ public interface MemberMapper {
     void insert(Member member);
 
     void updateProfileUrl(
-        @Param("memberId") long memberId,
-        @Param("profileUrl") String profileUrl
+            @Param("memberId") long memberId,
+            @Param("profileUrl") String profileUrl
     );
 
     void update(
-        @Param("memberId") long memberId,
-        @Param("pwdHash") String pwdHash,
-        @Param("sex") Sex sex,
-        @Param("birth") String birth,
-        @Param("address") String address,
-        @Param("detailAddress") String detailAddress);
+            @Param("memberId") long memberId,
+            @Param("pwdHash") String pwdHash,
+            @Param("sex") Sex sex,
+            @Param("birth") String birth,
+            @Param("address") String address,
+            @Param("detailAddress") String detailAddress);
 
     int deductPointsByMemberId(@Param("memberId") Long memberId, @Param("points") int points);
 
     void updatePassword(
-        @Param("memberId") long memberId,
-        @Param("pwdHash") String pwdHash);
+            @Param("memberId") long memberId,
+            @Param("pwdHash") String pwdHash);
 
     void updateProfile(
-        @Param("memberId") long memberId,
+            @Param("memberId") long memberId,
 //        @Param("email") String email,
 //        @Param("name") String name,
-        @Param("sex") Sex sex,
-        @Param("birth") String birth,
-        @Param("address") String address,
-        @Param("detailAddress") String detailAddress);
+            @Param("sex") Sex sex,
+            @Param("birth") String birth,
+            @Param("address") String address,
+            @Param("detailAddress") String detailAddress);
+
+
+    List<MyOrderResponse> findMyOrders(Long memberId);
+
+    List<MyEcoDealResponse> reservedEcoDeal(Long memberId);
 
 }

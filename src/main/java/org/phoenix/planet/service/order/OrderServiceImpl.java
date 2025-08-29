@@ -19,7 +19,6 @@ import org.phoenix.planet.dto.order.raw.PickupStoreProductInfo;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.request.OrderProductRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
-import org.phoenix.planet.dto.order.response.MyOrderResponse;
 import org.phoenix.planet.dto.order.response.OrderDraftProductResponse;
 import org.phoenix.planet.dto.order.response.OrderDraftResponse;
 import org.phoenix.planet.dto.product.raw.Product;
@@ -275,10 +274,5 @@ public class OrderServiceImpl implements OrderService {
                     departmentStoreId, now, now.plusMinutes(30)
             );
         }
-    }
-
-    /* 마이페이지 - 구매내역 */
-    public List<MyOrderResponse> getMyOrders(Long memberId) {
-        return myOrderMapper.findMyOrders(memberId);
     }
 }

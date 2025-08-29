@@ -9,6 +9,8 @@ import org.phoenix.planet.dto.car.response.MemberCarResponse;
 import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
+import org.phoenix.planet.dto.order.response.MyEcoDealResponse;
+import org.phoenix.planet.dto.order.response.MyOrderResponse;
 import org.phoenix.planet.service.car.MemberCarService;
 import org.phoenix.planet.service.member.MemberService;
 import org.springframework.http.MediaType;
@@ -39,7 +41,7 @@ public class MemberController {
 
     @GetMapping("/me")
     public ResponseEntity<MemberProfileResponse> fetchProfile(
-        @LoginMemberId long loginMemberId
+            @LoginMemberId long loginMemberId
     ) {
 
         MemberProfileResponse memberProfileResponse = memberService.searchProfile(loginMemberId);
@@ -47,13 +49,13 @@ public class MemberController {
     }
 
     @PutMapping(
-        value = "/me",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+            value = "/me",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateProfile(
-        @LoginMemberId long loginMemberId,
-        @RequestPart("updateProfile") @Valid ProfileUpdateRequest profileUpdateRequest,
-        @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile
+            @LoginMemberId long loginMemberId,
+            @RequestPart("updateProfile") @Valid ProfileUpdateRequest profileUpdateRequest,
+            @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile
     ) {
 
         memberService.updateMemberInfo(loginMemberId, profileUpdateRequest, profileImageFile);
@@ -62,7 +64,7 @@ public class MemberController {
 
     @GetMapping("/me/cars")
     public ResponseEntity<MemberCarResponse> searchMyCar(
-        @LoginMemberId long loginMemberId
+            @LoginMemberId long loginMemberId
     ) {
 
         MemberCarResponse carInfo = memberCarService.searchByMemberId(loginMemberId);
@@ -71,11 +73,26 @@ public class MemberController {
 
     @PostMapping("/me/cars")
     public ResponseEntity<Void> registerMyCar(
-        @LoginMemberId long loginMemberId,
-        @RequestBody @Valid CarRegisterRequest carRegisterRequest
+            @LoginMemberId long loginMemberId,
+            @RequestBody @Valid CarRegisterRequest carRegisterRequest
     ) {
 
         memberCarService.registerCar(loginMemberId, carRegisterRequest);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me/orders")
+    public ResponseEntity<List<MyOrderResponse>> getMyOrders(
+            @LoginMemberId Long memberId
+    ) {
+        List<MyOrderResponse> list = memberService.getMyOrders(memberId);
+        return ResponseEntity.ok(memberService.getMyOrders(memberId));
+    }
+
+    @GetMapping("/me/eco-deals")
+    public ResponseEntity<List<MyEcoDealResponse>> getMyEcoDeals(
+            @LoginMemberId Long memberId
+    ) {
+        return ResponseEntity.ok(memberService.getMyEcoDeals(memberId));
     }
 }

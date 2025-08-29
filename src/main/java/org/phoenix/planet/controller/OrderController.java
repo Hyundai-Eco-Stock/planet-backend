@@ -1,13 +1,11 @@
 package org.phoenix.planet.controller;
 
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
-import org.phoenix.planet.dto.order.response.MyOrderResponse;
 import org.phoenix.planet.dto.order.response.OrderDraftResponse;
 import org.phoenix.planet.service.order.OrderService;
 import org.springframework.http.HttpStatus;
@@ -46,10 +44,4 @@ public class OrderController {
     }
 
 
-    @GetMapping("/me")
-    public ResponseEntity<List<MyOrderResponse>> getMyOrders(
-            @LoginMemberId Long memberId
-    ) {
-        return ResponseEntity.ok(orderService.getMyOrders(memberId));
-    }
 }

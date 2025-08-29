@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.LoginMemberId;
-import org.phoenix.planet.dto.order.raw.OrderConfirmResult;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
 import org.phoenix.planet.dto.order.response.OrderDraftResponse;
@@ -47,11 +46,8 @@ public class OrderController {
             @PathVariable("order-id") Long orderHistoryId,
             @LoginMemberId Long memberId
     ) {
-        // 구매확정 처리
-        OrderConfirmResult result = orderService.confirmPurchase(orderHistoryId, memberId);
-
-        // 에코스톡 발급
-        EcoStockIssueResponse response = ecoStockIssueService.issueEcoStock(result, memberId);
+        // 구매확정 + 에코스톡 발급을 하나의 트랜잭션으로 처리
+        EcoStockIssueResponse response = orderService.confirmPurchaseAndIssueEcoStock(orderHistoryId, memberId);
 
         return ResponseEntity.ok(response);
     }

@@ -13,6 +13,7 @@ import org.phoenix.planet.mapper.EcoStockIssueMapper;
 import org.phoenix.planet.mapper.EcoStockPriceHistoryMapper;
 import org.phoenix.planet.mapper.MemberStockInfoMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -41,7 +42,7 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public EcoStockIssueResponse issueEcoStock(OrderConfirmResult orderConfirmResult, Long memberId) {
         log.info("구매 확정 에코스톡 발급 - orderHistoryId : {}, memberId : {}", orderConfirmResult.orderHistoryId(), memberId);
 

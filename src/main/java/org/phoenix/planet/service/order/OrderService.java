@@ -1,8 +1,8 @@
 package org.phoenix.planet.service.order;
 
-import org.phoenix.planet.dto.order.raw.OrderConfirmResult;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
+import org.phoenix.planet.dto.order.response.EcoStockIssueResponse;
 import org.phoenix.planet.dto.order.response.OrderDraftResponse;
 
 public interface OrderService {
@@ -11,6 +11,6 @@ public interface OrderService {
 
     OrderDraftResponse getOrderDraft(String orderNumber, Long memberId);
 
-    OrderConfirmResult confirmPurchase(Long orderHistoryId, Long memberId);
+    EcoStockIssueResponse confirmPurchaseAndIssueEcoStock(Long orderHistoryId, Long memberId);
 
 }

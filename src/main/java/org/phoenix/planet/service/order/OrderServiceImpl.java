@@ -17,12 +17,14 @@ import org.phoenix.planet.dto.order.raw.*;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.request.OrderProductRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
+import org.phoenix.planet.dto.order.response.EcoStockIssueResponse;
 import org.phoenix.planet.dto.order.response.OrderDraftProductResponse;
 import org.phoenix.planet.dto.order.response.OrderDraftResponse;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.error.auth.AuthException;
 import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.mapper.*;
+import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,13 +40,14 @@ public class OrderServiceImpl implements OrderService {
     private final MemberMapper memberMapper;
     private final ProductMapper productMapper;
     private final OrderHistoryMapper orderHistoryMapper;
+    private final EcoStockIssueService ecoStockIssueService;
 
     @Override
     @Transactional
     public CreateOrderResponse createOrder(CreateOrderRequest request, Long memberId) {
         // 상품 검증
         OrderValidationResult validationResult = orderValidationService.validateAndCalculate(
-                request.products(), null);
+            request.products(), null);
         String orderNumber = orderNumberService.generateOrderNumber();
 
         // 사용자 보유 포인트 조회
@@ -57,21 +60,21 @@ public class OrderServiceImpl implements OrderService {
         List<PickupStoreInfo> availablePickupStores = findCommonPickupStores(request.products());
 
         OrderDraft orderDraft = createOrderDraft(
-                orderNumber,
-                memberId,
-                request.products(),
-                validationResult.totalAmount(),  // 순수 상품 금액만
-                null, // 매장 선택은 나중에
-                availablePoint,
-                defaultDonationPrice
+            orderNumber,
+            memberId,
+            request.products(),
+            validationResult.totalAmount(),  // 순수 상품 금액만
+            null, // 매장 선택은 나중에
+            availablePoint,
+            defaultDonationPrice
         );
         orderDraftService.saveOrderDraft(orderDraft);
 
         return new CreateOrderResponse(
-                orderNumber,
-                validationResult.totalAmount(), // 상품 금액만 반환
-                availablePickupStores,
-                "주문서가 성공적으로 생성되었습니다."
+            orderNumber,
+            validationResult.totalAmount(), // 상품 금액만 반환
+            availablePickupStores,
+            "주문서가 성공적으로 생성되었습니다."
         );
     }
 
@@ -85,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
 
         // OrderDraftService를 통해 Redis에서 조회
         OrderDraft orderDraft = orderDraftService.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new OrderException(OrderError.ORDER_NOT_FOUND));
+            .orElseThrow(() -> new OrderException(OrderError.ORDER_NOT_FOUND));
 
         // 권한 검증
         if (!orderDraft.memberId().equals(memberId)) {
@@ -102,7 +105,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderConfirmResult confirmPurchase(Long orderHistoryId, Long memberId) {
+    public EcoStockIssueResponse confirmPurchaseAndIssueEcoStock(Long orderHistoryId,
+        Long memberId) {
+
         OrderHistory orderHistory = orderHistoryMapper.findById(orderHistoryId);
         if (orderHistory == null) {
             throw new OrderException(OrderError.ORDER_NOT_FOUND);
@@ -117,17 +122,20 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 주문 상태를 DONE으로 변경
-        int updatedRows = orderHistoryMapper.updateOrderStatus(orderHistoryId, OrderStatus.DONE, LocalDateTime.now());
+        int updatedRows = orderHistoryMapper.updateOrderStatus(orderHistoryId, OrderStatus.DONE,
+            LocalDateTime.now());
         if (updatedRows == 0) {
             throw new OrderException(OrderError.ORDER_STATUS_UPDATE_FAILED);
         }
 
-        return OrderConfirmResult.builder()
-                .orderHistoryId(orderHistoryId)
-                .orderNumber(orderHistory.getOrderNumber())
-                .donationPrice(orderHistory.getDonationPrice())
-                .confirmedAt(LocalDateTime.now())
-                .build();
+        OrderConfirmResult orderConfirmResult = OrderConfirmResult.builder()
+            .orderHistoryId(orderHistoryId)
+            .orderNumber(orderHistory.getOrderNumber())
+            .donationPrice(orderHistory.getDonationPrice())
+            .confirmedAt(LocalDateTime.now())
+            .build();
+
+        return ecoStockIssueService.issueEcoStock(orderConfirmResult, memberId);
     }
 
     private OrderDraftResponse convertToOrderDraftResponse(OrderDraft orderDraft) {
@@ -148,13 +156,13 @@ public class OrderServiceImpl implements OrderService {
         Map<Long, List<PickupStoreInfo>> storeMap = new HashMap<>();
         if (orderDraft.getOrderType() == OrderType.PICKUP) {
             List<PickupStoreProductInfo> storeInfos = departmentStoreProductMapper.findPickupStoresByProductIds(
-                    productIds);
+                productIds);
 
             // 상품별 매장 리스트로 그룹핑
             for (PickupStoreProductInfo storeInfo : storeInfos) {
                 Long productId = storeInfo.productId();
                 PickupStoreInfo pickupStore = new PickupStoreInfo(storeInfo.storeId(),
-                        storeInfo.storeName());
+                    storeInfo.storeName());
 
                 storeMap.computeIfAbsent(productId, key -> new ArrayList<>()).add(pickupStore);
             }
@@ -164,12 +172,12 @@ public class OrderServiceImpl implements OrderService {
         for (OrderProductRequest orderProduct : orderDraft.products()) {
             Product product = productMap.get(orderProduct.productId());
             List<PickupStoreInfo> availableStores = storeMap.getOrDefault(orderProduct.productId(),
-                    new ArrayList<>());
+                new ArrayList<>());
 
             OrderDraftProductResponse productResponse = convertToOrderDraftProductResponse(
-                    orderProduct,
-                    product,
-                    availableStores
+                orderProduct,
+                product,
+                availableStores
             );
             productResponses.add(productResponse);
         }
@@ -196,42 +204,44 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return OrderDraftResponse.builder()
-                .orderNumber(orderDraft.orderNumber())
-                .totalAmount(orderDraft.totalAmount())
-                .usedPoint(orderDraft.usedPoint())
-                .donationPrice(orderDraft.donationPrice())
-                .products(productResponses)
-                .deliveryAddress(orderDraft.deliveryAddress())
-                .recipientName(orderDraft.recipientName())
-                .selectedPickupStoreId(selectedPickupStoreId)
-                .selectedPickupStoreName(selectedPickupStoreName)
-                .availablePickupStores(availablePickupStores)
-                .createdAt(orderDraft.createdAt())
-                .validUntil(orderDraft.validUntil())
-                .build();
+            .orderNumber(orderDraft.orderNumber())
+            .totalAmount(orderDraft.totalAmount())
+            .usedPoint(orderDraft.usedPoint())
+            .donationPrice(orderDraft.donationPrice())
+            .products(productResponses)
+            .deliveryAddress(orderDraft.deliveryAddress())
+            .recipientName(orderDraft.recipientName())
+            .selectedPickupStoreId(selectedPickupStoreId)
+            .selectedPickupStoreName(selectedPickupStoreName)
+            .availablePickupStores(availablePickupStores)
+            .createdAt(orderDraft.createdAt())
+            .validUntil(orderDraft.validUntil())
+            .build();
     }
 
     private OrderDraftProductResponse convertToOrderDraftProductResponse(
-            OrderProductRequest orderProductRequest,
-            Product product,
-            List<PickupStoreInfo> availableStores
+        OrderProductRequest orderProductRequest,
+        Product product,
+        List<PickupStoreInfo> availableStores
     ) {
+
         if (product == null) {
             throw new OrderException(OrderError.PRODUCT_NOT_FOUND);
         }
 
         return OrderDraftProductResponse.builder()
-                .productId(orderProductRequest.productId())
-                .productName(product.getName())
-                .productImageUrl(product.getImageUrl())
-                .price(product.getPrice())
-                .quantity(orderProductRequest.quantity())
-                .orderType(orderProductRequest.orderType())
-                .availableStores(availableStores)
-                .build();
+            .productId(orderProductRequest.productId())
+            .productName(product.getName())
+            .productImageUrl(product.getImageUrl())
+            .price(product.getPrice())
+            .quantity(orderProductRequest.quantity())
+            .orderType(orderProductRequest.orderType())
+            .availableStores(availableStores)
+            .build();
     }
 
     private List<PickupStoreInfo> findCommonPickupStores(List<OrderProductRequest> products) {
+
         OrderType orderType = products.getFirst().orderType();
 
         if (orderType != OrderType.PICKUP) {
@@ -242,7 +252,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderProductRequest product : products) {
             List<PickupStoreInfo> productStores = departmentStoreProductMapper
-                    .findCommonPickupStoresByProductIds(product.productId());
+                .findCommonPickupStoresByProductIds(product.productId());
             Set<PickupStoreInfo> storeSet = new HashSet<>(productStores);
 
             if (commonStores == null) {
@@ -260,41 +270,43 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private Long calculateDefaultDonation(Long totalAmount) {
+
         return totalAmount % 1000;  // 1000원 미만을 기부금으로
     }
 
     private Long getMemberAvailablePoint(Long memberId) {
+
         return memberMapper.findById(memberId)
-                .map(Member::getPoint)
-                .orElse(0L);
+            .map(Member::getPoint)
+            .orElse(0L);
     }
 
     private OrderDraft createOrderDraft(String orderNumber, Long memberId,
-            List<OrderProductRequest> products, Long productAmount, Long departmentStoreId,
-            Long usedPoint, Long donationPrice) {
+        List<OrderProductRequest> products, Long productAmount, Long departmentStoreId,
+        Long usedPoint, Long donationPrice) {
 
         LocalDateTime now = LocalDateTime.now();
 
         if (departmentStoreId == null) {
             Member member = memberMapper.findById(memberId)
-                    .orElseThrow(() -> new AuthException(AuthenticationError.NOT_EXIST_MEMBER_ID));
+                .orElseThrow(() -> new AuthException(AuthenticationError.NOT_EXIST_MEMBER_ID));
 
             String deliveryAddress = member.getAddress() != null ?
-                    member.getAddress() : "기본 배송지 없음";
+                member.getAddress() : "기본 배송지 없음";
 
             return new OrderDraft(
-                    null, orderNumber, memberId, products,
-                    productAmount, usedPoint, donationPrice,
-                    deliveryAddress,
-                    member.getName(),
-                    null, now, now.plusMinutes(30)
+                null, orderNumber, memberId, products,
+                productAmount, usedPoint, donationPrice,
+                deliveryAddress,
+                member.getName(),
+                null, now, now.plusMinutes(30)
             );
         } else {
             return new OrderDraft(
-                    null, orderNumber, memberId, products,
-                    productAmount, usedPoint, donationPrice,
-                    null, null,
-                    departmentStoreId, now, now.plusMinutes(30)
+                null, orderNumber, memberId, products,
+                productAmount, usedPoint, donationPrice,
+                null, null,
+                departmentStoreId, now, now.plusMinutes(30)
             );
         }
     }

@@ -16,6 +16,7 @@ import org.phoenix.planet.service.car.MemberCarService;
 import org.phoenix.planet.service.member.MemberService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,7 +43,7 @@ public class MemberController {
 
     @GetMapping("/me")
     public ResponseEntity<MemberProfileResponse> fetchProfile(
-            @LoginMemberId long loginMemberId
+        @LoginMemberId long loginMemberId
     ) {
 
         MemberProfileResponse memberProfileResponse = memberService.searchProfile(loginMemberId);
@@ -50,13 +51,13 @@ public class MemberController {
     }
 
     @PutMapping(
-            value = "/me",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+        value = "/me",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateProfile(
-            @LoginMemberId long loginMemberId,
-            @RequestPart("updateProfile") @Valid ProfileUpdateRequest profileUpdateRequest,
-            @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile
+        @LoginMemberId long loginMemberId,
+        @RequestPart("updateProfile") @Valid ProfileUpdateRequest profileUpdateRequest,
+        @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile
     ) {
 
         memberService.updateMemberInfo(loginMemberId, profileUpdateRequest, profileImageFile);
@@ -65,7 +66,7 @@ public class MemberController {
 
     @GetMapping("/me/cars")
     public ResponseEntity<MemberCarResponse> searchMyCar(
-            @LoginMemberId long loginMemberId
+        @LoginMemberId long loginMemberId
     ) {
 
         MemberCarResponse carInfo = memberCarService.searchByMemberId(loginMemberId);
@@ -74,35 +75,44 @@ public class MemberController {
 
     @PostMapping("/me/cars")
     public ResponseEntity<Void> registerMyCar(
-            @LoginMemberId long loginMemberId,
-            @RequestBody @Valid CarRegisterRequest carRegisterRequest
+        @LoginMemberId long loginMemberId,
+        @RequestBody @Valid CarRegisterRequest carRegisterRequest
     ) {
 
         memberCarService.registerCar(loginMemberId, carRegisterRequest);
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/me/cars")
+    public ResponseEntity<Void> unregisterMyCar(@LoginMemberId long loginMemberId) {
+
+        memberCarService.unregisterCar(loginMemberId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/me/orders")
     public ResponseEntity<List<MyOrderResponse>> getMyOrders(
-            @LoginMemberId Long memberId
+        @LoginMemberId Long memberId
     ) {
+
         List<MyOrderResponse> list = memberService.getMyOrders(memberId);
         return ResponseEntity.ok(memberService.getMyOrders(memberId));
     }
 
     @GetMapping("/me/eco-deals")
     public ResponseEntity<List<MyEcoDealResponse>> getMyEcoDeals(
-            @LoginMemberId Long memberId
+        @LoginMemberId Long memberId
     ) {
+
         return ResponseEntity.ok(memberService.getMyEcoDeals(memberId));
     }
 
     @GetMapping("/me/raffles")
     public ResponseEntity<List<MyRaffleResponse>> getMyRaffles(
-            @LoginMemberId Long memberId
+        @LoginMemberId Long memberId
     ) {
+
         System.out.println("여기까지 와요");
         return ResponseEntity.ok(memberService.getMyRaffles(memberId));
     }
-
 }

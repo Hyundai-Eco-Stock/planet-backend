@@ -9,5 +9,4 @@ public interface OrderService {
     CreateOrderResponse createOrder(CreateOrderRequest request, Long memberId);
 
     OrderDraftResponse getOrderDraft(String orderNumber, Long memberId);
-
 }

@@ -4,7 +4,7 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="org.phoenix.planet.mapper.MemberMapper">
-    
+
     <resultMap id="MemberResultMap" type="org.phoenix.planet.dto.member.raw.Member">
         <id column="member_id" property="id"/>
         <result column="email" property="email"/>
@@ -15,7 +15,7 @@
         <result column="birth" property="birth"/>
         <result column="address" property="address"/>
         <result column="detail_address" property="detailAddress"/>
-        
+
         <result column="ROLE" property="role"
             javaType="org.phoenix.planet.constant.Role"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
@@ -23,18 +23,18 @@
             javaType="org.phoenix.planet.constant.Sex"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
         <result column="point" property="point"/>
-        
+
         <result column="created_at" property="createdAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
         <result column="updated_at" property="updatedAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
     </resultMap>
-    
+
     <insert id="insert" parameterType="org.phoenix.planet.dto.member.raw.Member">
         <selectKey keyProperty="id" resultType="long" order="BEFORE">
             SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
         </selectKey>
-        
+
         INSERT INTO MEMBER (
         member_id,
         email,
@@ -63,14 +63,14 @@
         SYSDATE
         )
     </insert>
-    
+
     <update id="updateProfileUrl" parameterType="map">
         UPDATE MEMBER
         SET profile_url = #{profileUrl},
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
-    
+
     <update id="update" parameterType="map">
         UPDATE MEMBER
         SET
@@ -85,7 +85,7 @@
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
-    
+
     <update id="updatePassword" parameterType="map">
         UPDATE MEMBER
         SET
@@ -93,7 +93,7 @@
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
-    
+
     <update id="updateProfile">
         UPDATE MEMBER
         SET
@@ -109,7 +109,7 @@
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
-    
+
     <select id="findById" parameterType="long" resultMap="MemberResultMap">
         SELECT
         member_id,
@@ -129,7 +129,7 @@
         FROM MEMBER
         WHERE member_id = #{memberId}
     </select>
-    
+
     <select id="findByEmail" parameterType="string" resultMap="MemberResultMap">
         SELECT
         member_id,
@@ -147,7 +147,7 @@
         FROM MEMBER
         WHERE email = #{email}
     </select>
-    
+
     <select id="findAll" resultType="org.phoenix.planet.dto.member.response.MemberListResponse">
         SELECT
         member_id,
@@ -175,4 +175,83 @@
         WHERE id = #{memberId}
     </update>
 
+
+    <!--  마이페이지 - 구매내역 -->
+    <select id="findMyOrders" parameterType="long"
+        resultType="org.phoenix.planet.dto.member.response.MyOrderResponse">
+        select
+        H.ORDER_HISTORY_ID,
+        H.ORDER_NUMBER,
+        H.ORDER_STATUS,
+        H.ORIGIN_PRICE,
+        H.USED_POINT,
+        H.DONATION_PRICE,
+        H.FINAL_PAY_PRICE,
+        H.ECO_DEAL_QR_URL,
+        H.MEMBER_ID,
+        H.CREATED_AT,
+        OP.ORDER_PRODUCT_ID,
+        OP.PRICE,
+        OP.QUANTITY,
+        OP.CANCEL_STATUS,
+        OP.ORDER_TYPE,
+        OP.PRODUCT_ID,
+        OP.DISCOUNT_PRICE,
+        P.ECO_DEAL_STATUS,
+        P.NAME as PRODUCT_NAME,
+        P.IMAGE_URL as PRODUCT_IMAGE_URL,
+        PH.PAYMENT_STATUS
+        from ORDER_HISTORY H
+        join ORDER_PRODUCT OP on H.ORDER_HISTORY_ID = OP.ORDER_HISTORY_ID
+        join PRODUCT P on OP.PRODUCT_ID = P.PRODUCT_ID
+        join PAYMENT_HISTORY PH on H.ORDER_HISTORY_ID = PH.ORDER_HISTORY_ID
+        where H.MEMBER_ID = #{memberId}
+        order by H.ORDER_HISTORY_ID desc, OP.ORDER_PRODUCT_ID desc
+    </select>
+
+
+    <!-- 마이페이지 - 에약한 에코딜 상품 -->
+    <select id="reservedEcoDeal" parameterType="long"
+        resultType="org.phoenix.planet.dto.member.response.MyEcoDealResponse">
+        select
+        OH.ORDER_HISTORY_ID,
+        OH.ORDER_NUMBER,
+        OH.ORDER_STATUS,
+        OH.ORIGIN_PRICE,
+        OH.USED_POINT,
+        OH.DONATION_PRICE,
+        OH.FINAL_PAY_PRICE,
+        OH.ECO_DEAL_QR_URL,
+        OH.CREATED_AT,
+        OP.PRODUCT_ID,
+        OP.PRICE,
+        OP.QUANTITY,
+        OP.CANCEL_STATUS,
+        OP.ORDER_TYPE,
+        P.NAME AS PRODUCT_NAME,
+        P.ECO_DEAL_STATUS,
+        P.SALE_PERCENT,
+        P.IMAGE_URL
+        from ORDER_HISTORY OH
+        join ORDER_PRODUCT OP on OP.ORDER_HISTORY_ID = OH.ORDER_HISTORY_ID
+        join PRODUCT P on P.PRODUCT_ID = OP.PRODUCT_ID
+        where MEMBER_ID = #{member_id} and P.ECO_DEAL_STATUS = 'Y'
+    </select>
+
+    <select id="getMyRaffles" parameterType="long"
+        resultType="org.phoenix.planet.dto.member.response.MyRaffleResponse">
+        select
+        RH.RAFFLE_HISTORY_ID,
+        RH.WIN_STATUS,
+        RH.raffle_id,
+        R.START_DATE,
+        R.END_DATE,
+        P.NAME as product_name,
+        P.IMAGE_URL as productImageUrl
+        from raffle_history RH
+        join RAFFLE R on RH.RAFFLE_ID = R.RAFFLE_ID
+        join PRODUCT P on R.PRODUCT_ID = P.PRODUCT_ID
+        where MEMBER_ID = #{memberId}
+        order by RAFFLE_ID desc
+    </select>
 </mapper>

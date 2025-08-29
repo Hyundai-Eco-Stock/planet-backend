@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -28,10 +29,13 @@ public class RaffleHistoryServiceImpl implements RaffleHistoryService {
     @Transactional
     public void bulkUpdateWinners(List<WinnerInfo> winnerInfos) {
 
-        raffleHistoryMapper.bulkUpdateWinners(
-                winnerInfos.stream()
-                        .map(WinnerInfo::getRaffleHistoryId)
-                        .toList()
-        );
+        List<Long> ids = winnerInfos.stream()
+                .map(WinnerInfo::getRaffleHistoryId)
+                .filter(Objects::nonNull) // ✅ null 제거
+                .toList();
+
+        if (ids.isEmpty()) return;
+
+        raffleHistoryMapper.bulkUpdateWinners(ids);
     }
 }

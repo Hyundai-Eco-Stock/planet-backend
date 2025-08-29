@@ -42,7 +42,7 @@ public class RaffleController {
     }
 
     @GetMapping("/{raffleId}/participate")
-    public ResponseEntity<?> getRaffleParticipate(@PathVariable Long raffleId, @LoginMemberId Long memberId) {
+    public ResponseEntity<Void> getRaffleParticipate(@PathVariable Long raffleId, @LoginMemberId Long memberId) {
 
         raffleService.participateRaffle(raffleId, memberId);
 

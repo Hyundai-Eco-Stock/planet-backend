@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,7 +41,6 @@ public class MemberDeviceTokenService {
 
         List<Long> memberIds = winnerInfos.stream()
                 .map(WinnerInfo::getMemberId)
-                .filter(Objects::nonNull)
                 .toList();
 
         List<MemberFcmToken> results = mapper.searchFcmTokensByMemberIds(memberIds);

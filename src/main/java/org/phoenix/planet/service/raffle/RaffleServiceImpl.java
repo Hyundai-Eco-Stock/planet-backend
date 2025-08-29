@@ -112,73 +112,63 @@ public class RaffleServiceImpl implements RaffleService {
         //래플 당철 처리 할 데이터 조회 및 지원자 조회
         List<RaffleHistoryWithDetail> raffleHistories = raffleHistoryService.findEndedYesterday(yesterday);
 
+        if (raffleHistories.isEmpty()) {
+            return;
+        }
+
         log.info("지원자들 {}", raffleHistories);
 
         // 랜덤 당첨자 추출
         List<WinnerInfo> winnerInfos = drawRaffleWinners(raffleHistories);
 
-        log.info("당첨자들 {}", winnerInfos);
-
-        if (winnerInfos == null || winnerInfos.isEmpty()) {
-            return; // bulkUpdate 호출 안 함
-        }
-
-        // 당첨 처리 벌크 업데이트
-        raffleHistoryService.bulkUpdateWinners(winnerInfos);
-
+        // 래플 상태 업데이트 (모든 래플)
         List<Long> raffleIds = raffleHistories.stream()
                 .map(RaffleHistoryWithDetail::getRaffleId)
                 .toList();
 
         raffleMapper.bulkUpdateRaffleUpdatedAt(raffleIds);
-        // 당첨된 사람 FCM 토큰 조회
-        Map<Long, List<String>> tokenMap =
-                memberDeviceTokenService.findFcmTokensByMemberIds(winnerInfos);
 
-        for (WinnerInfo winner : winnerInfos) {
-
-            List<String> tokens = tokenMap.get(winner.getMemberId());
-
-            if (tokens == null || tokens.isEmpty())
-                continue;
-
-            String body = String.format("축하합니다! %s 래플에 당첨되셨습니다.", winner.getRaffleName());
-
-            //당첨자 알림 전송
-            fcmService.sendRaffleWinNotification(tokens, body);
+        // 당첨자 처리 및 알림
+        if (!winnerInfos.isEmpty()) {
+            processWinnersAndNotify(winnerInfos);
         }
     }
 
+    private void processWinnersAndNotify(List<WinnerInfo> winnerInfos) {
+        // 당첨 처리 벌크 업데이트
+        raffleHistoryService.bulkUpdateWinners(winnerInfos);
 
-    public List<WinnerInfo> drawRaffleWinners(List<RaffleHistoryWithDetail> raffleHistories) {
+        // FCM 토큰 조회 및 알림 발송
+        Map<Long, List<String>> tokenMap = memberDeviceTokenService.findFcmTokensByMemberIds(winnerInfos);
 
+        winnerInfos.stream()
+                .filter(winner -> !CollectionUtils.isEmpty(tokenMap.get(winner.getMemberId())))
+                .forEach(winner -> sendWinNotification(winner, tokenMap.get(winner.getMemberId())));
+    }
+
+    private List<WinnerInfo> drawRaffleWinners(List<RaffleHistoryWithDetail> raffleHistories) {
         return raffleHistories.stream()
-                .map(r ->
-                        CollectionUtils.isEmpty(r.getRaffleHistories())
-                                ? noWinner(r)                // 지원자 없으면
-                                : pickRandomWinner(r))       // 지원자 있으면
+                .filter(r -> !CollectionUtils.isEmpty(r.getRaffleHistories())) // 지원자 있는 것만
+                .map(this::pickRandomWinner)
                 .toList();
     }
 
-    private WinnerInfo noWinner(RaffleHistoryWithDetail raffle) {
-        return WinnerInfo.builder()
-                .raffleHistoryId(null)
-                .memberId(null)
-                .raffleName(raffle.getRaffleName())
-                .build();
-    }
-
     private WinnerInfo pickRandomWinner(RaffleHistoryWithDetail raffle) {
-
         List<RaffleHistory> applicants = raffle.getRaffleHistories();
 
-        RaffleHistory winner =
-                applicants.get(secureRandom.nextInt(applicants.size())); // SecureRandom 권장
+        RaffleHistory winner = applicants.get(secureRandom.nextInt(applicants.size()));
 
         return WinnerInfo.builder()
                 .raffleHistoryId(winner.getRaffleHistoryId())
                 .memberId(winner.getMemberId())
                 .raffleName(raffle.getRaffleName())
                 .build();
+    }
+
+    private void sendWinNotification(WinnerInfo winner, List<String> tokens) {
+
+        String body = String.format("축하합니다! %s 래플에 당첨되셨습니다.", winner.getRaffleName());
+
+        fcmService.sendRaffleWinNotification(tokens, body);
     }
 }

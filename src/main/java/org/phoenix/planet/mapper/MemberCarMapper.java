@@ -1,5 +1,6 @@
 package org.phoenix.planet.mapper;
 
+import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.dto.car.response.MemberCarResponse;
@@ -7,10 +8,10 @@ import org.phoenix.planet.dto.car.response.MemberCarResponse;
 @Mapper
 public interface MemberCarMapper {
 
-    MemberCarResponse selectByMemberId(
+    Optional<MemberCarResponse> selectByMemberId(
         @Param("memberId") long memberId);
 
-    MemberCarResponse selectByCarNumber(
+    Optional<MemberCarResponse> selectByCarNumber(
         @Param("carNumber") String carNumber);
 
     void insert(

@@ -18,13 +18,15 @@ public class MemberMemberCarServiceImpl implements MemberCarService {
     @Override
     public MemberCarResponse searchByMemberId(long memberId) {
 
-        return memberCarMapper.selectByMemberId(memberId);
+        return memberCarMapper.selectByMemberId(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("memberId에 해당하는 차량 정보가 없습니다."));
     }
 
     @Override
     public MemberCarResponse searchByCarNumber(String carNumber) {
 
-        return memberCarMapper.selectByCarNumber(carNumber);
+        return memberCarMapper.selectByCarNumber(carNumber)
+            .orElseThrow(() -> new IllegalArgumentException("carNumber에 해당하는 차량 정보가 없습니다."));
     }
 
     @Override

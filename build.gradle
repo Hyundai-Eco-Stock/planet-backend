@@ -94,6 +94,12 @@ dependencies {
 
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // 분산락
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    // Websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {

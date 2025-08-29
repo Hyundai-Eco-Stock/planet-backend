@@ -57,4 +57,6 @@ public interface MemberMapper {
 
     List<MyRaffleResponse> getMyRaffles(Long memberId);
 
+    int restorePointsByMemberId(@Param("memberId") Long memberId, @Param("points") int points);
+
 }

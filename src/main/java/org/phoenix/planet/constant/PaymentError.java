@@ -28,9 +28,16 @@ public enum PaymentError {
     DELIVERY_INFO_REQUIRED(HttpStatus.BAD_REQUEST,"일반 배송 주문의 경우 배송 정보는 필수입니다."),
     PICKUP_INFO_REQUIRED(HttpStatus.BAD_REQUEST,"픽업 배송 주문의 경우 픽업 정보는 필수입니다."),
 
-    // 재고 및 포인트 오류
+    // 재고 및 포인트 등 오류
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "상품 재고가 부족합니다."),
+    STOCK_RESTORE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "재고 복구 처리에 실패했습니다."),
     INSUFFICIENT_POINTS(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
+    POINT_REFUND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "포인트 환불 처리에 실패했습니다."),
+    INVALID_POINT_AMOUNT(HttpStatus.BAD_REQUEST, "유효하지 않은 포인트 금액입니다."),
+    DONATION_CANCEL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "기부금 취소 처리에 실패했습니다."),
+    ORDER_STATUS_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "주문 상태 업데이트에 실패했습니다."),
+    INVALID_CANCEL_RESPONSE(HttpStatus.BAD_REQUEST, "취소 응답 정보가 올바르지 않습니다."),
+    PAYMENT_STATUS_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 상태 업데이트에 실패했습니다."),
 
     // QR 코드 관련 오류
     QR_CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "QR 코드 생성에 실패했습니다."),

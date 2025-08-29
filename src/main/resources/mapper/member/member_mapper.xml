@@ -1,171 +1,179 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="org.phoenix.planet.mapper.MemberMapper">
-
-  <resultMap id="MemberResultMap" type="org.phoenix.planet.dto.member.raw.Member">
-    <id column="member_id" property="id"/>
-    <result column="email" property="email"/>
-    <result column="name" property="name"/>
-    <result column="profile_url" property="profileUrl"/>
-    <result column="pwd_hash" property="pwdHash"/>
-    <result column="provider" property="provider"/>
-    <result column="birth" property="birth"/>
-    <result column="address" property="address"/>
-    <result column="detail_address" property="detailAddress"/>
-
-    <result column="ROLE" property="role"
-      javaType="org.phoenix.planet.constant.Role"
-      typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
-    <result column="SEX" property="sex"
-      javaType="org.phoenix.planet.constant.Sex"
-      typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
-    <result column="point" property="point"/>
-
-    <result column="created_at" property="createdAt" jdbcType="DATE"
-      javaType="java.time.LocalDateTime"/>
-    <result column="updated_at" property="updatedAt" jdbcType="DATE"
-      javaType="java.time.LocalDateTime"/>
-  </resultMap>
-
-  <insert id="insert" parameterType="org.phoenix.planet.dto.member.raw.Member">
-    <selectKey keyProperty="id" resultType="long" order="BEFORE">
-      SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
-    </selectKey>
-
-    INSERT INTO MEMBER (
-    member_id,
-    email,
-    name,
-    profile_url,
-    pwd_hash,
-    provider,
-    address,
-    detail_address,
-    "ROLE",
-    "SEX",
-    updated_at
-    ) VALUES (
-    #{id},
-    #{email,        jdbcType=VARCHAR},
-    #{name,         jdbcType=VARCHAR},
-    #{profileUrl,   jdbcType=VARCHAR},
-    #{pwdHash,      jdbcType=VARCHAR},
-    #{provider,     jdbcType=VARCHAR},
-    #{address,      jdbcType=VARCHAR},
-    #{detailAddress,jdbcType=VARCHAR},
-    #{role, javaType=org.phoenix.planet.constant.Role,
-           typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
-    #{sex,  javaType=org.phoenix.planet.constant.Sex,
-           typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
-    SYSDATE
-    )
-  </insert>
-
-  <update id="updateProfileUrl" parameterType="map">
-    UPDATE MEMBER
-    SET profile_url = #{profileUrl},
-    updated_at = SYSDATE
-    WHERE member_id = #{memberId}
-  </update>
-
-  <update id="update" parameterType="map">
-    UPDATE MEMBER
-    SET
-    pwd_hash = #{pwdHash},
-    sex = #{sex,
+    
+    <resultMap id="MemberResultMap" type="org.phoenix.planet.dto.member.raw.Member">
+        <id column="member_id" property="id"/>
+        <result column="email" property="email"/>
+        <result column="name" property="name"/>
+        <result column="profile_url" property="profileUrl"/>
+        <result column="pwd_hash" property="pwdHash"/>
+        <result column="provider" property="provider"/>
+        <result column="birth" property="birth"/>
+        <result column="address" property="address"/>
+        <result column="detail_address" property="detailAddress"/>
+        
+        <result column="ROLE" property="role"
+            javaType="org.phoenix.planet.constant.Role"
+            typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="SEX" property="sex"
+            javaType="org.phoenix.planet.constant.Sex"
+            typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="point" property="point"/>
+        
+        <result column="created_at" property="createdAt" jdbcType="DATE"
+            javaType="java.time.LocalDateTime"/>
+        <result column="updated_at" property="updatedAt" jdbcType="DATE"
+            javaType="java.time.LocalDateTime"/>
+    </resultMap>
+    
+    <insert id="insert" parameterType="org.phoenix.planet.dto.member.raw.Member">
+        <selectKey keyProperty="id" resultType="long" order="BEFORE">
+            SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
+        </selectKey>
+        
+        INSERT INTO MEMBER (
+        member_id,
+        email,
+        name,
+        profile_url,
+        pwd_hash,
+        provider,
+        address,
+        detail_address,
+        "ROLE",
+        "SEX",
+        updated_at
+        ) VALUES (
+        #{id},
+        #{email,        jdbcType=VARCHAR},
+        #{name,         jdbcType=VARCHAR},
+        #{profileUrl,   jdbcType=VARCHAR},
+        #{pwdHash,      jdbcType=VARCHAR},
+        #{provider,     jdbcType=VARCHAR},
+        #{address,      jdbcType=VARCHAR},
+        #{detailAddress,jdbcType=VARCHAR},
+        #{role, javaType=org.phoenix.planet.constant.Role,
+               typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
+        #{sex,  javaType=org.phoenix.planet.constant.Sex,
+               typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
+        SYSDATE
+        )
+    </insert>
+    
+    <update id="updateProfileUrl" parameterType="map">
+        UPDATE MEMBER
+        SET profile_url = #{profileUrl},
+        updated_at = SYSDATE
+        WHERE member_id = #{memberId}
+    </update>
+    
+    <update id="update" parameterType="map">
+        UPDATE MEMBER
+        SET
+        pwd_hash = #{pwdHash},
+        sex = #{sex,
                 javaType=org.phoenix.planet.constant.Sex,
                 typeHandler=org.apache.ibatis.type.EnumTypeHandler,
                 jdbcType=VARCHAR},
-    birth = TO_DATE(#{birth}, 'YYYY-MM-DD'),
-    address = #{address},
-    detail_address = #{detailAddress},
-    updated_at = SYSDATE
-    WHERE member_id = #{memberId}
-  </update>
-
-  <update id="updatePassword" parameterType="map">
-    UPDATE MEMBER
-    SET
-    pwd_hash = #{pwdHash},
-    updated_at = SYSDATE
-    WHERE member_id = #{memberId}
-  </update>
-
-  <update id="updateProfile">
-    UPDATE MEMBER
-    SET
-    <!--        email = #{email},-->
-    <!--        name = #{name},-->
-    sex = #{sex,
+        birth = TO_DATE(#{birth}, 'YYYY-MM-DD'),
+        address = #{address},
+        detail_address = #{detailAddress},
+        updated_at = SYSDATE
+        WHERE member_id = #{memberId}
+    </update>
+    
+    <update id="updatePassword" parameterType="map">
+        UPDATE MEMBER
+        SET
+        pwd_hash = #{pwdHash},
+        updated_at = SYSDATE
+        WHERE member_id = #{memberId}
+    </update>
+    
+    <update id="updateProfile">
+        UPDATE MEMBER
+        SET
+        <!--        email = #{email},-->
+        <!--        name = #{name},-->
+        sex = #{sex,
                 javaType=org.phoenix.planet.constant.Sex,
                 typeHandler=org.apache.ibatis.type.EnumTypeHandler,
                 jdbcType=VARCHAR},
-    birth = #{birth},
-    address = #{address},
-    detail_address = #{detailAddress},
-    updated_at = SYSDATE
-    WHERE member_id = #{memberId}
-  </update>
+        birth = #{birth},
+        address = #{address},
+        detail_address = #{detailAddress},
+        updated_at = SYSDATE
+        WHERE member_id = #{memberId}
+    </update>
+    
+    <select id="findById" parameterType="long" resultMap="MemberResultMap">
+        SELECT
+        member_id,
+        email,
+        name,
+        profile_url,
+        pwd_hash,
+        provider,
+        TO_CHAR(birth, 'YYYY-MM-DD') AS birth,
+        address,
+        detail_address,
+        "ROLE",
+        "SEX",
+        point,
+        created_at,
+        updated_at
+        FROM MEMBER
+        WHERE member_id = #{memberId}
+    </select>
+    
+    <select id="findByEmail" parameterType="string" resultMap="MemberResultMap">
+        SELECT
+        member_id,
+        email,
+        name,
+        profile_url,
+        pwd_hash,
+        provider,
+        address,
+        detail_address,
+        "ROLE",
+        "SEX",
+        created_at,
+        updated_at
+        FROM MEMBER
+        WHERE email = #{email}
+    </select>
+    
+    <select id="findAll" resultType="org.phoenix.planet.dto.member.response.MemberListResponse">
+        SELECT
+        member_id,
+        email,
+        name,
+        "SEX"
+        FROM MEMBER
+        WHERE role = 'USER'
+    </select>
 
-  <select id="findById" parameterType="long" resultMap="MemberResultMap">
-    SELECT
-    member_id,
-    email,
-    name,
-    profile_url,
-    pwd_hash,
-    provider,
-    TO_CHAR(birth, 'YYYY-MM-DD') AS birth,
-    address,
-    detail_address,
-    "ROLE",
-    "SEX",
-    point,
-    created_at,
-    updated_at
-    FROM MEMBER
-    WHERE member_id = #{memberId}
-  </select>
+    <!-- 포인트 차감 -->
+    <update id="deductPointsByMemberId">
+        UPDATE member
+        SET point = point - #{points},
+        updated_at = CURRENT_TIMESTAMP
+        WHERE member_id = #{memberId}
+        AND point >= #{points}
+    </update>
 
-  <select id="findByEmail" parameterType="string" resultMap="MemberResultMap">
-    SELECT
-    member_id,
-    email,
-    name,
-    profile_url,
-    pwd_hash,
-    provider,
-    address,
-    detail_address,
-    "ROLE",
-    "SEX",
-    created_at,
-    updated_at
-    FROM MEMBER
-    WHERE email = #{email}
-  </select>
-
-  <select id="findAll" resultType="org.phoenix.planet.dto.member.response.MemberListResponse">
-    SELECT
-    member_id,
-    email,
-    name,
-    "SEX"
-    FROM MEMBER
-    WHERE role = 'USER'
-  </select>
-
-  <!-- 포인트 차감 -->
-  <update id="deductPointsByMemberId">
-    UPDATE member
-    SET point = point - #{points},
-    updated_at = CURRENT_TIMESTAMP
-    WHERE member_id = #{memberId}
-    AND point >= #{points}
-  </update>
+    <!-- 포인트 복구 -->
+    <update id="restorePointsByMemberId">
+        UPDATE member
+        SET points = points + #{points},
+        updated_at = SYSDATE
+        WHERE id = #{memberId}
+    </update>
 
 
   <!--  마이페이지 - 구매내역 -->

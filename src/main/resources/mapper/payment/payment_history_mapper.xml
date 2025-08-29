@@ -15,8 +15,8 @@
         payment_key,
         order_id,
         total_amount,
-        method,
-        status,
+        payment_method,
+        payment_status,
         requested_at,
         approved_at,
         balance_amount,
@@ -52,8 +52,8 @@
         payment_key as paymentKey,
         order_id as orderId,
         total_amount as totalAmount,
-        method,
-        status,
+        payment_method,
+        payment_status,
         requested_at as requestedAt,
         approved_at as approvedAt,
         balance_amount as balanceAmount,
@@ -74,8 +74,8 @@
         payment_key as paymentKey,
         order_id as orderId,
         total_amount as totalAmount,
-        method,
-        status,
+        payment_method,
+        payment_status,
         requested_at as requestedAt,
         approved_at as approvedAt,
         balance_amount as balanceAmount,
@@ -87,5 +87,12 @@
         FROM payment_history
         WHERE order_history_id = #{orderHistoryId}
     </select>
+
+    <update id="updatePaymentStatus" parameterType="map">
+        UPDATE payment_history
+        SET payment_status = #{paymentStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+        updated_at = SYSDATE
+        WHERE payment_id = #{paymentId}
+    </update>
 
 </mapper>

@@ -87,6 +87,8 @@ CREATE TABLE stock_price_history
     eco_stock_id           NUMBER               NOT NULL,
     created_at             DATE DEFAULT SYSDATE NOT NULL,
     updated_at             DATE,
+    sell_count             number               not null,
+    buy_count              number               not null,
     CONSTRAINT PK_STOCK_PRICE_HISTORY PRIMARY KEY (stock_price_history_id),
     CONSTRAINT fk_stock_price_history_eco FOREIGN KEY (eco_stock_id)
         REFERENCES eco_stock (eco_stock_id)
@@ -331,30 +333,34 @@ CREATE SEQUENCE seq_customer_inquery START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE
 
 
 -- ------------------------- 래플 -------------------------
-CREATE TABLE raffle
+CREATE TABLE RAFFLE
 (
-    raffle_id        NUMBER               NOT NULL,
-    name             VARCHAR2(255)        NOT NULL,
-    eco_stock_id     NUMBER               NOT NULL,
-    eco_stock_amount NUMBER               NOT NULL,
-    product_price    NUMBER               NOT NULL,
-    start_date       DATE                 NOT NULL,
-    end_date         DATE                 NOT NULL,
-    description      VARCHAR2(2000)       NOT NULL,
-    image_url        VARCHAR2(511)        NOT NULL,
-    created_at       DATE DEFAULT SYSDATE NOT NULL,
-    updated_at       DATE,
-    CONSTRAINT PK_RAFFLE PRIMARY KEY (raffle_id),
-    CONSTRAINT fk_raffle_eco_stock FOREIGN KEY (eco_stock_id)
-        REFERENCES eco_stock (eco_stock_id)
+    RAFFLE_ID        NUMBER               NOT NULL
+        CONSTRAINT PK_RAFFLE PRIMARY KEY,
+    ECO_STOCK_ID     NUMBER               NOT NULL,
+    PRODUCT_ID       NUMBER               NOT NULL,
+    ECO_STOCK_AMOUNT NUMBER               NOT NULL,
+    START_DATE       DATE                 NOT NULL,
+    END_DATE         DATE                 NOT NULL,
+    CREATED_AT       DATE DEFAULT SYSDATE NOT NULL,
+    UPDATED_AT       DATE,
+
+    CONSTRAINT FK_RAFFLE_ECO_STOCK
+        FOREIGN KEY (ECO_STOCK_ID)
+            REFERENCES ECO_STOCK (ECO_STOCK_ID),
+
+    CONSTRAINT FK_RAFFLE_PRODUCT
+        FOREIGN KEY (PRODUCT_ID)
+            REFERENCES PRODUCT (PRODUCT_ID)
 );
+
 CREATE SEQUENCE seq_raffle START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 
 CREATE TABLE raffle_history
 (
     raffle_history_id NUMBER               NOT NULL,
-    win_status        VARCHAR2(100),
+    win_status        VARCHAR2(100) default 'N',
     raffle_id         NUMBER               NOT NULL,
     member_id         NUMBER               NOT NULL,
     created_at        DATE DEFAULT SYSDATE NOT NULL,

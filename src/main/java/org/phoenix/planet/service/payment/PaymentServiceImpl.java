@@ -2,23 +2,25 @@ package org.phoenix.planet.service.payment;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.constant.CancelStatus;
-import org.phoenix.planet.constant.OrderStatus;
-import org.phoenix.planet.constant.OrderType;
-import org.phoenix.planet.constant.PaymentError;
+import org.phoenix.planet.constant.*;
 import org.phoenix.planet.dto.order.raw.OrderHistory;
 import org.phoenix.planet.dto.order.raw.OrderProduct;
 import org.phoenix.planet.dto.payment.raw.PaymentHistory;
+import org.phoenix.planet.dto.payment.request.PaymentCancelReqeust;
 import org.phoenix.planet.dto.payment.request.PaymentConfirmRequest;
+import org.phoenix.planet.dto.payment.response.PaymentCancelResponse;
 import org.phoenix.planet.dto.payment.response.PaymentConfirmResponse;
 import org.phoenix.planet.dto.payment.response.TossPaymentResponse;
+import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.error.payment.PaymentException;
 import org.phoenix.planet.mapper.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -81,6 +83,180 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("결제 승인 완료: orderId={}, paymentKey={}", request.orderId(), request.paymentKey());
 
         return new PaymentConfirmResponse(true, "결제가 성공적으로 완료되었습니다.", resultData);
+    }
+
+    @Override
+    @Transactional
+    public PaymentCancelResponse cancelEntireOrder(Long orderHistoryId, PaymentCancelReqeust request) {
+        log.info("주문 전체 취소 프로세스 시작 - orderId: {}, reason: {}", orderHistoryId, request.cancelReason());
+
+        // 주문 및 결제 정보 조회
+        OrderHistory order = orderHistoryMapper.findById(orderHistoryId);
+        if (order == null) {
+            throw new OrderException(OrderError.ORDER_NOT_FOUND);
+        }
+
+        PaymentHistory payment = paymentHistoryMapper.findByOrderHistoryId(orderHistoryId);
+        if (payment == null) {
+            throw new PaymentException(PaymentError.PAYMENT_NOT_FOUND);
+        }
+
+        // 취소 가능 상태 검증
+        validateCancelableOrder(order, payment);
+
+        // 주문 상품 목록 조회
+        List<OrderProduct> orderProducts = orderProductMapper.findOrderProductsByOrderHistoryId(orderHistoryId);
+
+        // TossPayments 취소 요청
+        TossPaymentResponse tossResponse = requestTossCancel(payment, order.getFinalPayPrice().intValue(), request.cancelReason());
+
+        // 재고 복구
+        restoreInventory(orderProducts);
+
+        //  포인트 환불
+        refundPoints(order);
+
+        // 기부 취소 처리
+        Long refundedDonation = cancelDonation(order, true, false);
+
+        // 주문 상태를 전체 취소로 업데이트
+        updateOrderStatus(orderHistoryId, OrderStatus.ALL_CANCELLED);
+
+        // 결제 상태 업데이트
+        updatePaymentStatus(payment.getPaymentId(), true);
+
+        // 모든 주문 상품을 취소 상태로 변경
+        orderProductMapper.updateAllOrderProductsCancelStatus(orderHistoryId, CancelStatus.Y);
+
+        Long cancelAmount = (long) tossResponse.cancels().getFirst().cancelAmount();
+        Long refundedPoints = order.getUsedPoint() != null ? order.getUsedPoint() : 0L;
+
+        log.info("주문 전체 취소 완료 - orderId: {}, cancelAmount: {}, refundedPoints: {}", orderHistoryId, cancelAmount, refundedPoints);
+
+        return PaymentCancelResponse.success(
+                orderHistoryId,
+                order.getOrderNumber(),
+                cancelAmount,
+                refundedPoints,
+                "주문이 성공적으로 취소되었습니다."
+        );
+    }
+
+    /**
+     * 취소 가능 상태 검증
+     */
+    private void validateCancelableOrder(OrderHistory order, PaymentHistory payment) {
+        if (order.getOrderStatus() != OrderStatus.PAID) {
+            switch (order.getOrderStatus()) {
+                case PENDING:
+                    throw new IllegalStateException("결제가 완료되지 않은 주문은 취소할 수 없습니다.");
+                case ALL_CANCELLED:
+                    throw new IllegalStateException("이미 전체 취소된 주문입니다.");
+                case DONE:
+                    throw new IllegalStateException("구매 확정된 주문은 취소할 수 없습니다.");
+                default:
+                    throw new IllegalStateException("취소할 수 없는 주문 상태입니다.");
+            }
+        }
+
+        // 결제 실패 또는 취소된 결제
+        if (payment.getStatus() == PaymentStatus.ABORTED ||
+                payment.getStatus() == PaymentStatus.CANCELED) {
+            throw new IllegalStateException("결제가 완료되지 않은 주문은 취소할 수 없습니다.");
+        }
+    }
+
+    /**
+     * TossPayments 취소 요청
+     */
+    private TossPaymentResponse requestTossCancel(PaymentHistory payment, Integer cancelAmount, String cancelReason) {
+        return tossPaymentsClient.cancelPayment(payment.getPaymentKey(), cancelAmount, cancelReason);
+    }
+
+    /**
+     * 재고 복구
+     */
+    private void restoreInventory(List<OrderProduct> orderProducts) {
+        for (OrderProduct orderProduct : orderProducts) {
+            if (orderProduct.getCancelStatus() == CancelStatus.N) {
+                int result = productMapper.restoreStock(orderProduct.getProductId(), orderProduct.getQuantity());
+
+                if (result == 0) {
+                    throw new PaymentException(PaymentError.STOCK_RESTORE_FAILED);
+                }
+
+                log.info("재고 복구 완료 - productId: {}, quantity: {}", orderProduct.getProductId(), orderProduct.getQuantity());
+            }
+        }
+    }
+
+    /**
+     * 포인트 환불
+     */
+    private void refundPoints(OrderHistory order) {
+        if (order.getUsedPoint() != null && order.getUsedPoint().intValue() > 0) {
+            int result = memberMapper.restorePointsByMemberId(
+                    order.getMemberId(),
+                    order.getUsedPoint().intValue()
+            );
+
+            if (result == 0) {
+                throw new PaymentException(PaymentError.POINT_REFUND_FAILED);
+            }
+
+            log.info("포인트 환불 완료 - memberId: {}, amount: {}", order.getMemberId(), order.getUsedPoint());
+        }
+    }
+
+    /**
+     * 기부금 취소 처리 (전체/부분 취소 공통)
+     */
+    private Long cancelDonation(OrderHistory order, boolean isFullCancel, boolean cancelDonationForPartial) {
+        if (order.getDonationPrice() == null || order.getDonationPrice().intValue() <= 0) {
+            return 0L;
+        }
+
+        // 전체 취소이거나, 부분 취소에서 기부금 취소를 선택한 경우
+        if (isFullCancel || cancelDonationForPartial) {
+            Long donationAmount = order.getDonationPrice();
+
+            // order_history의 donation_price를 0으로 업데이트
+            int result = orderHistoryMapper.updateDonationPrice(order.getOrderHistoryId(), 0L);
+            if (result == 0) {
+                throw new PaymentException(PaymentError.DONATION_CANCEL_FAILED);
+            }
+
+            log.info("기부금 취소 완료 - orderId: {}, donationAmount: {}", order.getMemberId(), donationAmount);
+
+            return donationAmount; // 환불할 기부금 반환
+        }
+
+        return 0L; // 기부금 취소 안 함
+    }
+
+    /**
+     * 주문 상태 업데이트
+     */
+    private void updateOrderStatus(Long orderId, OrderStatus status) {
+        int result = orderHistoryMapper.updateOrderStatus(orderId, status, LocalDateTime.now());
+        if (result == 0) {
+            throw new PaymentException(PaymentError.ORDER_STATUS_UPDATE_FAILED);
+        }
+        log.info("주문 상태 업데이트 완료 - orderId: {}, status: {}", orderId, status);
+    }
+
+    /**
+     * 결제 상태 업데이트 (전체/부분 취소 공통)
+     */
+    private void updatePaymentStatus(Long paymentId, boolean isFullCancel) {
+        PaymentStatus paymentStatus = isFullCancel ? PaymentStatus.CANCELED : PaymentStatus.PARTIAL_CANCELED;
+        int result = paymentHistoryMapper.updatePaymentStatus(paymentId, paymentStatus);
+
+        if (result == 0) {
+            throw new PaymentException(PaymentError.PAYMENT_STATUS_UPDATE_FAILED);
+        }
+
+        log.info("결제 상태 업데이트 완료 - paymentId: {}, status: {}", paymentId, paymentStatus);
     }
 
     /**

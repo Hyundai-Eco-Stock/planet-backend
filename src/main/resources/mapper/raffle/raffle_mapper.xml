@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.RaffleMapper">
+
+    <select id="findAll" resultType="org.phoenix.planet.dto.raffle.RaffleResponse">
+        SELECT
+            R.RAFFLE_ID       AS raffleId,
+            R.ECO_STOCK_AMOUNT AS ecoStockAmount,
+            R.START_DATE      AS startDate,
+            R.END_DATE        AS endDate,
+
+            P.PRODUCT_ID      AS productId,
+            P.NAME            AS productName,
+            P.PRICE           AS price,
+            P.IMAGE_URL       AS imageUrl,
+
+            B.NAME            AS brandName,
+
+            ES.ECO_STOCK_ID   AS ecoStockId,
+            ES.NAME           AS ecoStockName,
+
+            COUNT(RH.RAFFLE_HISTORY_ID) AS participantCount   -- 참여 인원 수
+
+        FROM RAFFLE R
+            JOIN PRODUCT P ON R.PRODUCT_ID = P.PRODUCT_ID
+            JOIN ECO_STOCK ES ON R.ECO_STOCK_ID = ES.ECO_STOCK_ID
+            JOIN BRAND B ON P.BRAND_ID = B.BRAND_ID
+            LEFT JOIN RAFFLE_HISTORY RH ON RH.RAFFLE_ID = R.RAFFLE_ID
+        GROUP BY
+            R.RAFFLE_ID, R.ECO_STOCK_AMOUNT, R.START_DATE, R.END_DATE,
+            P.PRODUCT_ID, P.NAME, P.PRICE, P.IMAGE_URL,
+            B.NAME,
+            ES.ECO_STOCK_ID, ES.NAME
+    </select>
+
+    <resultMap id="RaffleDetailMap" type="org.phoenix.planet.dto.raffle.RaffleDetailResponse">
+        <id property="raffleId" column="raffleId"/>
+        <result property="ecoStockAmount" column="ecoStockAmount"/>
+        <result property="startDate" column="startDate"/>
+        <result property="endDate" column="endDate"/>
+        <result property="productId" column="productId"/>
+        <result property="productName" column="productName"/>
+        <result property="price" column="price"/>
+        <result property="imageUrl" column="imageUrl"/>
+        <result property="brandName" column="brandName"/>
+        <result property="ecoStockId" column="ecoStockId"/>
+        <result property="ecoStockName" column="ecoStockName"/>
+
+        <collection property="images"
+                    javaType="java.util.ArrayList"
+                    ofType="org.phoenix.planet.dto.raffle.ProductImage"
+                    notNullColumn="image_id">
+            <result property="imageId" column="image_id"/>
+            <result property="imageUrl" column="image_url"/>
+            <result property="sortOrder" column="sort_order"/>
+            <result property="altText" column="alt_text"/>
+        </collection>
+    </resultMap>
+
+    <select id="findDetailById" resultMap="RaffleDetailMap">
+        SELECT
+        R.RAFFLE_ID         AS raffleId,
+        R.ECO_STOCK_AMOUNT  AS ecoStockAmount,
+        R.START_DATE        AS startDate,
+        R.END_DATE          AS endDate,
+
+        P.PRODUCT_ID        AS productId,
+        P.NAME              AS productName,
+        P.PRICE             AS price,
+        P.IMAGE_URL         AS imageUrl,
+
+        B.NAME              AS brandName,
+
+        ES.ECO_STOCK_ID     AS ecoStockId,
+        ES.NAME             AS ecoStockName,
+
+        PI.PRODUCT_IMAGE_ID AS image_id,
+        PI.IMAGE_URL        AS image_url,
+        PI.SORT_ORDER       AS sort_order,
+        PI.ALT_TEXT         AS alt_text
+
+        FROM RAFFLE R
+        JOIN PRODUCT P      ON R.PRODUCT_ID = P.PRODUCT_ID
+        JOIN ECO_STOCK ES   ON R.ECO_STOCK_ID = ES.ECO_STOCK_ID
+        JOIN BRAND B        ON P.BRAND_ID = B.BRAND_ID
+        LEFT JOIN PRODUCT_IMAGE PI ON PI.PRODUCT_ID = P.PRODUCT_ID
+
+        WHERE R.RAFFLE_ID = #{raffleId}
+        ORDER BY PI.SORT_ORDER
+    </select>
+
+    <update id="callParticipateRaffleProcedure"
+            parameterType="org.phoenix.planet.dto.raffle.response.ParticipateRaffleResponse"
+            statementType="CALLABLE">
+        {call PARTICIPATE_RAFFLE(
+            #{raffleId, mode=IN, jdbcType=NUMERIC},
+            #{memberId, mode=IN, jdbcType=NUMERIC},
+            #{result, mode=OUT, jdbcType=NUMERIC}
+        )}
+    </update>
+
+    <update id="bulkUpdateRaffleUpdatedAt">
+        UPDATE RAFFLE
+        SET UPDATED_AT = sysdate
+        WHERE RAFFLE_ID IN
+        <foreach collection="raffleIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+</mapper>
+

@@ -44,7 +44,7 @@ public class MemberStockInfoController {
         return ResponseEntity.ok().body(memberStockInfo);
     }
 
-    @GetMapping("/summary/all")
+    @GetMapping("/summaries")
     public ResponseEntity<?> getUserInfoAll(@LoginMemberId Long loginMemberId) {
 
         log.info("get user info: {}", loginMemberId);

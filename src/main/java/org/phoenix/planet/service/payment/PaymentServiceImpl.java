@@ -5,21 +5,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.*;
 import org.phoenix.planet.dto.order.raw.OrderHistory;
 import org.phoenix.planet.dto.order.raw.OrderProduct;
+import org.phoenix.planet.dto.payment.raw.PartialCancelCalculation;
 import org.phoenix.planet.dto.payment.raw.PaymentHistory;
+import org.phoenix.planet.dto.payment.request.PartialCancelRequest;
 import org.phoenix.planet.dto.payment.request.PaymentCancelReqeust;
 import org.phoenix.planet.dto.payment.request.PaymentConfirmRequest;
+import org.phoenix.planet.dto.payment.response.PartialCancelResponse;
 import org.phoenix.planet.dto.payment.response.PaymentCancelResponse;
 import org.phoenix.planet.dto.payment.response.PaymentConfirmResponse;
 import org.phoenix.planet.dto.payment.response.TossPaymentResponse;
+import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.error.payment.PaymentException;
 import org.phoenix.planet.mapper.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -102,7 +106,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // 취소 가능 상태 검증
-        validateCancelableOrder(order, payment);
+        validateCancelableOrder(order, payment, false);
 
         // 주문 상품 목록 조회
         List<OrderProduct> orderProducts = orderProductMapper.findOrderProductsByOrderHistoryId(orderHistoryId);
@@ -142,28 +146,129 @@ public class PaymentServiceImpl implements PaymentService {
         );
     }
 
+    @Override
+    @Transactional
+    public PartialCancelResponse cancelPartialOrder(Long orderHistoryId, PartialCancelRequest request) {
+        log.info("주문 부분 취소 프로세스 시작 - orderHistoryId: {}, 취소 상품 수: {}, 기부금 환불: {}",
+                orderHistoryId, request.cancelItems().size(), request.refundDonation());
+
+        Boolean refundDonation = (request.refundDonation() != null) ? request.refundDonation() : false;
+
+        // 주문 및 결제 정보 조회
+        OrderHistory order = orderHistoryMapper.findById(orderHistoryId);
+        if (order == null) {
+            throw new OrderException(OrderError.ORDER_NOT_FOUND);
+        }
+
+        PaymentHistory payment = paymentHistoryMapper.findByOrderHistoryId(orderHistoryId);
+        if (payment == null) {
+            throw new PaymentException(PaymentError.PAYMENT_NOT_FOUND);
+        }
+
+        validateCancelableOrder(order, payment, true);
+
+        // 취소할 상품들 조회 및 검증
+        List<OrderProduct> cancelTargets = validateAndGetCancelTargets(request.cancelItems(), orderHistoryId);
+
+        // 취소 금액 계산
+        PartialCancelCalculation calculation = calculatePartialCancelAmount(order, cancelTargets, refundDonation);
+
+        log.info("부분 취소 계산 완료 - orderHistoryId: {}, 취소 금액: {}, 포인트 환불: {}, 기부금 환불: {}",
+                orderHistoryId, calculation.cancelAmount(), calculation.refundedPoints(), calculation.refundedDonation());
+
+        // TossPayments 취소 요청 (예외는 TossClient에서 처리)
+        TossPaymentResponse tossResponse = tossPaymentsClient.cancelPayment(
+                payment.getPaymentKey(),
+                calculation.cancelAmount().intValue(),
+                request.cancelReason()
+        );
+
+        // 재고 복구 (선택된 상품들만)
+        restoreInventory(cancelTargets);
+
+        // 포인트 환불 (비례 계산)
+        refundPointsForPartialCancel(order, calculation.refundedPoints().intValue());
+
+        // 기부 취소 처리
+        Long refundedDonationAmount = cancelDonation(order, false, true);
+
+        // 주문 상품 취소 상태 업데이트
+        updateCancelTargetsStatus(cancelTargets);
+
+        // 주문 상태 업데이트
+        updateOrderStatus(orderHistoryId, OrderStatus.PARTIAL_CANCELLED);
+
+        // 결제 상태 업데이트
+        updatePaymentStatus(payment.getPaymentId(), false);
+
+        // 응답 생성
+        List<PartialCancelResponse.CanceledProductDetail> canceledProducts = createCanceledProductDetails(cancelTargets);
+
+        log.info("주문 부분 취소 완료 - orderHistoryId: {}, 새로운 상태: {}, 취소 금액: {}",
+                orderHistoryId, OrderStatus.PARTIAL_CANCELLED, calculation.cancelAmount());
+
+        return PartialCancelResponse.success(
+                orderHistoryId,
+                order.getOrderNumber(),
+                calculation.cancelAmount(),
+                calculation.refundedPoints(),
+                refundedDonationAmount,
+                OrderStatus.PARTIAL_CANCELLED,
+                canceledProducts,
+                "부분 취소가 완료되었습니다."
+        );
+    }
+
     /**
      * 취소 가능 상태 검증
      */
-    private void validateCancelableOrder(OrderHistory order, PaymentHistory payment) {
-        if (order.getOrderStatus() != OrderStatus.PAID) {
-            switch (order.getOrderStatus()) {
-                case PENDING:
-                    throw new IllegalStateException("결제가 완료되지 않은 주문은 취소할 수 없습니다.");
-                case ALL_CANCELLED:
-                    throw new IllegalStateException("이미 전체 취소된 주문입니다.");
-                case DONE:
-                    throw new IllegalStateException("구매 확정된 주문은 취소할 수 없습니다.");
-                default:
-                    throw new IllegalStateException("취소할 수 없는 주문 상태입니다.");
+    private void validateCancelableOrder(OrderHistory order, PaymentHistory payment, boolean isPartialCancel) {
+        // 주문 상태 검증
+        if (isPartialCancel) {  // 부분 취소: PAID 또는 PARTIAL_CANCELLED 허용
+            if (order.getOrderStatus() != OrderStatus.PAID && order.getOrderStatus() != OrderStatus.PARTIAL_CANCELLED) {
+                throwCancelException(order.getOrderStatus());
+            }
+        } else {  // 전체 취소: PAID만 허용
+            if (order.getOrderStatus() != OrderStatus.PAID) {
+                throwCancelException(order.getOrderStatus());
             }
         }
 
-        // 결제 실패 또는 취소된 결제
-        if (payment.getStatus() == PaymentStatus.ABORTED ||
-                payment.getStatus() == PaymentStatus.CANCELED) {
-            throw new IllegalStateException("결제가 완료되지 않은 주문은 취소할 수 없습니다.");
+        // 결제 상태 검증
+        if (payment.getStatus() == PaymentStatus.ABORTED || payment.getStatus() == PaymentStatus.CANCELED) {
+            throw new PaymentException(PaymentError.PAYMENT_NOT_FOUND);
         }
+    }
+
+    /**
+     * 취소 대상 상품 검증 및 조회
+     */
+    private List<OrderProduct> validateAndGetCancelTargets(
+            List<PartialCancelRequest.CancelItem> cancelItems,
+            Long orderHistoryId
+    ) {
+        List<OrderProduct> cancelTargets = new ArrayList<>();
+
+        for (PartialCancelRequest.CancelItem item : cancelItems) {
+            OrderProduct orderProduct = orderProductMapper.findByOrderProductId(item.orderProductId());
+            if (orderProduct == null) {
+                throw new OrderException(OrderError.ORDER_PRODUCT_NOT_FOUND);
+            }
+
+            // 주문서 소속 확인
+            if (!orderProduct.getOrderHistoryId().equals(orderHistoryId)) {
+                throw new PaymentException(PaymentError.INVALID_ORDER_PRODUCT);
+            }
+
+            // 이미 취소된 상품인지 확인
+            if (orderProduct.getCancelStatus() == CancelStatus.Y) {
+                throw new PaymentException(PaymentError.ALREADY_CANCELLED_PRODUCT);
+            }
+
+            cancelTargets.add(orderProduct);
+        }
+
+        return cancelTargets;
     }
 
     /**
@@ -205,6 +310,21 @@ public class PaymentServiceImpl implements PaymentService {
             }
 
             log.info("포인트 환불 완료 - memberId: {}, amount: {}", order.getMemberId(), order.getUsedPoint());
+        }
+    }
+
+    /**
+     * 포인트 환불 (부분 취소용)
+     */
+    private void refundPointsForPartialCancel(OrderHistory order, int refundPoints) {
+        if (refundPoints > 0 && order.getMemberId() != null) {
+            int result = memberMapper.restorePointsByMemberId(order.getMemberId(), refundPoints);
+
+            if (result == 0) {
+                throw new PaymentException(PaymentError.POINT_REFUND_FAILED);
+            }
+
+            log.info("부분 취소 포인트 환불 완료 - 회원 ID: {}, 환불 포인트: {}", order.getMemberId(), refundPoints);
         }
     }
 
@@ -385,6 +505,147 @@ public class PaymentServiceImpl implements PaymentService {
                         tossResponse.approvedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
                 tossResponse.receipt() != null ? tossResponse.receipt().url() : null
         );
+    }
+
+    /**
+     * 부분 취소 금액 계산
+     */
+    private PartialCancelCalculation calculatePartialCancelAmount(
+            OrderHistory order,
+            List<OrderProduct> cancelTargets,
+            Boolean refundDonation
+    ) {
+        Long totalCancelAmount = 0L;
+
+        // 각 취소 대상 상품의 금액 계산
+        for (OrderProduct orderProduct : cancelTargets) {
+            Long productPrice = orderProduct.getPrice();
+            Long totalDiscountAmount = orderProduct.getDiscountPrice();
+            int quantity = orderProduct.getQuantity();
+
+            // 할인 적용 후 전체 금액
+            Long discountedTotalAmount = (productPrice * quantity) - totalDiscountAmount;
+            totalCancelAmount = totalCancelAmount + discountedTotalAmount;
+
+            log.debug("상품 취소 금액 계산 - 상품 ID: {}, 원가: {}, 수량: {}, 할인: {}, 최종: {}",
+                    orderProduct.getProductId(), productPrice, quantity, totalDiscountAmount, discountedTotalAmount);
+        }
+
+        // 포인트 환불 계산 (비례)
+        Long originalPoints = order.getUsedPoint() != null ? order.getUsedPoint() : 0L;
+        Long refundedPoints = calculateProportionalPointRefund(
+                originalPoints,
+                totalCancelAmount,
+                order.getFinalPayPrice()
+        );
+
+        // 기부금 환불 계산 (선택적)
+        Long refundedDonation = (refundDonation && order.getDonationPrice() != null) ? order.getDonationPrice() : 0;
+
+        log.info("부분 취소 금액 계산 결과 - 취소 금액: {}, 포인트 환불: {}, 기부금 환불: {}",
+                totalCancelAmount, refundedPoints, refundedDonation);
+
+        return new PartialCancelCalculation(
+                totalCancelAmount,
+                refundedPoints,
+                refundedDonation
+        );
+    }
+
+    /**
+     * 비례 포인트 환불 계산
+     */
+    private Long calculateProportionalPointRefund(Long originalPoints, Long cancelAmount, Long totalOrderAmount) {
+        if (originalPoints == 0 || totalOrderAmount == 0) {
+            return 0L;
+        }
+
+        double proportionalPoints = (double) originalPoints * cancelAmount / totalOrderAmount;
+        Long refundPoints = (long) Math.floor(proportionalPoints);
+
+        log.debug("포인트 비례 환불 계산 - 원래 포인트: {}, 취소 금액: {}, 전체 금액: {}, 환불 포인트: {}",
+                originalPoints, cancelAmount, totalOrderAmount, refundPoints);
+
+        return refundPoints;
+    }
+
+
+    /**
+     * 취소된 상품 상세 정보 생성
+     */
+    private List<PartialCancelResponse.CanceledProductDetail> createCanceledProductDetails(
+            List<OrderProduct> cancelTargets) {
+
+        List<PartialCancelResponse.CanceledProductDetail> details = new ArrayList<>();
+
+        for (OrderProduct orderProduct : cancelTargets) {
+            Product product = productMapper.findById(orderProduct.getProductId());
+            String productName = (product != null) ? product.getName() : "상품명 없음";
+
+            int productPrice = orderProduct.getPrice().intValue();
+            int quantity = orderProduct.getQuantity();
+            int totalDiscountAmount = orderProduct.getDiscountPrice().intValue();
+            long refundAmount = ((long) productPrice * quantity) - totalDiscountAmount;
+
+            PartialCancelResponse.CanceledProductDetail detail =
+                    new PartialCancelResponse.CanceledProductDetail(
+                            orderProduct.getOrderProductId(),
+                            orderProduct.getProductId(),
+                            productName,
+                            quantity,
+                            productPrice,
+                            totalDiscountAmount,
+                            refundAmount
+                    );
+
+            details.add(detail);
+        }
+
+        return details;
+    }
+
+    /**
+     * 취소 대상 상품들 상태 업데이트
+     */
+    private void updateCancelTargetsStatus(List<OrderProduct> cancelTargets) {
+        for (OrderProduct orderProduct : cancelTargets) {
+            orderProductMapper.updateCancelStatus(orderProduct.getOrderProductId(), CancelStatus.Y);
+            log.debug("주문 상품 취소 상태 업데이트 - ID: {}", orderProduct.getOrderProductId());
+        }
+        log.info("취소 대상 상품 상태 업데이트 완료 - 상품 수: {}", cancelTargets.size());
+    }
+
+    /**
+     * 부분 취소 후 주문 상태 결정
+     */
+    private OrderStatus determineOrderStatusAfterPartialCancel(Long orderHistoryId) {
+        List<OrderProduct> remainingProducts = orderProductMapper.findActiveOrderProducts(orderHistoryId);
+
+        if (remainingProducts == null || remainingProducts.isEmpty()) {
+            return OrderStatus.ALL_CANCELLED;
+        } else {
+            return OrderStatus.PARTIAL_CANCELLED;
+        }
+    }
+
+    /**
+     * 주문 상태별 예외 발생
+     */
+    private void throwCancelException(OrderStatus orderStatus) {
+        switch (orderStatus) {
+            case PENDING:
+                throw new PaymentException(PaymentError.PAYMENT_NOT_COMPLETED);
+            case ALL_CANCELLED:
+                throw new PaymentException(PaymentError.ALREADY_ALL_CANCELLED);
+            case DONE:
+                throw new PaymentException(PaymentError.ORDER_CONFIRMED);
+            case SHIPPED:
+                throw new PaymentException(PaymentError.ORDER_SHIPPED);
+            case COMPLETED:
+                throw new PaymentException(PaymentError.ORDER_COMPLETED);
+            default:
+                throw new PaymentException(PaymentError.INVALID_ORDER_STATUS);
+        }
     }
 
 }

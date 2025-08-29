@@ -28,10 +28,12 @@ public class RaffleHistoryServiceImpl implements RaffleHistoryService {
     @Transactional
     public void bulkUpdateWinners(List<WinnerInfo> winnerInfos) {
 
-        raffleHistoryMapper.bulkUpdateWinners(
-                winnerInfos.stream()
-                        .map(WinnerInfo::getRaffleHistoryId)
-                        .toList()
-        );
+        List<Long> ids = winnerInfos.stream()
+                .map(WinnerInfo::getRaffleHistoryId)
+                .toList();
+
+        if (ids.isEmpty()) return;
+
+        raffleHistoryMapper.bulkUpdateWinners(ids);
     }
 }

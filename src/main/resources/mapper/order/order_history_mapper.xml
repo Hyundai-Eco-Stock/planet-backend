@@ -27,8 +27,7 @@
         ) VALUES (
         #{orderHistoryId},
         #{orderNumber},
-        #{orderStatus,
-        javaType=org.phoenix.planet.constant.OrderStatus,
+        #{orderStatus, javaType=org.phoenix.planet.constant.OrderStatus,
         typeHandler=org.apache.ibatis.type.EnumTypeHandler},
         #{originPrice},
         #{usedPoint},

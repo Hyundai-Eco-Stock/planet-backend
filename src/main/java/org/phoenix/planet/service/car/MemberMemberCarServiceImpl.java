@@ -37,4 +37,10 @@ public class MemberMemberCarServiceImpl implements MemberCarService {
             carRegisterRequest.carNumber());
     }
 
+    @Override
+    public void unregisterCar(long memberId) {
+
+        memberCarMapper.deleteByMemberId(memberId);
+    }
+
 }

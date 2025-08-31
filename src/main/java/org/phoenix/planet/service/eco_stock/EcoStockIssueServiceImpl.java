@@ -185,6 +185,7 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
             .confirmedAt(LocalDateTime.now())
             .message("구매 확정 에코스톡 발급 완료")
             .build();
+
     }
 
 }

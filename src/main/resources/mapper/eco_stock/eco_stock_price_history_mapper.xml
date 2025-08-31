@@ -37,5 +37,18 @@
         #{stockPrice}, #{sellCount}, #{buyCount} )
     </insert>
 
+    <select id="findAllLatestPrice" resultType="org.phoenix.planet.dto.eco_stock.raw.StockData">
+        SELECT * FROM (
+        SELECT
+        stock_price_history_id AS stockPriceHistoryId,
+        eco_stock_id AS ecoStockId,
+        stock_time AS stockTime,
+        stock_price AS stockPrice,
+        sell_count AS sellCount,
+        buy_count AS buyCount,
+        ROW_NUMBER() OVER (PARTITION BY eco_stock_id ORDER BY stock_time DESC) as rn
+        FROM stock_price_history
+        ) WHERE rn = 1
+    </select>
 
 </mapper>

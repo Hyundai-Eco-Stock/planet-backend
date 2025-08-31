@@ -39,5 +39,8 @@ public interface ProductMapper {
 
     List<ProductDetailResponse> getProductDetail(Long productId);
 
+    int restoreStock(@Param("productId") Long productId, @Param("quantity") int quantity);
+
     List<EcoProductDetailResponse> getEcoDealDetail(Long productId);
+
 }

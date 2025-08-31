@@ -12,7 +12,8 @@ public enum OrderStatus {
     SHIPPED("배송 중"),
     COMPLETED("배송 완료"),
     ALL_CANCELLED("전체 취소"),
-    PARTIAL_CANCELLED("부분 취소")
+    PARTIAL_CANCELLED("부분 취소"),
+    DONE("구매 확정")
     ;
 
     private final String value;

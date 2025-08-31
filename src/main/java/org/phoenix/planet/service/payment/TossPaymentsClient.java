@@ -92,12 +92,10 @@ public class TossPaymentsClient {
             } else {
                 throw new TossPaymentsException("결제 정보 조회 응답이 올바르지 않습니다.");
             }
-
         } catch (HttpClientErrorException e) {
             log.error("TossPayments 클라이언트 오류: statusCode={}, responseBody={}",
                     e.getStatusCode(), e.getResponseBodyAsString());
             throw new TossPaymentsException("결제 정보 조회 중 오류가 발생했습니다: " + e.getResponseBodyAsString());
-
         } catch (Exception e) {
             log.error("TossPayments API 호출 중 예상치 못한 오류 발생", e);
             throw new TossPaymentsException("결제 정보 조회 중 시스템 오류가 발생했습니다.");
@@ -134,6 +132,44 @@ public class TossPaymentsClient {
             return "알 수 없는 오류";
         } catch (Exception e) {
             return "에러 메시지 파싱 실패";
+        }
+    }
+
+    public TossPaymentResponse cancelPayment(String paymentKey, Integer cancelAmount, String cancelReason) {
+        String url = baseUrl + "/v1/payments/" + paymentKey + "/cancel";
+
+        // 요청 헤더 설정
+        HttpHeaders headers = createHeaders();
+
+        // 요청 바디 설정
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("cancelAmount", cancelAmount);
+        requestBody.put("cancelReason", cancelReason);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+        try {
+            log.info("TossPayments 취소 요청 - paymentKey: {}, amount: {}, reason: {}", paymentKey, cancelAmount, cancelReason);
+
+            ResponseEntity<TossPaymentResponse> response = restTemplate.postForEntity(url, request, TossPaymentResponse.class);
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                TossPaymentResponse result = response.getBody();
+                log.info("TossPayments 취소 완료 - paymentKey: {}, status: {}", paymentKey, result.status());
+                return result;
+            } else {
+                log.error("TossPayments 취소 응답 오류: statusCode={}", response.getStatusCode());
+                throw new TossPaymentsException("결제 취소 응답이 올바르지 않습니다.");
+            }
+        } catch (HttpClientErrorException e) {
+            log.error("TossPayments 클라이언트 오류: statusCode={}, responseBody={}", e.getStatusCode(), e.getResponseBodyAsString());
+            String errorMessage = parseErrorMessage(e.getResponseBodyAsString());
+            throw new TossPaymentsException("결제 취소 중 클라이언트 오류가 발생했습니다: " + errorMessage);
+        } catch (HttpServerErrorException e) {
+            log.error("TossPayments 서버 오류: statusCode={}, responseBody={}",  e.getStatusCode(), e.getResponseBodyAsString());
+            throw new TossPaymentsException("결제 취소 중 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        } catch (Exception e) {
+            log.error("TossPayments API 호출 중 예상치 못한 오류 발생", e);
+            throw new TossPaymentsException("결제 취소 중 시스템 오류가 발생했습니다.");
         }
     }
 

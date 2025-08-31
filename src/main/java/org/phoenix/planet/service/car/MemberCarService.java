@@ -10,4 +10,6 @@ public interface MemberCarService {
     MemberCarResponse searchByCarNumber(String carNumber);
 
     void registerCar(long memberId, CarRegisterRequest carRegisterRequest);
+
+    void unregisterCar(long memberId);
 }

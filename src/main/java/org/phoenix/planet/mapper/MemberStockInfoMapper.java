@@ -8,7 +8,7 @@ import org.phoenix.planet.dto.eco_stock_info.response.MemberStockInfoWithDetail;
 
 @Mapper
 public interface MemberStockInfoMapper {
-  
+
     MemberStockInfo findPersonalStockInfoById(@Param("memberId") Long memberId,
         @Param("ecoStockId") Long ecoStockId);
 
@@ -31,5 +31,4 @@ public interface MemberStockInfoMapper {
         @Param("memberId") long memberId,
         @Param("ecoStockId") long ecoStockId,
         @Param("quantity") int quantity);
-
 }

@@ -12,6 +12,11 @@
         <result column="updated_at" property="updatedAt" jdbcType="DATE"/>
     </resultMap>
     
+    <delete id="deleteByMemberId" parameterType="long">
+        DELETE FROM member_car
+        WHERE member_id = #{memberId}
+    </delete>
+    
     <select id="selectByMemberId"
         parameterType="long"
         resultMap="MemberCarResultMap">

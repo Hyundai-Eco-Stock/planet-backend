@@ -19,6 +19,15 @@ pipeline {
             }
         }
 
+        stage('Clean') {
+            steps {
+                sh '''
+                    ./gradlew clean
+                '''
+            }
+        }
+
+
         stage('Build') {
             steps {
 		            sh '''

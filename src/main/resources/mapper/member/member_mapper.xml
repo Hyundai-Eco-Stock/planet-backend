@@ -19,7 +19,7 @@
         <result column="role" property="role"
             javaType="org.phoenix.planet.constant.Role"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
-        <result column="SEX" property="sex"
+        <result column="sex" property="sex"
             javaType="org.phoenix.planet.constant.Sex"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
         <result column="point" property="point"/>
@@ -44,22 +44,20 @@
         provider,
         address,
         detail_address,
-        "ROLE",
-        "SEX",
+        role,
+        sex,
         updated_at
         ) VALUES (
         #{id},
-        #{email,        jdbcType=VARCHAR},
-        #{name,         jdbcType=VARCHAR},
-        #{profileUrl,   jdbcType=VARCHAR},
-        #{pwdHash,      jdbcType=VARCHAR},
-        #{provider,     jdbcType=VARCHAR},
-        #{address,      jdbcType=VARCHAR},
-        #{detailAddress,jdbcType=VARCHAR},
-        #{role, javaType=org.phoenix.planet.constant.Role,
-               typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
-        #{sex,  javaType=org.phoenix.planet.constant.Sex,
-               typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
+        #{email},
+        #{name},
+        #{profileUrl},
+        #{pwdHash},
+        #{provider},
+        #{address},
+        #{detailAddress},
+        #{role},
+        #{sex},
         SYSDATE
         )
     </insert>
@@ -75,10 +73,7 @@
         UPDATE MEMBER
         SET
         pwd_hash = #{pwdHash},
-        sex = #{sex,
-                javaType=org.phoenix.planet.constant.Sex,
-                typeHandler=org.apache.ibatis.type.EnumTypeHandler,
-                jdbcType=VARCHAR},
+        sex = #{sex},
         birth = TO_DATE(#{birth}, 'YYYY-MM-DD'),
         address = #{address},
         detail_address = #{detailAddress},
@@ -99,10 +94,7 @@
         SET
         <!--        email = #{email},-->
         <!--        name = #{name},-->
-        sex = #{sex,
-                javaType=org.phoenix.planet.constant.Sex,
-                typeHandler=org.apache.ibatis.type.EnumTypeHandler,
-                jdbcType=VARCHAR},
+        sex = #{sex},
         birth = #{birth},
         address = #{address},
         detail_address = #{detailAddress},
@@ -121,8 +113,8 @@
         TO_CHAR(birth, 'YYYY-MM-DD') AS birth,
         address,
         detail_address,
-        "ROLE",
-        "SEX",
+        role,
+        sex,
         point,
         created_at,
         updated_at
@@ -140,8 +132,8 @@
         provider,
         address,
         detail_address,
-        ROLE,
-        SEX,
+        role,
+        sex,
         created_at,
         updated_at
         FROM MEMBER
@@ -153,7 +145,7 @@
         member_id,
         email,
         name,
-        "SEX"
+        sex
         FROM MEMBER
         WHERE role = 'USER'
     </select>
@@ -170,9 +162,9 @@
     <!-- 포인트 복구 -->
     <update id="restorePointsByMemberId">
         UPDATE member
-        SET points = points + #{points},
+        SET point = point + #{points},
         updated_at = SYSDATE
-        WHERE id = #{memberId}
+        WHERE member_id = #{memberId}
     </update>
     
     

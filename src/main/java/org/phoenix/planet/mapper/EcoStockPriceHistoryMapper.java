@@ -11,4 +11,7 @@ public interface EcoStockPriceHistoryMapper {
     List<StockData> findAllPriceHistory(Long ecoStockId);
 
     int saveIfNotExists(StockData stockData);
+
+    List<StockData> findAllLatestPrice();
+
 }

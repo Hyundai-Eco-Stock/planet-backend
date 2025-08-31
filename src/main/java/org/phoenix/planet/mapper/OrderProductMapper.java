@@ -19,4 +19,13 @@ public interface OrderProductMapper {
             @Param("cancelStatus") CancelStatus cancelStatus
     );
 
+    OrderProduct findByOrderProductId(Long orderProductId);
+
+    void updateCancelStatus(
+            @Param("orderProductId") Long orderProductId,
+            @Param("cancelStatus") CancelStatus cancelStatus
+    );
+
+    List<OrderProduct> findActiveOrderProducts(Long orderHistoryId);
+
 }

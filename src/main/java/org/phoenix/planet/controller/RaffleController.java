@@ -29,13 +29,13 @@ public class RaffleController {
     }
 
     @GetMapping("/{raffleId}")
-    public ResponseEntity<List<RaffleDetailResponse>> getRaffleList(@PathVariable Long raffleId) {
+    public ResponseEntity<RaffleDetailResponse> getRaffleDetail(@PathVariable Long raffleId) {
 
-        List<RaffleDetailResponse> raffleList = raffleService.findDetailById(raffleId);
+        RaffleDetailResponse raffleDetailResponse = raffleService.findDetailById(raffleId);
 
-        log.info("raffleList: {}", raffleList);
+        log.info("RaffleDetailResponse: {}", raffleDetailResponse);
 
-        return ResponseEntity.ok(raffleList);
+        return ResponseEntity.ok(raffleDetailResponse);
     }
 
     @PostMapping("/{raffleId}/participants")

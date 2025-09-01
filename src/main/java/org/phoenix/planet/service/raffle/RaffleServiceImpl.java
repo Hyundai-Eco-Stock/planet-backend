@@ -36,7 +36,7 @@ public class RaffleServiceImpl implements RaffleService {
     }
 
     @Override
-    public List<RaffleDetailResponse> findDetailById(Long raffleId) {
+    public RaffleDetailResponse findDetailById(Long raffleId) {
         return raffleMapper.findDetailById(raffleId);
     }
 

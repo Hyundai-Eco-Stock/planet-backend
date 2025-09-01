@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.MemberPhtiMapper">
+    <insert id="insertOrUpdate"
+        parameterType="org.phoenix.planet.dto.phti.raw.MemberPhtiSaveRequest">
+        MERGE INTO MEMBER_PHTI target
+        USING (
+        SELECT
+        #{memberId} AS member_id,
+        #{primaryPhti} AS primary_phti,
+        #{primaryPhtiCustomDescription} AS primary_phti_custom_description,
+        #{secondaryPhti} AS secondary_phti,
+        #{tertiaryPhti} AS tertiary_phti,
+        #{ecoChoiceRatio} AS eco_choice_ratio,
+        #{valueChoiceRatio} AS value_choice_ratio,
+        #{raffleChoiceRatio} AS raffle_choice_ratio,
+        #{pointChoiceRatio} AS point_choice_ratio
+        FROM dual
+        ) source
+        ON (target.member_id = source.member_id)
+        WHEN MATCHED THEN
+        UPDATE SET
+        target.primary_phti = source.primary_phti,
+        target.primary_phti_custom_description = source.primary_phti_custom_description,
+        target.secondary_phti = source.secondary_phti,
+        target.tertiary_phti = source.tertiary_phti,
+        target.eco_choice_ratio = source.eco_choice_ratio,
+        target.value_choice_ratio = source.value_choice_ratio,
+        target.raffle_choice_ratio = source.raffle_choice_ratio,
+        target.point_choice_ratio = source.point_choice_ratio,
+        target.updated_at = SYSDATE
+        WHEN NOT MATCHED THEN
+        INSERT (
+        MEMBER_PHTI_ID,
+        PRIMARY_PHTI,
+        PRIMARY_PHTI_CUSTOM_DESCRIPTION,
+        SECONDARY_PHTI,
+        TERTIARY_PHTI,
+        ECO_CHOICE_RATIO,
+        VALUE_CHOICE_RATIO,
+        RAFFLE_CHOICE_RATIO,
+        POINT_CHOICE_RATIO,
+        MEMBER_ID,
+        CREATED_AT
+        ) VALUES (
+        SEQ_MEMBER_PHTI.NEXTVAL,
+        source.primary_phti,
+        source.primary_phti_custom_description,
+        source.secondary_phti,
+        source.tertiary_phti,
+        source.eco_choice_ratio,
+        source.value_choice_ratio,
+        source.raffle_choice_ratio,
+        source.point_choice_ratio,
+        source.member_id,
+        SYSDATE
+        )
+    </insert>
+    
+    <select id="selectAll" resultType="org.phoenix.planet.dto.phti.raw.MemberPhti">
+        SELECT
+        MEMBER_ID AS memberId,
+        PRIMARY_PHTI AS phti
+        FROM MEMBER_PHTI
+    </select>
+
+</mapper>

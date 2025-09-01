@@ -108,7 +108,7 @@ public class EcoStockPriceHistoryServiceImpl implements EcoStockPriceHistoryServ
     }
 
     private NoiseNewPriceData calculateTradeNoise(EcoStockUpdatePriceRecord record) {
-        int baseSellCount = record.transactionHistoryCount();
+        int baseSellCount = record.transactionHistoryCount() + record.raffleHistoryCount();
         int baseBuyCount = record.stockIssueCount();
 
         int sellNoiseRange = Math.max(random.nextInt(100), baseSellCount / 10);

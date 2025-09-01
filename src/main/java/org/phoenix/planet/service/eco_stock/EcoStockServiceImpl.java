@@ -1,5 +1,6 @@
 package org.phoenix.planet.service.eco_stock;
 
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.EcoStockError;
@@ -37,7 +38,7 @@ public class EcoStockServiceImpl implements EcoStockService {
     }
 
     @Override
-    public List<EcoStockUpdatePriceRecord> findAllHistory(String targetTime) {
+    public List<EcoStockUpdatePriceRecord> findAllHistory(LocalDateTime targetTime) {
 
         return ecoStockMapper.findAllHistory(targetTime);
     }

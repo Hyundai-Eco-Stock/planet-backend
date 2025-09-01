@@ -7,6 +7,7 @@ public record EcoStockUpdatePriceRecord(
         Long ecoStockId,                           // 단일 값
         Integer stockIssueCount,
         Integer transactionHistoryCount,
+        Integer raffleHistoryCount,
         Long beforePrice,
         Integer quantity,
         Long initPrice

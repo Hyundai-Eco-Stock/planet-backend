@@ -4,6 +4,7 @@ services:
     container_name: planet-backend
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - TZ=Asia/Seoul
     env_file:
       - ../.env.planet-backend
     expose:

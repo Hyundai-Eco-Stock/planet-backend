@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.PhtiQuestionMapper">
+    <resultMap id="QuestionWithChoicesMap"
+        type="org.phoenix.planet.dto.phti.response.PhtiQuestionWithChoicesResponse">
+        <id property="questionId" column="PHTI_QUESTION_ID"/>
+        <result property="questionOrder" column="QUESTION_ORDER"/>
+        <result property="questionText" column="QUESTION_TEXT"/>
+        <result property="questionType" column="QUESTION_TYPE"/>
+        
+        <!-- Choice 리스트 매핑 -->
+        <collection
+            property="choices"
+            ofType="org.phoenix.planet.dto.phti.response.ChoiceResponse"
+            javaType="java.util.ArrayList">
+            <id property="choiceId" column="PHTI_CHOICE_ID"/>
+            <result property="choiceText" column="CHOICE_TEXT"/>
+            <result property="choiceOrder" column="CHOICE_ORDER"/>
+            <result property="mappedType" column="MAPPED_TYPE"/>
+        </collection>
+    </resultMap>
+    
+    <select id="selectQuestionWithChoices"
+        resultMap="QuestionWithChoicesMap">
+        SELECT
+        q.PHTI_QUESTION_ID,
+        q.QUESTION_ORDER,
+        q.QUESTION_TEXT,
+        q.QUESTION_TYPE,
+        c.PHTI_CHOICE_ID,
+        c.CHOICE_TEXT,
+        c.MAPPED_TYPE,
+        c.CHOICE_ORDER
+        FROM PHTI_QUESTION q
+        LEFT JOIN PHTI_CHOICE c
+        ON q.PHTI_QUESTION_ID = c.PHTI_QUESTION_ID
+        ORDER BY q.QUESTION_ORDER, c.CHOICE_ORDER
+    </select>
+
+</mapper>

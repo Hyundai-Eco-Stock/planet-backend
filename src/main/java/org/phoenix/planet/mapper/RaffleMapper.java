@@ -12,7 +12,7 @@ public interface RaffleMapper {
 
     List<RaffleResponse> findAll();
 
-    List<RaffleDetailResponse> findDetailById(Long raffleId);
+    RaffleDetailResponse findDetailById(Long raffleId);
 
     void callParticipateRaffleProcedure(ParticipateRaffleResponse response);
 

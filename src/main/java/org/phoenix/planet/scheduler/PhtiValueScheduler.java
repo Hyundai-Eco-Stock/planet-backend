@@ -3,6 +3,7 @@ package org.phoenix.planet.scheduler;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.annotation.DistributedScheduled;
 import org.phoenix.planet.dto.phti.raw.MemberPhti;
 import org.phoenix.planet.mapper.MemberPhtiMapper;
 import org.phoenix.planet.service.fcm.FcmService;
@@ -23,6 +24,7 @@ public class PhtiValueScheduler {
 
     @Scheduled(cron = "0 30 * * * *") // 개발 시
 //    @Scheduled(cron = "0 0 12 * * *") // 운영 시
+    @DistributedScheduled(lockKey = "planet:prod:phti:value:notification")
     public void runTask() {
 
         log.info("✅ 스케줄 실행됨: {}", java.time.LocalDateTime.now());

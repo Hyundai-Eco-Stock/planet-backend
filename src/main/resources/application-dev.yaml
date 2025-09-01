@@ -73,3 +73,4 @@ spring:
 custom-redis:
   host: ${STOCK_REDIS_HOST}
   port: ${STOCK_REDIS_PORT}
+  password: ${STOCK_REDIS_PASSWORD}

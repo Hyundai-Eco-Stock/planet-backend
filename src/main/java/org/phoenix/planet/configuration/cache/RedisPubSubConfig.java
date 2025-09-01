@@ -1,5 +1,7 @@
 package org.phoenix.planet.configuration.cache;
 
+import java.util.Objects;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.service.websocket.StockDataSubscriber;
@@ -7,14 +9,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-
-import javax.annotation.PostConstruct;
-import java.util.Objects;
 
 @Configuration
 @RequiredArgsConstructor
@@ -27,6 +27,9 @@ public class RedisPubSubConfig {
     @Value("${custom-redis.port}")
     private int secondPort;
 
+    @Value("${custom-redis.password}")
+    private String password;
+
     @PostConstruct
     public void logRedisConfig() {
         log.info("🔧 WebSocket Redis 설정 - Host: {}, Port: {}", secondHost, secondPort);
@@ -37,6 +40,15 @@ public class RedisPubSubConfig {
         log.info("🔧 WebSocket Redis ConnectionFactory 생성 시작");
 
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(secondHost, secondPort);
+
+        // 비밀번호 설정 (null / 빈값 체크)
+        if (password != null && !password.isBlank()) {
+            config.setPassword(RedisPassword.of(password));
+            log.info("🔑 Redis 비밀번호 설정 완료");
+        } else {
+            log.warn("⚠️ Redis 비밀번호가 설정되지 않았습니다 (비번 없음 모드)");
+        }
+
         LettuceConnectionFactory factory = new LettuceConnectionFactory(config);
 
         // 연결 검증 활성화

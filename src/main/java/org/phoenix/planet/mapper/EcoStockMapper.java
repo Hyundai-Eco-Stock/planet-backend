@@ -1,5 +1,6 @@
 package org.phoenix.planet.mapper;
 
+import java.time.LocalDateTime;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.dto.eco_stock.raw.EcoStock;
@@ -15,7 +16,7 @@ public interface EcoStockMapper {
 
     List<EcoStock> findAll();
 
-    List<EcoStockUpdatePriceRecord> findAllHistory(@Param("targetTime") String targetTime);
+    List<EcoStockUpdatePriceRecord> findAllHistory(@Param("targetTime") LocalDateTime targetTime);
 
     void updateQuantityById(@Param("stockId") Long stockId, @Param(("updateQuantity")) int updateQuantity);
 

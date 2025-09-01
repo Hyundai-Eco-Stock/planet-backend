@@ -1,13 +1,16 @@
 CREATE OR REPLACE PROCEDURE PARTICIPATE_RAFFLE(
     p_raffle_id IN NUMBER,
     p_member_id IN NUMBER,
-    p_result OUT NUMBER -- -2: 래플없음/기간만료, -3: 중복참여, -5: 수량부족/미보유, 1: 성공
+    p_result OUT NUMBER, -- -2: 래플없음/기간만료, -3: 중복참여, -5: 수량부족/미보유, 1: 성공
+    p_remaining_quantity OUT NUMBER, -- 성공 시 남은 수량
+    p_eco_stock_id OUT NUMBER -- 성공 시 ECO_STOCK_IDF
 )
 AS
     v_updated_rows         NUMBER;
     v_eco_stock_amount     NUMBER;
     v_eco_stock_id         NUMBER;
     v_already_participated NUMBER;
+    v_remaining_quantity   NUMBER;
 BEGIN
     -- 1. 래플 정보 조회 (존재 + 기간 검증 동시에) 데이터 못찾으면 NO_DATA_FOUND -> -2
     SELECT ECO_STOCK_AMOUNT, ECO_STOCK_ID
@@ -34,10 +37,19 @@ BEGIN
     v_updated_rows := SQL%ROWCOUNT;
 
     IF v_updated_rows > 0 THEN
+
+        SELECT CURRENT_TOTAL_QUANTITY
+        INTO v_remaining_quantity
+        FROM MEMBER_STOCK_INFO
+        WHERE MEMBER_ID = p_member_id
+          AND ECO_STOCK_ID = v_eco_stock_id;
+
         INSERT INTO RAFFLE_HISTORY (RAFFLE_HISTORY_ID, RAFFLE_ID, MEMBER_ID)
         VALUES (SEQ_RAFFLE_HISTORY.NEXTVAL, p_raffle_id, p_member_id);
 
         p_result := 1;
+        p_remaining_quantity := v_remaining_quantity;
+        p_eco_stock_id := v_eco_stock_id;
         COMMIT;
     ELSE
         -- 실패 원인 구분
@@ -52,6 +64,10 @@ BEGIN
         ELSE
             p_result := -5; -- 수량 부족/미보유
         END IF;
+
+        p_remaining_quantity := NULL;
+        p_eco_stock_id := NULL;
+
         ROLLBACK;
     END IF;
 

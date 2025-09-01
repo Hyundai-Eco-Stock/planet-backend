@@ -41,7 +41,7 @@ public class RaffleServiceImpl implements RaffleService {
     }
 
     @Override
-    public void participateRaffle(Long raffleId, Long memberId) {
+    public ParticipateRaffleResponse participateRaffle(Long raffleId, Long memberId) {
 
         try {
             log.info("래플 참여 시작 - raffleId: {}, memberId: {}", raffleId, memberId);
@@ -61,6 +61,7 @@ public class RaffleServiceImpl implements RaffleService {
 
             log.info("래플 참여 성공 - raffleId: {}, memberId: {}", raffleId, memberId);
 
+            return response;
         } catch (RaffleException e) {
 
             log.warn("래플 참여 실패 - raffleId: {}, memberId: {}, error: {}", raffleId, memberId, e.getMessage());

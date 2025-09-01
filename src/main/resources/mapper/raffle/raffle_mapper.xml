@@ -99,7 +99,9 @@
         {call PARTICIPATE_RAFFLE(
             #{raffleId, mode=IN, jdbcType=NUMERIC},
             #{memberId, mode=IN, jdbcType=NUMERIC},
-            #{result, mode=OUT, jdbcType=NUMERIC}
+            #{result, mode=OUT, jdbcType=NUMERIC},
+            #{remainingQuantity, mode=OUT, jdbcType=NUMERIC},
+            #{ecoStockId, mode=OUT, jdbcType=NUMERIC}
         )}
     </update>
 

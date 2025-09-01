@@ -27,7 +27,7 @@ public class EcoDealScheduler {
         List<String> fcmTokens = memberDeviceTokenService.findAll();
         fcmService.sendCustomNotification(
             fcmTokens,
-            "🌱 오늘 오후 6시! 새로운 에코딜 식품이 공개되었습니다",
+            "\uD83D\uDD25 에코딜 타임 세일 시작!",
             "한정 혜택을 지금 바로 확인해 보세요 🚀");
     }
 }

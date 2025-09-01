@@ -23,12 +23,14 @@ repositories {
     mavenCentral()
 }
 
-ext {
-    set('springAiVersion', "1.0.0")
-}
-
 bootJar {
     archiveFileName = 'app.jar'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:1.0.0"
+    }
 }
 
 dependencies {
@@ -94,6 +96,10 @@ dependencies {
 
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // Spring AI (https://docs.spring.io/spring-ai/reference/api/chat/openai-chat.html?utm_source=chatgpt.com)
+    implementation 'org.springframework.ai:spring-ai-openai'
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai' // auto configuration
 
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

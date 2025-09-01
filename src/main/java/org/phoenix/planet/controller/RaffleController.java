@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.raffle.RaffleDetailResponse;
 import org.phoenix.planet.dto.raffle.RaffleResponse;
+import org.phoenix.planet.dto.raffle.response.ParticipateRaffleResponse;
 import org.phoenix.planet.service.raffle.RaffleService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,20 +30,20 @@ public class RaffleController {
     }
 
     @GetMapping("/{raffleId}")
-    public ResponseEntity<List<RaffleDetailResponse>> getRaffleList(@PathVariable Long raffleId) {
+    public ResponseEntity<RaffleDetailResponse> getRaffleDetail(@PathVariable Long raffleId) {
 
-        List<RaffleDetailResponse> raffleList = raffleService.findDetailById(raffleId);
+        RaffleDetailResponse raffleDetailResponse = raffleService.findDetailById(raffleId);
 
-        log.info("raffleList: {}", raffleList);
+        log.info("RaffleDetailResponse: {}", raffleDetailResponse);
 
-        return ResponseEntity.ok(raffleList);
+        return ResponseEntity.ok(raffleDetailResponse);
     }
 
     @PostMapping("/{raffleId}/participants")
-    public ResponseEntity<Void> getRaffleParticipate(@PathVariable Long raffleId, @LoginMemberId Long memberId) {
+    public ResponseEntity<ParticipateRaffleResponse> getRaffleParticipate(@PathVariable Long raffleId, @LoginMemberId Long memberId) {
 
-        raffleService.participateRaffle(raffleId, memberId);
+        ParticipateRaffleResponse raffleResponse= raffleService.participateRaffle(raffleId, memberId);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(raffleResponse);
     }
 }

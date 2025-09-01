@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.PhtiMapper">
+    
+    <!-- 전체 조회 -->
+    <select id="selectAll" resultType="org.phoenix.planet.dto.phti.raw.Phti">
+        SELECT
+        PHTI_ID AS phtiId,
+        PHTI_NAME AS phtiName,
+        PHTI_ALIAS AS phtiAlias,
+        PHTI_DESCRIPTION AS description
+        FROM PHTI
+        ORDER BY PHTI_ID
+    </select>
+    
+    <!-- 단건 조회 -->
+    <select id="selectByName" parameterType="long"
+        resultType="org.phoenix.planet.dto.phti.raw.Phti">
+        SELECT
+        PHTI_ID AS phtiId,
+        PHTI_NAME AS phtiName,
+        PHTI_ALIAS AS phtiAlias,
+        PHTI_DESCRIPTION AS description
+        FROM PHTI
+        WHERE PHTI_NAME = #{phtiName}
+    </select>
+</mapper>

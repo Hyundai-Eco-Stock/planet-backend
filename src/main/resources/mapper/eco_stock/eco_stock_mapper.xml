@@ -35,35 +35,66 @@
         WHERE ECO_STOCK_ID = #{stockId}
     </update>
 
-
-    <!-- 실제 쿼리 -->
+    
     <select id="findAllHistory"
             resultType="org.phoenix.planet.dto.eco_stock.raw.EcoStockUpdatePriceRecord">
+        WITH basic_info AS (
+            SELECT
+                es.eco_stock_id,
+                COUNT(si.stock_issue_id) AS stock_issue_count,
+                es.quantity,
+                es.init_price
+            FROM eco_stock es
+            LEFT JOIN stock_issue si ON es.eco_stock_id = si.eco_stock_id
+            AND si.created_at >= #{targetTime}
+            GROUP BY es.eco_stock_id, es.quantity, es.init_price
+        ),
+        transaction_counts AS (
+            SELECT
+                sph.eco_stock_id,
+                SUM(th.sell_count) AS transaction_count
+            FROM stock_price_history sph
+            JOIN transaction_history th ON sph.stock_price_history_id = th.stock_price_history_id
+            AND sph.stock_time = #{targetTime}
+            AND th.created_at >= #{targetTime}
+            GROUP BY sph.eco_stock_id
+        ),
+        raffle_counts AS (
+            SELECT
+                r.ECO_STOCK_ID,
+                SUM(r.ECO_STOCK_AMOUNT) AS raffle_count
+            FROM RAFFLE_HISTORY rh
+            JOIN RAFFLE r ON r.RAFFLE_ID = rh.RAFFLE_ID
+            AND rh.created_at >= #{targetTime}
+            GROUP BY r.ECO_STOCK_ID
+        ),
+        latest_prices AS (
+            SELECT
+                eco_stock_id,
+                stock_price
+            FROM (
+                SELECT
+                    eco_stock_id,
+                    stock_price,
+                    ROW_NUMBER() OVER (PARTITION BY eco_stock_id ORDER BY stock_time DESC) AS rn
+                FROM stock_price_history
+                WHERE #{targetTime} >= stock_time
+            ) ranked
+            WHERE rn = 1
+        )
         SELECT
-        es.eco_stock_id AS ecoStockId,
-        COUNT(si.stock_issue_id) AS stockIssueCount,
-        COALESCE((
-        SELECT SUM(th.sell_count)
-        FROM stock_price_history sph
-        JOIN transaction_history th ON sph.stock_price_history_id = th.stock_price_history_id
-        WHERE sph.eco_stock_id = es.eco_stock_id
-        AND sph.stock_time = TO_DATE(#{targetTime}, 'YYYY-MM-DD HH24:MI:SS')
-        AND th.created_at >= TO_DATE(#{targetTime}, 'YYYY-MM-DD HH24:MI:SS')
-        ), 0) AS transactionHistoryCount,
-        (
-        SELECT stock_price
-        FROM stock_price_history
-        WHERE eco_stock_id = es.eco_stock_id
-        AND TO_DATE(#{targetTime}, 'YYYY-MM-DD HH24:MI:SS') >= stock_time
-        ORDER BY stock_time DESC
-        FETCH FIRST 1 ROW ONLY
-        ) AS beforePrice,
-        es.quantity,
-        es.init_price AS initPrice
-        FROM eco_stock es
-        LEFT JOIN stock_issue si ON es.eco_stock_id = si.eco_stock_id
-        GROUP BY es.eco_stock_id, es.quantity, es.init_price
-        ORDER BY es.eco_stock_id ASC
+            bi.eco_stock_id AS ecoStockId,
+            bi.stock_issue_count AS stockIssueCount,
+            COALESCE(tc.transaction_count, 0) AS transactionHistoryCount,
+            COALESCE(rc.raffle_count, 0) AS raffleHistoryCount,
+            COALESCE(lp.stock_price, bi.init_price) AS beforePrice,
+            bi.quantity,
+            bi.init_price AS initPrice
+        FROM basic_info bi
+        LEFT JOIN transaction_counts tc ON bi.eco_stock_id = tc.eco_stock_id
+        LEFT JOIN raffle_counts rc ON bi.eco_stock_id = rc.ECO_STOCK_ID
+        LEFT JOIN latest_prices lp ON bi.eco_stock_id = lp.eco_stock_id
+        ORDER BY bi.eco_stock_id
     </select>
 
     <update id="callSellStockProcedure" statementType="CALLABLE">

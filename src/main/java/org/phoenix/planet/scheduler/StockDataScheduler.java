@@ -1,9 +1,15 @@
 package org.phoenix.planet.scheduler;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.DistributedScheduled;
-import org.phoenix.planet.dto.eco_stock.raw.*;
+import org.phoenix.planet.dto.eco_stock.raw.EcoStockUpdatePriceRecord;
+import org.phoenix.planet.dto.eco_stock.raw.OhlcDto;
+import org.phoenix.planet.dto.eco_stock.raw.StockCalculationResult;
+import org.phoenix.planet.dto.eco_stock.raw.StockData;
+import org.phoenix.planet.dto.eco_stock.raw.VolumeDto;
 import org.phoenix.planet.dto.eco_stock.response.ChartSingleDataResponse;
 import org.phoenix.planet.repository.ChartDataRedisRepository;
 import org.phoenix.planet.service.eco_stock.EcoStockPriceHistoryService;
@@ -12,10 +18,6 @@ import org.phoenix.planet.service.websocket.StockDataPublish;
 import org.phoenix.planet.util.ecoStock.StockChartUtil;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -35,19 +37,22 @@ public class StockDataScheduler {
                 .withSecond(0)   // 초를 0으로
                 .withNano(0);
 
-        String targetTime = time
+        LocalDateTime targetTime = time
                 .minusMinutes(1)
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                .withSecond(0)   // 초를 0으로
+                .withNano(0);
 
         List<EcoStockUpdatePriceRecord> ecoStockUpdatePriceRecords =
                 ecoStockService.findAllHistory(targetTime);
 
+        log.info(" 로우 값 {} ", ecoStockUpdatePriceRecords);
         for (EcoStockUpdatePriceRecord record : ecoStockUpdatePriceRecords) {
             Long stockId = record.ecoStockId();
 
             StockCalculationResult stockCalculationResult = ecoStockPriceHistoryService.calculatePriceHistory(record, time);
 
             StockData stockData = stockCalculationResult.stockData();
+            log.info("stockData:{}", stockData);
 
             int result = ecoStockPriceHistoryService.saveIfNotExists(stockData);
 

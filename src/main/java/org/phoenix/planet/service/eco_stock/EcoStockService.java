@@ -1,5 +1,6 @@
 package org.phoenix.planet.service.eco_stock;
 
+import java.time.LocalDateTime;
 import org.phoenix.planet.dto.eco_stock.raw.EcoStock;
 import org.phoenix.planet.dto.eco_stock.raw.EcoStockUpdatePriceRecord;
 import org.phoenix.planet.dto.eco_stock.request.SellStockRequest;
@@ -12,7 +13,7 @@ public interface EcoStockService {
 
     List<EcoStock> findAll();
 
-    List<EcoStockUpdatePriceRecord> findAllHistory(String time);
+    List<EcoStockUpdatePriceRecord> findAllHistory(LocalDateTime time);
 
     void updateQuantityById(Long stockId, int updateQuantity);
 

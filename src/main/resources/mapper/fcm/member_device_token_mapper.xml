@@ -49,14 +49,14 @@
         DELETE FROM member_device_token
         WHERE member_id = #{memberId}
     </delete>
-
+    
     <resultMap id="MemberFcmTokenMap" type="org.phoenix.planet.dto.fcm.raw.MemberFcmToken">
         <result property="memberId" column="member_id"/>
         <collection property="fcmTokens" ofType="string">
             <result column="fcm_token"/>
         </collection>
     </resultMap>
-
+    
     <select id="searchFcmTokensByMemberIds" parameterType="list" resultMap="MemberFcmTokenMap">
         SELECT member_id, fcm_token
         FROM member_device_token
@@ -64,6 +64,12 @@
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </select>
+    
+    <select id="selectAll" resultType="java.lang.String">
+        SELECT
+        fcm_token AS fcmToken
+        FROM member_device_token
     </select>
 
 </mapper>

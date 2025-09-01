@@ -1,9 +1,8 @@
 package org.phoenix.planet.mapper;
 
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.phoenix.planet.dto.fcm.raw.MemberFcmToken;
-
-import java.util.List;
 
 @Mapper
 public interface MemberDeviceTokenMapper {
@@ -19,4 +18,6 @@ public interface MemberDeviceTokenMapper {
     void deleteAllTokensByMemberId(long memberId);
 
     List<MemberFcmToken> searchFcmTokensByMemberIds(List<Long> memberIds);
+
+    List<String> selectAll();
 }

@@ -192,8 +192,8 @@ pipeline {
             aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK || \
             aws cloudformation wait stack-update-complete --stack-name $IDLE_STACK
 
-            echo "$IDLE_TG" > idle_tg.txt
-            echo "arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515" > listener_arn.txt
+            echo "$IDLE_TG" > $WORKSPACE/idle_tg.txt
+            echo "arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515" > $WORKSPACE/listener_arn.txt
           '''
         }
       }
@@ -209,7 +209,7 @@ pipeline {
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             aws configure set default.region ap-northeast-2
 
-            IDLE_TG=$(cat idle_tg.txt)
+            IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
             for i in {1..60}; do
               HEALTH=$(aws elbv2 describe-target-health --target-group-arn $IDLE_TG \
                 --query 'TargetHealthDescriptions[*].TargetHealth.State' \
@@ -239,8 +239,8 @@ pipeline {
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             aws configure set default.region ap-northeast-2
 
-            IDLE_TG=$(cat idle_tg.txt)
-            LISTENER_ARN=$(cat listener_arn.txt)
+            IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
+            LISTENER_ARN=$(cat $WORKSPACE/listener_arn.txt)
 
             echo "[INFO] Switching traffic to $IDLE_TG..."
             aws elbv2 modify-listener \

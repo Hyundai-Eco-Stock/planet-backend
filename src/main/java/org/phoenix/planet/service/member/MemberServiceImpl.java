@@ -30,6 +30,7 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final S3FileUtil s3FileUtil;
 
+
     @Override
     public MemberProfileResponse searchProfile(long memberId) {
 
@@ -58,6 +59,13 @@ public class MemberServiceImpl implements MemberService {
         long loginMemberId,
         ProfileUpdateRequest request,
         MultipartFile profileImageFile) {
+
+        Member member = memberMapper.findById(loginMemberId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 member id를 가진 멤버가 없습니다."));
+
+        if (!passwordEncoder.matches(request.oldPassword(), member.getPwdHash())) {
+            throw new IllegalArgumentException("틀린 비밀번호 입니다.");
+        }
 
         memberMapper.updateProfile(
             loginMemberId,

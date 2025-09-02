@@ -34,39 +34,41 @@ public class MemberServiceImpl implements MemberService {
     public MemberProfileResponse searchProfile(long memberId) {
 
         Member member = memberMapper.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+            .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
         return MemberProfileResponse.builder()
-                .email(member.getEmail())
-                .name(member.getName())
-                .sex(member.getSex())
-                .birth(member.getBirth())
-                .profileUrl(member.getProfileUrl() != null
-                        ? cloudFrontFileUtil.generateSignedUrl(member.getProfileUrl(), 60) : null)
-                .address(member.getAddress())
-                .detailAddress(member.getDetailAddress())
-                .build();
+            .email(member.getEmail())
+            .name(member.getName())
+            .sex(member.getSex())
+            .birth(member.getBirth())
+            .profileUrl(
+                member.getProfileUrl() != null ?
+                    member.getProfileUrl().startsWith("http") ?
+                        member.getProfileUrl()
+                        : cloudFrontFileUtil.generateUrl(member.getProfileUrl())
+                    : null)
+            .address(member.getAddress())
+            .detailAddress(member.getDetailAddress())
+            .build();
     }
 
     @Override
     @Transactional
     public void updateMemberInfo(
-            long loginMemberId,
-            ProfileUpdateRequest request,
-            MultipartFile profileImageFile) {
+        long loginMemberId,
+        ProfileUpdateRequest request,
+        MultipartFile profileImageFile) {
 
         memberMapper.updateProfile(
-                loginMemberId,
-//            request.email(),
-//            request.name(),
-                request.sex(),
-                request.birth(),
-                request.address(),
-                request.detailAddress());
+            loginMemberId,
+            request.sex(),
+            request.birth(),
+            request.address(),
+            request.detailAddress());
 
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
             String profileFilePath = s3FileUtil.uploadMemberProfile(profileImageFile,
-                    loginMemberId);
+                loginMemberId);
             memberMapper.updateProfileUrl(loginMemberId, profileFilePath);
         }
     }
@@ -74,9 +76,9 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public SignUpResponse signUp(
-            long loginMemberId,
-            SignUpRequest request,
-            MultipartFile profileImage) {
+        long loginMemberId,
+        SignUpRequest request,
+        MultipartFile profileImage) {
 
         // 패스워드 해시화
         String pwdHash = passwordEncoder.encode(request.password());
@@ -90,12 +92,12 @@ public class MemberServiceImpl implements MemberService {
 
         // 멤버 정보 수정
         memberMapper.update(
-                loginMemberId,
-                pwdHash,
-                request.sex(),
-                request.birth(),
-                request.address(),
-                request.detailAddress()
+            loginMemberId,
+            pwdHash,
+            request.sex(),
+            request.birth(),
+            request.address(),
+            request.detailAddress()
         );
 
         return SignUpResponse.builder()
@@ -120,16 +122,19 @@ public class MemberServiceImpl implements MemberService {
 
     /* 마이페이지 - 구매내역 */
     public List<MyOrderResponse> getMyOrders(Long memberId) {
+
         return memberMapper.findMyOrders(memberId);
     }
 
     /* 마이페이지 - 에코딜 */
     public List<MyEcoDealResponse> getMyEcoDeals(Long memberId) {
+
         return memberMapper.reservedEcoDeal(memberId);
     }
 
     /* 마이페이지 - 래플 응모내역 */
     public List<MyRaffleResponse> getMyRaffles(Long memberId) {
+
         return memberMapper.getMyRaffles(memberId);
     }
 }

@@ -132,6 +132,7 @@ pipeline {
             NEW_VERSION=$(aws ec2 create-launch-template-version \
               --launch-template-name planet-backend \
               --source-version $CURRENT_VERSION \
+              --launch-template-data '{}' \
               --query 'LaunchTemplateVersion.VersionNumber' \
               --output text)
 

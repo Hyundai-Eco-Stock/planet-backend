@@ -123,7 +123,7 @@ pipeline {
 
             aws autoscaling update-auto-scaling-group \
               --auto-scaling-group-name planet \
-              --launch-template "LaunchTemplateName=planet-backend,Version=\$Latest"
+              --launch-template 'LaunchTemplateName=planet-backend,Version=$Latest'
 
             echo "[INFO] ✅ Rolling update triggered on ASG: planet"
           '''

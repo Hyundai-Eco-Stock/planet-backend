@@ -73,48 +73,48 @@ pipeline {
       }
     }
     
-    stage('Build') {
-      steps {
-        sh '''
-          echo "[INFO] Setting executable permissions..."
-          chmod +x ./gradlew
-
-          echo "[INFO] Building with Gradle (skipping tests)..."
-          export GRADLE_USER_HOME=~/.gradle
-          ./gradlew build -x test --no-daemon --build-cache
-
-          echo "[INFO] Build artifacts:"
-          ls -la build/libs/
-        '''
-      }
-    }
-
-    stage('Docker Build & Push') {
-      steps {
-        withCredentials([
-          string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
-          string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-        ]) {
-          sh '''
-            echo "[INFO] Configuring AWS credentials..."
-            aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
-            aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
-            aws configure set default.region "ap-northeast-2"
-
-            echo "[INFO] Logging into Amazon ECR..."
-            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet
-
-            echo "[INFO] Building Docker image..."
-            docker build -t 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest .
-
-            echo "[INFO] Pushing to ECR..."
-            docker push 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest
-
-            echo "[INFO] ✅ Docker image pushed successfully!"
-          '''
-        }
-      }
-    }
+//     stage('Build') {
+//       steps {
+//         sh '''
+//           echo "[INFO] Setting executable permissions..."
+//           chmod +x ./gradlew
+//
+//           echo "[INFO] Building with Gradle (skipping tests)..."
+//           export GRADLE_USER_HOME=~/.gradle
+//           ./gradlew build -x test --no-daemon --build-cache
+//
+//           echo "[INFO] Build artifacts:"
+//           ls -la build/libs/
+//         '''
+//       }
+//     }
+//
+//     stage('Docker Build & Push') {
+//       steps {
+//         withCredentials([
+//           string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
+//           string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+//         ]) {
+//           sh '''
+//             echo "[INFO] Configuring AWS credentials..."
+//             aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+//             aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+//             aws configure set default.region "ap-northeast-2"
+//
+//             echo "[INFO] Logging into Amazon ECR..."
+//             aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet
+//
+//             echo "[INFO] Building Docker image..."
+//             docker build -t 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest .
+//
+//             echo "[INFO] Pushing to ECR..."
+//             docker push 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest
+//
+//             echo "[INFO] ✅ Docker image pushed successfully!"
+//           '''
+//         }
+//       }
+//     }
 
     stage('Deploy to Idle Stack') {
       steps {
@@ -126,7 +126,7 @@ pipeline {
             set -e
             aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
             aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
-            aws configure set default.region "$AWS_REGION"
+            aws configure set default.region ap-northeast-2
 
             echo "[INFO] Creating new Launch Template version..."
             CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \

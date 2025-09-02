@@ -221,10 +221,13 @@ pipeline {
 
             IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
             for i in {1..60}; do
-              HEALTH=$(aws elbv2 describe-target-health --target-group-arn $IDLE_TG \
-                --query 'TargetHealthDescriptions[*].TargetHealth.State' \
-                --output text | grep -v draining | uniq)
+            HEALTH=$(aws elbv2 describe-target-health \
+              --target-group-arn $IDLE_TG \
+              --query 'TargetHealthDescriptions[*].TargetHealth.State' \
+              --output text | grep -v draining | uniq | awk '{print $1}')
+
               echo "Current health: $HEALTH"
+
               if [ "$HEALTH" = "healthy" ]; then
                 echo "[INFO] New stack is healthy!"
                 exit 0

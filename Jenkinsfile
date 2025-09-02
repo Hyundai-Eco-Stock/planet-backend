@@ -143,11 +143,39 @@ pipeline {
               --auto-scaling-group-name planet \
               --launch-template "LaunchTemplateName=planet-backend,Version=$NEW_VERSION"
 
-            echo "[INFO] ✅ Rolling update triggered on ASG: planet (using Launch Template v$NEW_VERSION)"
+            echo "[INFO] Starting ASG Instance Refresh..."
+            REFRESH_ID=$(aws autoscaling start-instance-refresh \
+              --auto-scaling-group-name planet \
+              --preferences MinHealthyPercentage=50,InstanceWarmup=10 \
+              --query 'InstanceRefreshId' --output text)
+
+            echo "[INFO] Instance refresh started: $REFRESH_ID"
+
+            # Polling until refresh completes
+            while true; do
+              STATUS=$(aws autoscaling describe-instance-refreshes \
+                --auto-scaling-group-name planet \
+                --instance-refresh-ids $REFRESH_ID \
+                --query 'InstanceRefreshes[0].Status' \
+                --output text)
+
+              echo "[INFO] Current refresh status: $STATUS"
+
+              if [ "$STATUS" = "Successful" ]; then
+                echo "[INFO] 🎉 Instance refresh completed successfully!"
+                break
+              elif [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ]; then
+                echo "[ERROR] ❌ Instance refresh ended with status: $STATUS"
+                exit 1
+              fi
+
+              sleep 30
+            done
           '''
         }
       }
     }
+
   }
   
   post {

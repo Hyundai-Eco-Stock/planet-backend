@@ -10,13 +10,11 @@ CREATE TABLE order_history
     final_pay_price     NUMBER(10)           NOT NULL, -- 결제할 금액: (총 가격) - (사용 포인트) + (기부 금액)
     eco_deal_qr_url     VARCHAR2(500),
     member_id           NUMBER               NOT NULL,
-    department_store_id NUMBER               NOT NULL,
+    department_store_id NUMBER,
     created_at          DATE DEFAULT SYSDATE NOT NULL,
     updated_at          DATE,
     CONSTRAINT PK_ORDER_HISTORY PRIMARY KEY (order_history_id),
-    CONSTRAINT ck_order_status CHECK (order_status IN
-                                      ('PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'ALL_CANCELLED',
-                                       'PARTIAL_CANCELLED')),
+    CONSTRAINT ck_order_status CHECK (order_status IN('PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'ALL_CANCELLED', 'PARTIAL_CANCELLED', 'DONE')),
     CONSTRAINT fk_order_member FOREIGN KEY (member_id)
         REFERENCES member (member_id),
     CONSTRAINT fk_order_department_store FOREIGN KEY (department_store_id)
@@ -58,9 +56,17 @@ CREATE TABLE payment_history
     order_history_id NUMBER               NOT NULL,
     created_at       DATE DEFAULT SYSDATE NOT NULL,
     updated_at       DATE,
+    order_id         VARCHAR2(255)        NOT NULL,
+    total_amount     NUMBER               NOT NULL,
+    requested_at     DATE,
+    approved_at      DATE,
+    balance_amount   NUMBER,
+    receipt_url      VARCHAR2(1000),
+    failure_code     VARCHAR2(100),
+    failure_message  VARCHAR2(500),
     CONSTRAINT PK_PAYMENT_HISTORY PRIMARY KEY (payment_id),
-    CONSTRAINT ck_payment_history_method CHECK (payment_method IN ('CREDIT_CARD', 'KAKAOPAY')),
-    CONSTRAINT ck_payment_history_status CHECK (payment_status IN ('PENDING', 'PAID', 'FAILED', 'REFUNDED')),
+    CONSTRAINT ck_payment_history_method CHECK (payment_method IN ('CARD', 'EASY_PAY', 'MOBILE_PHONE', 'TRANSFER')),
+    CONSTRAINT ck_payment_history_status CHECK (payment_status IN ('READY', 'IN_PROGRESS', 'DONE', 'CANCELED', 'PARTIAL_CANCELED', 'ABORTED', 'EXPIRED')),
     CONSTRAINT fk_payment_history_order FOREIGN KEY (order_history_id)
         REFERENCES order_history (order_history_id)
 );

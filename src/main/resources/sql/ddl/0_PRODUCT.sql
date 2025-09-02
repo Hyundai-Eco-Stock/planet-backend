@@ -89,12 +89,7 @@ VALUES (5, '헤어');
 INSERT INTO product_category (category_id, name)
 VALUES (6, '식기류');
 
-INSERT INTO product_category (category_id, name)
-VALUES (7, '속옷');
-
 commit;
-
-
 
 -- 상품
 -- TODO: 향후 NOT NULL로 수정

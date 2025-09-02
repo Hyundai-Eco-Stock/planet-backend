@@ -137,6 +137,12 @@ public class MemberServiceImpl implements MemberService {
     /* 마이페이지 - 에코딜 */
     public List<MyEcoDealResponse> getMyEcoDeals(Long memberId) {
 
+        List<MyEcoDealResponse> myEcoDealResponseList = memberMapper.reservedEcoDeal(memberId);
+        myEcoDealResponseList.forEach(myEcoDealResponse -> {
+            String filePath = myEcoDealResponse.getEcoDealQrUrl();
+            String fileUrl = cloudFrontFileUtil.generateSignedUrl(filePath, 24 * 60 * 60);
+            myEcoDealResponse.setEcoDealQrUrl(fileUrl);
+        });
         return memberMapper.reservedEcoDeal(memberId);
     }
 

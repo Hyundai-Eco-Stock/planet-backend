@@ -7,12 +7,12 @@ import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.error.auth.AuthException;
 
-// TODO: provider_uid 가져오기?
 @Builder
 public record OAuth2UserInfo(
     String name,
     String email,
-    String profile
+    String profile,
+    String provider
 ) {
 
     public static OAuth2UserInfo of(String registrationId, Map<String, Object> attributes) {
@@ -30,6 +30,7 @@ public record OAuth2UserInfo(
             .name((String) attributes.get("name"))
             .email((String) attributes.get("email"))
             .profile((String) attributes.get("picture"))
+            .provider("GOOGLE")
             .build();
     }
 
@@ -42,6 +43,7 @@ public record OAuth2UserInfo(
             .name((String) profile.get("nickname"))
             .email((String) account.get("email"))
             .profile((String) profile.get("profile_image_url"))
+            .provider("KAKAO")
             .build();
     }
 
@@ -52,6 +54,7 @@ public record OAuth2UserInfo(
             .profileUrl(profile)
             .name(name)
             .role(Role.USER)
+            .provider(provider)
             .build();
     }
 }

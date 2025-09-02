@@ -1,5 +1,8 @@
 package org.phoenix.planet.error;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.error.ecoStock.EcoStockException;
@@ -13,10 +16,6 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
@@ -38,12 +37,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
         IllegalArgumentException e) {
+
         log.error("IllegalArgumentException", e);
-        String errorMessage = "인자가 잘못되었을 되었습니다.";
 
         Map<String, Object> body = new HashMap<>();
         body.put("errorCode", e.getClass().getName());
-        body.put("message", errorMessage);
+        body.put("message", e.getMessage());
 
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -120,9 +119,9 @@ public class GlobalExceptionHandler {
         body.put("message", e.getError().getValue());
 
         return ResponseEntity
-                .status(e.getError().getHttpStatus())
-                .header("X-Error-Code", e.getError().name())
-                .body(body);
+            .status(e.getError().getHttpStatus())
+            .header("X-Error-Code", e.getError().name())
+            .body(body);
     }
 
     @ExceptionHandler(Exception.class)
@@ -143,6 +142,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EcoStockException.class)
     public ResponseEntity<Map<String, Object>> handleOrderException(EcoStockException e) {
+
         log.info("EcoStockException occurred", e); // <-- 원인과 stack trace 전부 로깅됨
 
         Map<String, Object> body = new HashMap<>();
@@ -150,19 +150,19 @@ public class GlobalExceptionHandler {
         body.put("message", e.getError().getValue());
 
         return ResponseEntity
-                .status(e.getError().getHttpStatus())
-                .body(body);
+            .status(e.getError().getHttpStatus())
+            .body(body);
     }
 
     @ExceptionHandler(RaffleException.class)
-     public ResponseEntity<Map<String, Object>> handleRaffleException(RaffleException e) {
+    public ResponseEntity<Map<String, Object>> handleRaffleException(RaffleException e) {
 
         Map<String, Object> body = new HashMap<>();
         body.put("errorCode", e.getError().name());
         body.put("message", e.getError().getValue());
 
         return ResponseEntity
-                .status(e.getError().getHttpStatus())
-                .body(body);
-     }
+            .status(e.getError().getHttpStatus())
+            .body(body);
+    }
 }

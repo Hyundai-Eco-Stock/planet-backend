@@ -45,6 +45,7 @@ public class MemberServiceImpl implements MemberService {
                         ? cloudFrontFileUtil.generateSignedUrl(member.getProfileUrl(), 60) : null)
                 .address(member.getAddress())
                 .detailAddress(member.getDetailAddress())
+                .point(member.getPoint())
                 .build();
     }
 

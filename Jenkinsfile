@@ -121,14 +121,9 @@ pipeline {
             aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
             aws configure set default.region ap-northeast-2
 
-            echo "[INFO] Updating Launch Template version..."
-            LATEST_VERSION=$(aws ec2 describe-launch-template-versions \
-              --launch-template-name planet-backend \
-              --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
-
             aws autoscaling update-auto-scaling-group \
               --auto-scaling-group-name planet \
-              --launch-template "LaunchTemplateName=planet-backend,Version=$LATEST_VERSION"
+              --launch-template "LaunchTemplateName=planet-backend,Version=\$Latest"
 
             echo "[INFO] ✅ Rolling update triggered on ASG: planet"
           '''

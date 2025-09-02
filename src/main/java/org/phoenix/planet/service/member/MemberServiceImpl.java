@@ -42,6 +42,7 @@ public class MemberServiceImpl implements MemberService {
             .name(member.getName())
             .sex(member.getSex())
             .birth(member.getBirth())
+            .point(member.getPoint())
             .profileUrl(
                 member.getProfileUrl() != null ?
                     member.getProfileUrl().startsWith("http") ?

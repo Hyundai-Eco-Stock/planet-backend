@@ -24,9 +24,7 @@ public class PhtiController {
     private final PhtiService phtiService;
 
     @GetMapping("/questions-with-choices")
-    public ResponseEntity<List<PhtiQuestionWithChoicesResponse>> fetchPhtiQuestionsWithChoices(
-        @LoginMemberId Long memberId
-    ) {
+    public ResponseEntity<List<PhtiQuestionWithChoicesResponse>> fetchPhtiQuestionsWithChoices() {
 
         List<PhtiQuestionWithChoicesResponse> response = phtiService.fetchAllQuestionsWithChoices();
         return ResponseEntity.ok(response);

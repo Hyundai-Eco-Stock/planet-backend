@@ -410,7 +410,7 @@ public class PaymentServiceImpl implements PaymentService {
                 (request.donationAmount() != null ? request.donationAmount() : 0);
 
         Long departmentStoreId = null;
-        if ("PICKUP".equals(request.orderType().getValue()) && request.pickupInfo() != null) {
+        if ("PICKUP".equals(request.orderType().name()) && request.pickupInfo() != null) {
             departmentStoreId = request.pickupInfo().departmentStoreId();
         }
 

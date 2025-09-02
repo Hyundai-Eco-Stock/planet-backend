@@ -126,17 +126,17 @@ pipeline {
             set -e
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-            aws configure set default.region ${AWS_REGION}
+            aws configure set default.region $AWS_REGION
 
             echo "[INFO] Creating new Launch Template version..."
             CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
-              --launch-template-name ${LT_NAME} \
-              --versions $Latest \
+              --launch-template-name $LT_NAME \
+              --versions "$Latest" \
               --query 'LaunchTemplateVersions[0].VersionNumber' \
               --output text)
 
             NEW_VERSION=$(aws ec2 create-launch-template-version \
-              --launch-template-id ${LT_ID} \
+              --launch-template-id $LT_ID \
               --source-version $CURRENT_VERSION \
               --version-description "CI/CD deploy $(date +%Y%m%d%H%M%S)" \
               --launch-template-data '{}' \
@@ -147,17 +147,17 @@ pipeline {
 
             echo "[INFO] Detecting active TargetGroup..."
             ACTIVE_TG=$(aws elbv2 describe-listeners \
-              --listener-arn ${LISTENER_ARN} \
+              --listener-arn $LISTENER_ARN \
               --query "Listeners[0].DefaultActions[0].TargetGroupArn" \
               --output text)
 
-            if [ "$ACTIVE_TG" = "${BLUE_TG}" ]; then
+            if [ "$ACTIVE_TG" = "$BLUE_TG" ]; then
               IDLE_STACK=planet-green-asg
-              IDLE_TG=${GREEN_TG}
+              IDLE_TG=$GREEN_TG
               IDLE_COLOR=green
             else
               IDLE_STACK=planet-blue-asg
-              IDLE_TG=${BLUE_TG}
+              IDLE_TG=$BLUE_TG
               IDLE_COLOR=blue
             fi
 
@@ -167,15 +167,15 @@ pipeline {
               --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
               --capabilities CAPABILITY_NAMED_IAM \
               --parameter-overrides \
-                VpcId=${VPC_ID} \
-                Subnets="${SUBNETS}" \
-                LaunchTemplateId=${LT_ID} \
+                VpcId=$VPC_ID \
+                Subnets="$SUBNETS" \
+                LaunchTemplateId=$LT_ID \
                 LaunchTemplateVersion=$NEW_VERSION \
                 TargetGroupArn=$IDLE_TG \
                 DeploymentColor=$IDLE_COLOR
 
             echo "$IDLE_TG" > $WORKSPACE/idle_tg.txt
-            echo "${LISTENER_ARN}" > $WORKSPACE/listener_arn.txt
+            echo "$LISTENER_ARN" > $WORKSPACE/listener_arn.txt
           '''
         }
       }

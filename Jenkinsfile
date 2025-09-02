@@ -131,7 +131,7 @@ pipeline {
             echo "[INFO] Creating new Launch Template version..."
             CURRENT_VERSION=\$(aws ec2 describe-launch-template-versions \
               --launch-template-name ${env.LT_NAME} \
-              --versions '$Latest' \
+              --versions "\$Latest" \
               --query 'LaunchTemplateVersions[0].VersionNumber' \
               --output text)
 

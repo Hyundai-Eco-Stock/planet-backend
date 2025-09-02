@@ -22,6 +22,7 @@ CREATE TABLE order_history
     CONSTRAINT fk_order_department_store FOREIGN KEY (department_store_id)
         REFERENCES department_store (department_store_id)
 );
+DROP SEQUENCE seq_order_history;
 CREATE SEQUENCE seq_order_history START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 
@@ -44,6 +45,7 @@ CREATE TABLE order_product
     CONSTRAINT fk_order_product_product FOREIGN KEY (product_id)
         REFERENCES product (product_id)
 );
+DROP SEQUENCE seq_order_product;
 CREATE SEQUENCE seq_order_product START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 
@@ -62,5 +64,6 @@ CREATE TABLE payment_history
     CONSTRAINT fk_payment_history_order FOREIGN KEY (order_history_id)
         REFERENCES order_history (order_history_id)
 );
+DROP SEQUENCE seq_payment_history;
 CREATE SEQUENCE seq_payment_history START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 

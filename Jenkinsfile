@@ -166,33 +166,37 @@ pipeline {
 
             echo "[INFO] Deploying to $IDLE_STACK ($IDLE_COLOR) with TG: $IDLE_TG"
 
-            cat > /tmp/cf-params.json <<EOF
-            [
+            echo "[INFO] Creating CloudFormation parameters..."
+            printf '[
               {"ParameterKey":"VpcId","ParameterValue":"vpc-0078d01ffe1b985f2"},
               {"ParameterKey":"Subnets","ParameterValue":"subnet-01277620756a7119c,subnet-03112ab72dbbebdc2,subnet-04d05f52b13a598b6,subnet-0d9c1cab2bf65b242"},
               {"ParameterKey":"LaunchTemplateId","ParameterValue":"lt-0247d3f1f9751c069"},
-              {"ParameterKey":"LaunchTemplateVersion","ParameterValue":"$NEW_VERSION"},
-              {"ParameterKey":"TargetGroupArn","ParameterValue":"$IDLE_TG"},
-              {"ParameterKey":"DeploymentColor","ParameterValue":"$IDLE_COLOR"}
-            ]
-            EOF
+              {"ParameterKey":"LaunchTemplateVersion","ParameterValue":"%s"},
+              {"ParameterKey":"TargetGroupArn","ParameterValue":"%s"},
+              {"ParameterKey":"DeploymentColor","ParameterValue":"%s"}
+            ]' "$NEW_VERSION" "$IDLE_TG" "$IDLE_COLOR" > /tmp/cf-params.json
 
-            aws cloudformation create-stack \
-              --stack-name $IDLE_STACK \
-              --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
-              --capabilities CAPABILITY_NAMED_IAM \
-              --parameters file:///tmp/cf-params.json \
-              2>/dev/null || aws cloudformation update-stack \
+            echo "[INFO] Creating/updating CloudFormation stack..."
+            if aws cloudformation describe-stacks --stack-name $IDLE_STACK >/dev/null 2>&1; then
+              echo "[INFO] Stack exists, updating..."
+              aws cloudformation update-stack \
                 --stack-name $IDLE_STACK \
                 --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
                 --capabilities CAPABILITY_NAMED_IAM \
                 --parameters file:///tmp/cf-params.json
+              aws cloudformation wait stack-update-complete --stack-name $IDLE_STACK
+            else
+              echo "[INFO] Stack does not exist, creating..."
+              aws cloudformation create-stack \
+                --stack-name $IDLE_STACK \
+                --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
+                --capabilities CAPABILITY_NAMED_IAM \
+                --parameters file:///tmp/cf-params.json
+              aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK
+            fi
 
-            # 스택 생성/업데이트 완료 대기
-            aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK || \
-            aws cloudformation wait stack-update-complete --stack-name $IDLE_STACK
+            echo "[INFO] Stack deployment completed successfully"
 
-            # 파일 생성 확인
             echo "$IDLE_TG" > $WORKSPACE/idle_tg.txt
             echo "arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515" > $WORKSPACE/listener_arn.txt
 

@@ -99,10 +99,10 @@ public class MemberServiceImpl implements MemberService {
         );
 
         return SignUpResponse.builder()
-                .profileUrl(
-                        (savedFilePath != null) ?
-                                cloudFrontFileUtil.generateSignedUrl(savedFilePath, 60) : null)
-                .build();
+            .profileUrl(
+                (savedFilePath != null) ?
+                    cloudFrontFileUtil.generateUrl(savedFilePath) : null)
+            .build();
     }
 
     @Override

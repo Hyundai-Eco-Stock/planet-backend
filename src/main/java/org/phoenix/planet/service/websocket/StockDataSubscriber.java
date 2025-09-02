@@ -21,22 +21,26 @@ public class StockDataSubscriber implements MessageListener {
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
+
         try {
             String jsonData = new String(message.getBody());
-            log.info("📨 Redis에서 메시지 수신: {}", jsonData);
+            log.trace("📨 Redis에서 메시지 수신: {}", jsonData);
 
-            ChartSingleDataResponse chartData = objectMapper.readValue(jsonData, ChartSingleDataResponse.class);
+            ChartSingleDataResponse chartData = objectMapper.readValue(jsonData,
+                ChartSingleDataResponse.class);
             Long stockId = chartData.ecoStockId();
 
             String topic = "/topic/stock" + stockId + "/update";
             sendingOperations.convertAndSend(topic, chartData);
 
-            log.info("📊 웹소켓 브로드캐스트: {} → {}", topic, chartData);
+            log.trace("📊 웹소켓 브로드캐스트: {} → {}", topic, chartData);
 
         } catch (JsonProcessingException e) {
-            log.error("{}: {}", EcoStockError.JSON_DESERIALIZATION_FAILED.getValue(), e.getMessage());
+            log.error("{}: {}", EcoStockError.JSON_DESERIALIZATION_FAILED.getValue(),
+                e.getMessage());
         } catch (Exception e) {
-            log.error("{}: {}", EcoStockError.STOCK_DATA_PROCESSING_FAILED.getValue(), e.getMessage());
+            log.error("{}: {}", EcoStockError.STOCK_DATA_PROCESSING_FAILED.getValue(),
+                e.getMessage());
         }
     }
 }

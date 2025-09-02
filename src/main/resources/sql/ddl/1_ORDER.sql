@@ -10,7 +10,7 @@ CREATE TABLE order_history
     final_pay_price     NUMBER(10)           NOT NULL, -- 결제할 금액: (총 가격) - (사용 포인트) + (기부 금액)
     eco_deal_qr_url     VARCHAR2(500),
     member_id           NUMBER               NOT NULL,
-    department_store_id VARCHAR2(255)        NOT NULL,
+    department_store_id NUMBER               NOT NULL,
     created_at          DATE DEFAULT SYSDATE NOT NULL,
     updated_at          DATE,
     CONSTRAINT PK_ORDER_HISTORY PRIMARY KEY (order_history_id),

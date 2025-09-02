@@ -14,7 +14,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 
@@ -76,25 +75,7 @@ public class SecurityConfig {
             // request 인증, 인가 설정
             .authorizeHttpRequests(request ->
                 request
-                    .requestMatchers(
-                        new AntPathRequestMatcher("/error"),
-                        new AntPathRequestMatcher("/favicon.ico"),
-                        new AntPathRequestMatcher("/h2-console/**"),
-                        new AntPathRequestMatcher("/swagger-ui/**"),
-                        new AntPathRequestMatcher("/v3/api-docs/**"),
-                        new AntPathRequestMatcher("/health"),
-                        new AntPathRequestMatcher("/"),
-                        new AntPathRequestMatcher("/auth/success"),
-                        new AntPathRequestMatcher("/auth/access-token/regenerate"),
-                        new AntPathRequestMatcher("/auth/login"),
-                        new AntPathRequestMatcher("/auth/password-change-mail"),
-                        new AntPathRequestMatcher("/auth/password-change-token/valid"),
-                        new AntPathRequestMatcher("/auth/change-password"),
-                        new AntPathRequestMatcher("/eco-stock/history/**"),
-                        new AntPathRequestMatcher("/eco-stock/list/**"),
-                        new AntPathRequestMatcher("/ws/**")
-
-                    ).permitAll()
+                    .requestMatchers(SecurityWhitelist.PATHS).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .anyRequest().authenticated()
             )

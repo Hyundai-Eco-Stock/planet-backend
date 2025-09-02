@@ -32,7 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // 2. resistrationId 가져오기 (third-party id)
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-
+        log.info("registrationId: {}", registrationId);
         // 3. userNameAttributeName 가져오기
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
             .getUserInfoEndpoint().getUserNameAttributeName();
@@ -47,8 +47,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             log.info("멤버 있음");
             member = memberOpt.get();
             if (member.getProfileUrl() != null && !member.getProfileUrl().startsWith("http")) {
-                String profileUrl = cloudFrontFileUtil.generateSignedUrl(member.getProfileUrl(),
-                    60);
+                String profileUrl = cloudFrontFileUtil.generateUrl(member.getProfileUrl());
                 member.updateProfile(profileUrl);
             }
         } else {

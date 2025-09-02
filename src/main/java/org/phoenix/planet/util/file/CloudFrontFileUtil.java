@@ -18,6 +18,11 @@ public class CloudFrontFileUtil {
 
     private final CloudFrontProperties properties;
 
+    public String generateUrl(String objectKey) {
+
+        return String.format("https://%s/%s", properties.getDistributionDomain(), objectKey);
+    }
+
     /// 지정된 경로로 Signed URL 생성
     public String generateSignedUrl(String objectKey, long validSeconds) {
 

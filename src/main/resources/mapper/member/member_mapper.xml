@@ -51,13 +51,13 @@
         #{id},
         #{email},
         #{name},
-        #{profileUrl},
-        #{pwdHash},
-        #{provider},
-        #{address},
-        #{detailAddress},
+        #{profileUrl, jdbcType=VARCHAR},
+        #{pwdHash, jdbcType=VARCHAR},
+        #{provider, jdbcType=VARCHAR},
+        #{address, jdbcType=VARCHAR},
+        #{detailAddress, jdbcType=VARCHAR},
         #{role},
-        #{sex},
+        #{sex, jdbcType=VARCHAR},
         SYSDATE
         )
     </insert>

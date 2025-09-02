@@ -1,0 +1,31 @@
+-- ------------------------- 고객 응대 -------------------------
+-- CREATE TABLE customer_inquery
+-- (
+--     customer_inquery_id NUMBER               NOT NULL,
+--     title               VARCHAR2(255)        NOT NULL,
+--     content             VARCHAR2(255)        NOT NULL,
+--     reply_status        VARCHAR2(255)        NOT NULL,
+--     reply               VARCHAR2(500)        NOT NULL,
+--     member_id           NUMBER               NOT NULL,
+--     created_at          DATE DEFAULT SYSDATE NOT NULL,
+--     updated_at          DATE,
+--     CONSTRAINT PK_CUSTOMER_INQUERY PRIMARY KEY (customer_inquery_id),
+--     CONSTRAINT ck_customer_inquery_reply_status CHECK (reply_status IN ('PENDING', 'ANSWERED')),
+--     CONSTRAINT fk_customer_inquery_member FOREIGN KEY (member_id)
+--         REFERENCES member (member_id)
+-- );
+-- CREATE SEQUENCE seq_customer_inquery START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+
+-- --------------------------- 벡터 -----------------------------
+-- CREATE TABLE product_vector
+-- (
+--     product_vector_id NUMBER               NOT NULL,
+--     product_id        NUMBER               NOT NULL,
+--     created_at        DATE DEFAULT SYSDATE NOT NULL,
+--     updated_at        DATE,
+--     CONSTRAINT PK_PRODUCT_VECTOR PRIMARY KEY (product_vector_id),
+--     CONSTRAINT fk_product_vector_product FOREIGN KEY (product_id)
+--         REFERENCES product (product_id)
+-- );
+-- CREATE SEQUENCE seq_product_vector START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;

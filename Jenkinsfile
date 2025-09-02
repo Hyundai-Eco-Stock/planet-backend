@@ -121,11 +121,28 @@ pipeline {
             aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
             aws configure set default.region ap-northeast-2
 
+            echo "[INFO] Getting current latest Launch Template version..."
+            CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
+              --launch-template-name planet-backend \
+              --versions $Latest \
+              --query 'LaunchTemplateVersions[0].VersionNumber' \
+              --output text)
+
+            echo "[INFO] Creating new Launch Template version from v$CURRENT_VERSION ..."
+            NEW_VERSION=$(aws ec2 create-launch-template-version \
+              --launch-template-name planet-backend \
+              --source-version $CURRENT_VERSION \
+              --query 'LaunchTemplateVersion.VersionNumber' \
+              --output text)
+
+            echo "[INFO] New Launch Template version created: v$NEW_VERSION"
+
+            echo "[INFO] Updating Auto Scaling Group to use new version..."
             aws autoscaling update-auto-scaling-group \
               --auto-scaling-group-name planet \
-              --launch-template 'LaunchTemplateName=planet-backend,Version=$Latest'
+              --launch-template "LaunchTemplateName=planet-backend,Version=$NEW_VERSION"
 
-            echo "[INFO] ✅ Rolling update triggered on ASG: planet"
+            echo "[INFO] ✅ Rolling update triggered on ASG: planet (using Launch Template v$NEW_VERSION)"
           '''
         }
       }

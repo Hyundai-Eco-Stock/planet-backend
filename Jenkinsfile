@@ -122,76 +122,75 @@ pipeline {
           string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
           string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
         ]) {
-          sh '''
+          sh """
             set -e
-            aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
-            aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
-            aws configure set default.region ap-northeast-2
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            aws configure set default.region ${env.AWS_REGION}
 
             echo "[INFO] Creating new Launch Template version..."
-            CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
-              --launch-template-name $LT_NAME \
+            CURRENT_VERSION=\$(aws ec2 describe-launch-template-versions \
+              --launch-template-name ${env.LT_NAME} \
               --versions '$Latest' \
               --query 'LaunchTemplateVersions[0].VersionNumber' \
               --output text)
 
-            NEW_VERSION=$(aws ec2 create-launch-template-version \
-              --launch-template-id $LT_ID \
-              --source-version $CURRENT_VERSION \
-              --version-description "CI/CD deploy $(date +%Y%m%d%H%M%S)" \
+            NEW_VERSION=\$(aws ec2 create-launch-template-version \
+              --launch-template-id ${env.LT_ID} \
+              --source-version \$CURRENT_VERSION \
+              --version-description "CI/CD deploy \$(date +%Y%m%d%H%M%S)" \
               --launch-template-data '{}' \
               --query 'LaunchTemplateVersion.VersionNumber' \
               --output text)
 
-            echo "[INFO] ✅ Created Launch Template version: $NEW_VERSION"
+            echo "[INFO] ✅ Created Launch Template version: \$NEW_VERSION"
 
             echo "[INFO] Detecting active TargetGroup..."
-            ACTIVE_TG=$(aws elbv2 describe-listeners \
-              --listener-arn $LISTENER_ARN \
+            ACTIVE_TG=\$(aws elbv2 describe-listeners \
+              --listener-arn ${env.LISTENER_ARN} \
               --query "Listeners[0].DefaultActions[0].TargetGroupArn" \
               --output text)
 
-            if [ "$ACTIVE_TG" = "$BLUE_TG" ]; then
+            if [ "\$ACTIVE_TG" = "${env.BLUE_TG}" ]; then
               IDLE_STACK=planet-green-asg
-              IDLE_TG=$GREEN_TG
+              IDLE_TG=${env.GREEN_TG}
               IDLE_COLOR=green
             else
               IDLE_STACK=planet-blue-asg
-              IDLE_TG=$BLUE_TG
+              IDLE_TG=${env.BLUE_TG}
               IDLE_COLOR=blue
             fi
 
-            echo "[INFO] Deploying to $IDLE_STACK ($IDLE_COLOR)..."
+            echo "[INFO] Deploying to \$IDLE_STACK (\$IDLE_COLOR)..."
             aws cloudformation deploy \
-              --stack-name $IDLE_STACK \
+              --stack-name \$IDLE_STACK \
               --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
               --capabilities CAPABILITY_NAMED_IAM \
               --parameter-overrides \
-                VpcId=$VPC_ID \
-                Subnets="$SUBNETS" \
-                LaunchTemplateId=$LT_ID \
-                LaunchTemplateVersion=$NEW_VERSION \
-                TargetGroupArn=$IDLE_TG \
-                DeploymentColor=$IDLE_COLOR
+                VpcId=${env.VPC_ID} \
+                Subnets="${env.SUBNETS}" \
+                LaunchTemplateId=${env.LT_ID} \
+                LaunchTemplateVersion=\$NEW_VERSION \
+                TargetGroupArn=\$IDLE_TG \
+                DeploymentColor=\$IDLE_COLOR
 
-            echo "$IDLE_TG" > /tmp/idle_tg.txt
-            echo "$LISTENER_ARN" > /tmp/listener_arn.txt
-          '''
+            echo "\$IDLE_TG" > ${env.WORKSPACE}/idle_tg.txt
+            echo "${env.LISTENER_ARN}" > ${env.WORKSPACE}/listener_arn.txt
+          """
         }
       }
     }
 
-
     stage('Wait for Idle Stack Health') {
       steps {
-        sh '''
-          IDLE_TG=$(cat /tmp/idle_tg.txt)
+        sh """
+          IDLE_TG=\$(cat ${env.WORKSPACE}/idle_tg.txt)
           for i in {1..60}; do
-            HEALTH=$(aws elbv2 describe-target-health --target-group-arn $IDLE_TG \
+            HEALTH=\$(aws elbv2 describe-target-health --target-group-arn \$IDLE_TG \
               --query 'TargetHealthDescriptions[*].TargetHealth.State' \
               --output text | grep -v draining | uniq)
-            echo "Current health: $HEALTH"
-            if [ "$HEALTH" = "healthy" ]; then
+            echo "Current health: \$HEALTH"
+            if [ "\$HEALTH" = "healthy" ]; then
               echo "[INFO] ✅ New stack is healthy!"
               exit 0
             fi
@@ -199,25 +198,25 @@ pipeline {
           done
           echo "[ERROR] ❌ New stack did not become healthy in time"
           exit 1
-        '''
+        """
       }
     }
 
     stage('Switch Traffic') {
       steps {
-        sh '''
-          IDLE_TG=$(cat /tmp/idle_tg.txt)
-          LISTENER_ARN=$(cat /tmp/listener_arn.txt)
+        sh """
+          IDLE_TG=\$(cat ${env.WORKSPACE}/idle_tg.txt)
+          LISTENER_ARN=\$(cat ${env.WORKSPACE}/listener_arn.txt)
 
-          echo "[INFO] Switching traffic to $IDLE_TG..."
+          echo "[INFO] Switching traffic to \$IDLE_TG..."
           aws elbv2 modify-listener \
-            --listener-arn $LISTENER_ARN \
-            --default-actions Type=forward,TargetGroupArn=$IDLE_TG
+            --listener-arn \$LISTENER_ARN \
+            --default-actions Type=forward,TargetGroupArn=\$IDLE_TG
           echo "[INFO] ✅ Traffic switched!"
-        '''
+        """
       }
     }
-  }
+
 
 //     stage('Deploy via ASG Rolling Update') {
 //       steps {

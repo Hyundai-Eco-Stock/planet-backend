@@ -192,8 +192,14 @@ pipeline {
             aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK || \
             aws cloudformation wait stack-update-complete --stack-name $IDLE_STACK
 
+            # 파일 생성 확인
             echo "$IDLE_TG" > $WORKSPACE/idle_tg.txt
             echo "arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515" > $WORKSPACE/listener_arn.txt
+
+            echo "[DEBUG] Files created:"
+            ls -la $WORKSPACE/idle_tg.txt $WORKSPACE/listener_arn.txt
+            echo "[DEBUG] File contents:"
+            cat $WORKSPACE/idle_tg.txt
           '''
         }
       }

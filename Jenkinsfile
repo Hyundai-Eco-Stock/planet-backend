@@ -109,40 +109,28 @@ pipeline {
       }
     }
     
-    stage('Deploy to EC2') {
+    stage('Deploy via ASG Rolling Update') {
       steps {
         withCredentials([
           string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
           string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
         ]) {
           sh '''
-            echo "[INFO] Finding EC2 instances in Auto Scaling Group..."
-            INSTANCE_IDS=$(aws ec2 describe-instances \
-              --filters "Name=tag:aws:autoscaling:groupName,Values=planet" "Name=instance-state-name,Values=running" \
-              --query "Reservations[].Instances[].InstanceId" --output text)
+            echo "[INFO] Configuring AWS CLI..."
+            aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+            aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+            aws configure set default.region ap-northeast-2
 
-            if [ -z "$INSTANCE_IDS" ]; then
-              echo "[INFO] ✅ No running instances found in ASG: planet (0개 입니다)"
-              exit 0   # 성공으로 종료
-            fi
+            echo "[INFO] Updating Launch Template version..."
+            LATEST_VERSION=$(aws ec2 describe-launch-template-versions \
+              --launch-template-name planet-backend \
+              --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
 
-            echo "[INFO] Deploying to instances: $INSTANCE_IDS"
-            
-            echo "[INFO] Sending deployment command via SSM..."
-            aws ssm send-command \
-              --document-name "AWS-RunShellScript" \
-              --comment "Deploy Docker container" \
-              --instance-ids $INSTANCE_IDS \
-              --parameters commands='[
-                "aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet",
-                "docker pull 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest",
-                "docker rm -f planet || true",
-                "docker run -d --name planet -p 8080:8080 --restart unless-stopped --env SPRING_PROFILES_ACTIVE=prod --env-file /home/ec2-user/.env 958948421852.dkr.ecr.ap-northeast-2.amazonaws.com/planet:latest",
-                "echo Deployment completed on $(hostname)"
-              ]' \
-              --region ap-northeast-2
-            
-            echo "[INFO] ✅ Deployment command sent!"
+            aws autoscaling update-auto-scaling-group \
+              --auto-scaling-group-name planet \
+              --launch-template "LaunchTemplateName=planet-backend,Version=$LATEST_VERSION"
+
+            echo "[INFO] ✅ Rolling update triggered on ASG: planet"
           '''
         }
       }

@@ -199,9 +199,9 @@ pipeline {
 
             echo "$IDLE_TG" > $WORKSPACE/idle_tg.txt
             echo "arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515" > $WORKSPACE/listener_arn.txt
-
+            echo "$ACTIVE_TG" > $WORKSPACE/active_tg.txt
             echo "[DEBUG] Files created:"
-            ls -la $WORKSPACE/idle_tg.txt $WORKSPACE/listener_arn.txt
+            ls -la $WORKSPACE/idle_tg.txt $WORKSPACE/active_tg.txt $WORKSPACE/listener_arn.txt
             echo "[DEBUG] File contents:"
             cat $WORKSPACE/idle_tg.txt
           '''
@@ -253,9 +253,22 @@ pipeline {
             LISTENER_ARN=$(cat $WORKSPACE/listener_arn.txt)
 
             echo "[INFO] Switching traffic to $IDLE_TG..."
+            IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
+            ACTIVE_TG=$(cat $WORKSPACE/active_tg.txt)
+            LISTENER_ARN=$(cat $WORKSPACE/listener_arn.txt)
+
+            echo "[INFO] Switching traffic from $ACTIVE_TG to $IDLE_TG..."
             aws elbv2 modify-listener \
               --listener-arn $LISTENER_ARN \
-              --default-actions Type=forward,TargetGroupArn=$IDLE_TG
+              --default-actions '[{
+                "Type": "forward",
+                "ForwardConfig": {
+                  "TargetGroups": [
+                    {"TargetGroupArn": "'$IDLE_TG'", "Weight": 1},
+                    {"TargetGroupArn": "'$ACTIVE_TG'", "Weight": 0}
+                  ]
+                }
+              }]'
             echo "[INFO] Traffic switched!"
           '''
         }

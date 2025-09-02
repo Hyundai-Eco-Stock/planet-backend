@@ -166,29 +166,27 @@ pipeline {
 
             echo "[INFO] Deploying to $IDLE_STACK ($IDLE_COLOR) with TG: $IDLE_TG"
 
-            # CloudFormation으로 스택 배포
+            cat > /tmp/cf-params.json <<EOF
+            [
+              {"ParameterKey":"VpcId","ParameterValue":"vpc-0078d01ffe1b985f2"},
+              {"ParameterKey":"Subnets","ParameterValue":"subnet-01277620756a7119c,subnet-03112ab72dbbebdc2,subnet-04d05f52b13a598b6,subnet-0d9c1cab2bf65b242"},
+              {"ParameterKey":"LaunchTemplateId","ParameterValue":"lt-0247d3f1f9751c069"},
+              {"ParameterKey":"LaunchTemplateVersion","ParameterValue":"$NEW_VERSION"},
+              {"ParameterKey":"TargetGroupArn","ParameterValue":"$IDLE_TG"},
+              {"ParameterKey":"DeploymentColor","ParameterValue":"$IDLE_COLOR"}
+            ]
+            EOF
+
             aws cloudformation create-stack \
               --stack-name $IDLE_STACK \
               --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
               --capabilities CAPABILITY_NAMED_IAM \
-              --parameters \
-                ParameterKey=VpcId,ParameterValue=vpc-0078d01ffe1b985f2 \
-                ParameterKey=Subnets,ParameterValue="subnet-01277620756a7119c,subnet-03112ab72dbbebdc2,subnet-04d05f52b13a598b6,subnet-0d9c1cab2bf65b242" \
-                ParameterKey=LaunchTemplateId,ParameterValue=lt-0247d3f1f9751c069 \
-                ParameterKey=LaunchTemplateVersion,ParameterValue=$NEW_VERSION \
-                ParameterKey=TargetGroupArn,ParameterValue=$IDLE_TG \
-                ParameterKey=DeploymentColor,ParameterValue=$IDLE_COLOR \
-              || aws cloudformation update-stack \
+              --parameters file:///tmp/cf-params.json \
+              2>/dev/null || aws cloudformation update-stack \
                 --stack-name $IDLE_STACK \
                 --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
                 --capabilities CAPABILITY_NAMED_IAM \
-                --parameters \
-                  ParameterKey=VpcId,ParameterValue=vpc-0078d01ffe1b985f2 \
-                  ParameterKey=Subnets,ParameterValue="subnet-01277620756a7119c,subnet-03112ab72dbbebdc2,subnet-04d05f52b13a598b6,subnet-0d9c1cab2bf65b242" \
-                  ParameterKey=LaunchTemplateId,ParameterValue=lt-0247d3f1f9751c069 \
-                  ParameterKey=LaunchTemplateVersion,ParameterValue=$NEW_VERSION \
-                  ParameterKey=TargetGroupArn,ParameterValue=$IDLE_TG \
-                  ParameterKey=DeploymentColor,ParameterValue=$IDLE_COLOR
+                --parameters file:///tmp/cf-params.json
 
             # 스택 생성/업데이트 완료 대기
             aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK || \

@@ -131,8 +131,7 @@ pipeline {
             echo "[INFO] Creating new Launch Template version..."
             CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
               --launch-template-name planet-backend \
-              --versions $Latest \
-              --query 'LaunchTemplateVersions[0].VersionNumber' \
+              --query 'LaunchTemplateVersions|sort_by(@,&VersionNumber)[-1].VersionNumber' \
               --output text)
 
             NEW_VERSION=$(aws ec2 create-launch-template-version \
@@ -147,9 +146,11 @@ pipeline {
 
             echo "[INFO] Detecting active TargetGroup..."
             ACTIVE_TG=$(aws elbv2 describe-listeners \
-              --listener-arn arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515 \
-              --query "Listeners[0].DefaultActions[0].TargetGroupArn" \
+              --listener-arns arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515 \
+              --query 'Listeners[0].DefaultActions[0].TargetGroupArn' \
               --output text)
+
+            echo "[DEBUG] Active TG: $ACTIVE_TG"
 
             if [ "$ACTIVE_TG" = "arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:targetgroup/planet-back/d17dc02beb3cf8f3" ]; then
               IDLE_STACK=planet-green-asg
@@ -161,18 +162,35 @@ pipeline {
               IDLE_COLOR=blue
             fi
 
-            echo "[INFO] Deploying to $IDLE_STACK ($IDLE_COLOR)..."
-            aws cloudformation deploy \
+            echo "[INFO] Deploying to $IDLE_STACK ($IDLE_COLOR) with TG: $IDLE_TG"
+
+            # CloudFormation으로 스택 배포
+            aws cloudformation create-stack \
               --stack-name $IDLE_STACK \
               --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
               --capabilities CAPABILITY_NAMED_IAM \
-              --parameter-overrides \
-                VpcId=vpc-0078d01ffe1b985f2 \
-                Subnets="subnet-01277620756a7119c,subnet-03112ab72dbbebdc2,subnet-04d05f52b13a598b6,subnet-0d9c1cab2bf65b242" \
-                LaunchTemplateId=lt-0247d3f1f9751c069 \
-                LaunchTemplateVersion=$NEW_VERSION \
-                TargetGroupArn=$IDLE_TG \
-                DeploymentColor=$IDLE_COLOR
+              --parameters \
+                ParameterKey=VpcId,ParameterValue=vpc-0078d01ffe1b985f2 \
+                ParameterKey=Subnets,ParameterValue="subnet-01277620756a7119c,subnet-03112ab72dbbebdc2,subnet-04d05f52b13a598b6,subnet-0d9c1cab2bf65b242" \
+                ParameterKey=LaunchTemplateId,ParameterValue=lt-0247d3f1f9751c069 \
+                ParameterKey=LaunchTemplateVersion,ParameterValue=$NEW_VERSION \
+                ParameterKey=TargetGroupArn,ParameterValue=$IDLE_TG \
+                ParameterKey=DeploymentColor,ParameterValue=$IDLE_COLOR \
+              || aws cloudformation update-stack \
+                --stack-name $IDLE_STACK \
+                --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
+                --capabilities CAPABILITY_NAMED_IAM \
+                --parameters \
+                  ParameterKey=VpcId,ParameterValue=vpc-0078d01ffe1b985f2 \
+                  ParameterKey=Subnets,ParameterValue="subnet-01277620756a7119c,subnet-03112ab72dbbebdc2,subnet-04d05f52b13a598b6,subnet-0d9c1cab2bf65b242" \
+                  ParameterKey=LaunchTemplateId,ParameterValue=lt-0247d3f1f9751c069 \
+                  ParameterKey=LaunchTemplateVersion,ParameterValue=$NEW_VERSION \
+                  ParameterKey=TargetGroupArn,ParameterValue=$IDLE_TG \
+                  ParameterKey=DeploymentColor,ParameterValue=$IDLE_COLOR
+
+            # 스택 생성/업데이트 완료 대기
+            aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK || \
+            aws cloudformation wait stack-update-complete --stack-name $IDLE_STACK
 
             echo "$IDLE_TG" > idle_tg.txt
             echo "arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515" > listener_arn.txt
@@ -180,7 +198,6 @@ pipeline {
         }
       }
     }
-
     stage('Wait for Idle Stack Health') {
       steps {
         withCredentials([

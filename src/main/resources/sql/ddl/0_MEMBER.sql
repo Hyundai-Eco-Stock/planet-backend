@@ -1,9 +1,9 @@
 -- ------------------------------ 멤버 ------------------------------
 CREATE TABLE member
 (
-    member_id      NUMBER               NOT NULL,
-    email          VARCHAR2(511)        NOT NULL,
-    name           VARCHAR2(511)        NOT NULL,
+    member_id      NUMBER                 NOT NULL,
+    email          VARCHAR2(511)          NOT NULL,
+    name           VARCHAR2(511)          NOT NULL,
     profile_url    VARCHAR2(1000),
     pwd_hash       VARCHAR2(1000),
     provider       VARCHAR2(255),
@@ -12,7 +12,8 @@ CREATE TABLE member
     address        VARCHAR2(100),
     detail_address VARCHAR2(100),
     role           VARCHAR2(50),
-    created_at     DATE DEFAULT SYSDATE NOT NULL,
+    point          NUMBER DEFAULT 0       NOT NULL,
+    created_at     DATE   DEFAULT SYSDATE NOT NULL,
     updated_at     DATE,
     CONSTRAINT PK_MEMBER PRIMARY KEY (member_id),
     CONSTRAINT ck_member_sex CHECK (sex IN ('M', 'F')),

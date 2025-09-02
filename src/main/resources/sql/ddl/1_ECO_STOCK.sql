@@ -4,6 +4,7 @@ CREATE TABLE eco_stock
     eco_stock_id NUMBER               NOT NULL,
     name         VARCHAR2(255)        NOT NULL,
     quantity     NUMBER               NOT NULL,
+    init_price   NUMBER               NOT NULL,
     image_url    VARCHAR2(255)        NULL,
     created_at   DATE DEFAULT SYSDATE NOT NULL,
     updated_at   DATE,

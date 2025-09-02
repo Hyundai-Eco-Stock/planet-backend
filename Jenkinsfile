@@ -147,19 +147,21 @@ pipeline {
             echo "[INFO] Detecting active TargetGroup..."
             ACTIVE_TG=$(aws elbv2 describe-listeners \
               --listener-arns arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515 \
-              --query 'Listeners[0].DefaultActions[0].TargetGroupArn' \
+              --query 'Listeners[0].DefaultActions[0].ForwardConfig.TargetGroups[?Weight==`1`].TargetGroupArn' \
               --output text)
 
             echo "[DEBUG] Active TG: $ACTIVE_TG"
 
-            if [ "$ACTIVE_TG" = "arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:targetgroup/planet-back/d17dc02beb3cf8f3" ]; then
-              IDLE_STACK=planet-green-asg
-              IDLE_TG=arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:targetgroup/planet-second/31753c9206519568
-              IDLE_COLOR=green
-            else
+            if [ "$ACTIVE_TG" = "arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:targetgroup/planet-second/31753c9206519568" ]; then
+              # GREEN이 활성이면 BLUE를 idle로
               IDLE_STACK=planet-blue-asg
               IDLE_TG=arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:targetgroup/planet-back/d17dc02beb3cf8f3
               IDLE_COLOR=blue
+            else
+              # BLUE가 활성이면 GREEN을 idle로
+              IDLE_STACK=planet-green-asg
+              IDLE_TG=arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:targetgroup/planet-second/31753c9206519568
+              IDLE_COLOR=green
             fi
 
             echo "[INFO] Deploying to $IDLE_STACK ($IDLE_COLOR) with TG: $IDLE_TG"

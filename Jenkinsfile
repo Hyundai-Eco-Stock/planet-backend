@@ -285,9 +285,6 @@ pipeline {
 //         }
 //       }
 //     }
-
-  }
-  
   post {
     success {
       echo "🎉 Backend deployment completed successfully!"

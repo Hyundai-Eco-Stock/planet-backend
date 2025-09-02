@@ -44,7 +44,7 @@ pipeline {
         }
       }
     }
-    
+
     stage('Setup') {
       steps {
         script {
@@ -52,7 +52,7 @@ pipeline {
             script: 'which aws || echo "notfound"',
             returnStdout: true
           ).trim()
-          
+
           if (awsInstalled.contains('notfound')) {
             echo "[INFO] Installing required packages..."
             sh '''
@@ -63,7 +63,7 @@ pipeline {
             echo "[INFO] AWS CLI already available, skipping package installation..."
           }
         }
-        
+
         sh '''
           echo "[INFO] Tool versions:"
           java -version
@@ -72,7 +72,7 @@ pipeline {
         '''
       }
     }
-    
+
 //     stage('Build') {
 //       steps {
 //         sh '''
@@ -216,6 +216,22 @@ pipeline {
         """
       }
     }
+  }
+  post {
+    success {
+      echo "🎉 Backend deployment completed successfully!"
+    }
+    failure {
+      echo "❌ Backend deployment failed!"
+    }
+    cleanup {
+      sh '''
+        echo "[INFO] Cleaning up Docker images..."
+        docker system prune -f || true
+      '''
+    }
+  }
+}
 
 
 //     stage('Deploy via ASG Rolling Update') {
@@ -284,18 +300,3 @@ pipeline {
 //         }
 //       }
 //     }
-  post {
-    success {
-      echo "🎉 Backend deployment completed successfully!"
-    }
-    failure {
-      echo "❌ Backend deployment failed!"
-    }
-    cleanup {
-      sh '''
-        echo "[INFO] Cleaning up Docker images..."
-        docker system prune -f || true
-      '''
-    }
-  }
-}

@@ -170,7 +170,7 @@ EOF
                 --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
                 --capabilities CAPABILITY_NAMED_IAM \
                 --parameters file:///tmp/cf-params.json
-              aws cloudformation wait stack-update-complete --stack-name $IDLE_STACK --max-attempts 60
+              aws cloudformation wait stack-update-complete --stack-name $IDLE_STACK
             else
               echo "[INFO] Creating new stack: $IDLE_STACK"
               aws cloudformation create-stack \
@@ -178,7 +178,7 @@ EOF
                 --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
                 --capabilities CAPABILITY_NAMED_IAM \
                 --parameters file:///tmp/cf-params.json
-              aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK --max-attempts 60
+              aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK
             fi
 
             # 파일에 저장하여 다음 스테이지에서 사용

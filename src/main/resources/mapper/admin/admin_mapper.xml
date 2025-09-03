@@ -83,11 +83,19 @@
         resultType="org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiItem">
         SELECT
         mp.primary_phti AS type,
-        COUNT(DISTINCT oh.order_history_id) AS orders,
-        COUNT(DISTINCT si.stock_issue_id) AS exchanges
+        SUM(NVL(oh.orders, 0)) AS orders,
+        SUM(NVL(si.exchanges, 0)) AS exchanges
         FROM member_phti mp
-        LEFT JOIN order_history oh ON mp.member_id = oh.member_id
-        LEFT JOIN stock_issue si ON mp.member_id = si.member_id
+        LEFT JOIN (
+        SELECT member_id, COUNT(DISTINCT order_history_id) AS orders
+        FROM order_history
+        GROUP BY member_id
+        ) oh ON mp.member_id = oh.member_id
+        LEFT JOIN (
+        SELECT member_id, COUNT(DISTINCT stock_issue_id) AS exchanges
+        FROM stock_issue
+        GROUP BY member_id
+        ) si ON mp.member_id = si.member_id
         GROUP BY mp.primary_phti
         ORDER BY type
     </select>

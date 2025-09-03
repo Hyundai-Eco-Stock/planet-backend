@@ -4,7 +4,7 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="org.phoenix.planet.mapper.ProductMapper">
-  
+
     <resultMap id="ProductResultMap" type="org.phoenix.planet.dto.product.raw.Product">
         <id column="product_id" property="id"/>
         <result column="category_id" property="categoryId"/>
@@ -202,7 +202,8 @@
         P.BRAND_ID,
         PI.PRODUCT_IMAGE_ID,
         PI.IMAGE_URL as PRODUCT_IMAGE_URL,
-        B.NAME as BRAND_NAME
+        B.NAME as BRAND_NAME,
+        PI.SORT_ORDER
         from PRODUCT P
         left join PRODUCT_IMAGE PI on P.PRODUCT_ID = PI.PRODUCT_ID
         join BRAND B on P.BRAND_ID = B.BRAND_ID

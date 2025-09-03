@@ -33,24 +33,21 @@ public class ProductController {
     /* 카테고리별 상품 조회 */
     @GetMapping
     public ResponseEntity<List<ProductResponse>> findByCategory(
-        @RequestParam(required = false) Long categoryId) {
-
+            @RequestParam(required = false) Long categoryId) {
         return ResponseEntity.ok(productService.findByCategory(categoryId));
     }
 
     /* 카테고리 목록 조회 */
     @GetMapping("/categories")
     public ResponseEntity<List<ProductCategory>> getCategories() {
-
         return ResponseEntity.ok(productService.getCategories());
     }
 
     /* 상품 검색 */
     @GetMapping("/search")
     public ResponseEntity<List<ProductResponse>> search(
-        @RequestParam(required = false) String categoryId,
-        @RequestParam String searchKeyword) {
-
+            @RequestParam(required = false) String categoryId,
+            @RequestParam String searchKeyword) {
         return ResponseEntity.ok(productService.searchByMlt(searchKeyword, categoryId, 30));
     }
 

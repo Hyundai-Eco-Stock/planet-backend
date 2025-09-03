@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.OrderError;
 import org.phoenix.planet.constant.OrderStatus;
 import org.phoenix.planet.dto.order.raw.OrderConfirmResult;
-import org.phoenix.planet.dto.order.raw.OrderHistory;
 import org.phoenix.planet.dto.pickup.raw.OrderQrHeader;
 import org.phoenix.planet.dto.pickup.raw.OrderQrInfo;
 import org.phoenix.planet.dto.pickup.raw.ProductQrInfo;

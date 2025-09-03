@@ -60,9 +60,9 @@ pipeline {
     stage('Build') {
       steps {
         withEnv([
-          "AWS_REGION=${AWS_REGION}",
-          "ECR_REPO=${ECR_REPO}",
-          "IMAGE_TAG=${IMAGE_TAG}"
+          "AWS_REGION=${env.AWS_REGION}",
+          "ECR_REPO=${env.ECR_REPO}",
+          "IMAGE_TAG=${env.IMAGE_TAG}"
         ]) {
           sh '''
             echo "[INFO] Building with Gradle (skipping tests)..."
@@ -79,9 +79,9 @@ pipeline {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
           withEnv([
-            "AWS_REGION=${AWS_REGION}",
-            "ECR_REPO=${ECR_REPO}",
-            "IMAGE_TAG=${IMAGE_TAG}"
+            "AWS_REGION=${env.AWS_REGION}",
+            "ECR_REPO=${env.ECR_REPO}",
+            "IMAGE_TAG=${env.IMAGE_TAG}"
           ]) {
             sh '''
               echo "[DEBUG] AWS_REGION=$AWS_REGION"
@@ -104,9 +104,9 @@ pipeline {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
           withEnv([
-            "AWS_REGION=${AWS_REGION}",
-            "ECR_REPO=${ECR_REPO}",
-            "IMAGE_TAG=${IMAGE_TAG}"
+            "AWS_REGION=${env.AWS_REGION}",
+            "ECR_REPO=${env.ECR_REPO}",
+            "IMAGE_TAG=${env.IMAGE_TAG}"
           ]) {
             sh '''
               echo "[INFO] Creating new Launch Template version..."
@@ -183,7 +183,7 @@ pipeline {
     stage('Wait for Idle Stack Health') {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
-          withEnv(["AWS_REGION=${AWS_REGION}"]) {
+          withEnv(["AWS_REGION=${env.AWS_REGION}"]) {
             sh '''
               IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
               for i in {1..60}; do
@@ -210,7 +210,7 @@ pipeline {
     stage('Switch Traffic') {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
-          withEnv(["AWS_REGION=${AWS_REGION}"]) {
+          withEnv(["AWS_REGION=${env.AWS_REGION}"]) {
             sh '''
               IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
               ACTIVE_TG=$(cat $WORKSPACE/active_tg.txt)

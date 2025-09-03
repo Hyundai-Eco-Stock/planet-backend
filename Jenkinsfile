@@ -181,6 +181,22 @@ EOF
               aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK
             fi
 
+            # ✅ 여기서 Scaling Policy 붙이기
+            ASG_NAME="planet-${IDLE_COLOR}-asg"
+            echo "[INFO] Attaching scaling policy to $ASG_NAME"
+
+            aws autoscaling put-scaling-policy \
+              --auto-scaling-group-name "$ASG_NAME" \
+              --policy-name "CPU80TargetTracking" \
+              --policy-type TargetTrackingScaling \
+              --target-tracking-configuration '{
+                "PredefinedMetricSpecification": {
+                  "PredefinedMetricType": "ASGAverageCPUUtilization"
+                },
+                "TargetValue": 80.0,
+                "EstimatedInstanceWarmup": 60
+              }'
+
             # 파일에 저장하여 다음 스테이지에서 사용
             echo "$IDLE_TG" > ${WORKSPACE}/idle_tg.txt
             echo "$ACTIVE_TG" > ${WORKSPACE}/active_tg.txt

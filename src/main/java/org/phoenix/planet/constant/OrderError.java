@@ -34,6 +34,7 @@ public enum OrderError {
     ORDER_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "이미 구매확정된 주문입니다."),
     ORDER_NOT_CONFIRMABLE(HttpStatus.BAD_REQUEST, "배송완료된 주문만 구매확정할 수 있습니다."),
     ORDER_STATUS_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "주문 상태 업데이트에 실패했습니다."),
+    ORDER_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "이미 픽업완료된 주문입니다."),
 
     // 포인트 관련 에러
     INSUFFICIENT_POINTS(HttpStatus.BAD_REQUEST, "사용 가능한 포인트가 부족합니다."),

@@ -13,6 +13,7 @@ pipeline {
 
   environment {
     AWS_REGION     = 'ap-northeast-2'
+    AWS_DEFAULT_REGION = 'ap-northeast-2'
     ASG_NAME       = 'planet'
     IMAGE_TAG      = 'latest'
     CONTAINER_NAME = 'planet'
@@ -70,7 +71,7 @@ pipeline {
 
     stage('Docker Build & Push') {
       steps {
-        withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
+        withAWS(region: "${env.AWS_DEFAULT_REGION}", credentials: 'aws-credentials-id') {
           sh '''
             echo "[DEBUG] AWS_REGION=${AWS_REGION}"
             echo "[DEBUG] ECR_REPO=${ECR_REPO}"
@@ -89,7 +90,7 @@ pipeline {
 
     stage('Deploy to Idle Stack') {
       steps {
-        withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
+        withAWS(region: "${env.AWS_DEFAULT_REGION}", credentials: 'aws-credentials-id') {
           sh '''
             echo "[INFO] Creating new Launch Template version..."
             CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
@@ -171,7 +172,7 @@ EOF
 
     stage('Wait for Idle Stack Health') {
       steps {
-        withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
+        withAWS(region: "${env.AWS_DEFAULT_REGION}", credentials: 'aws-credentials-id') {
           sh '''
             IDLE_TG=$(cat ${WORKSPACE}/idle_tg.txt)
             echo "[INFO] Waiting for health check on: $IDLE_TG"
@@ -210,7 +211,7 @@ EOF
 
     stage('Switch Traffic') {
       steps {
-        withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
+        withAWS(region: "${env.AWS_DEFAULT_REGION}", credentials: 'aws-credentials-id') {
           sh '''
             IDLE_TG=$(cat ${WORKSPACE}/idle_tg.txt)
             ACTIVE_TG=$(cat ${WORKSPACE}/active_tg.txt)

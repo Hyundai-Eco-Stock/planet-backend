@@ -50,7 +50,7 @@ pipeline {
           git --version || echo "git not found"
 
           echo "[INFO] Environment variables:"
-          echo "AWS_REGION: ${AWS_REGION}"
+          echo "AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}"
           echo "ECR_REPO: ${ECR_REPO}"
           echo "IMAGE_TAG: ${IMAGE_TAG}"
         '''
@@ -71,14 +71,14 @@ pipeline {
 
     stage('Docker Build & Push') {
       steps {
-        withAWS(region: "${env.AWS_DEFAULT_REGION}", credentials: 'aws-credentials-id') {
+        withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
           sh '''
-            echo "[DEBUG] AWS_REGION=${AWS_REGION}"
+            echo "[DEBUG] AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
             echo "[DEBUG] ECR_REPO=${ECR_REPO}"
             echo "[DEBUG] IMAGE_TAG=${IMAGE_TAG}"
 
             echo "[INFO] Login to ECR..."
-            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
+            aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
 
             echo "[INFO] Build & push Docker image..."
             docker build -t ${ECR_REPO}:${IMAGE_TAG} .
@@ -90,7 +90,7 @@ pipeline {
 
     stage('Deploy to Idle Stack') {
       steps {
-        withAWS(region: "${env.AWS_DEFAULT_REGION}", credentials: 'aws-credentials-id') {
+        withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
           sh '''
             echo "[INFO] Creating new Launch Template version..."
             CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
@@ -172,7 +172,7 @@ EOF
 
     stage('Wait for Idle Stack Health') {
       steps {
-        withAWS(region: "${env.AWS_DEFAULT_REGION}", credentials: 'aws-credentials-id') {
+        withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
           sh '''
             IDLE_TG=$(cat ${WORKSPACE}/idle_tg.txt)
             echo "[INFO] Waiting for health check on: $IDLE_TG"
@@ -211,7 +211,7 @@ EOF
 
     stage('Switch Traffic') {
       steps {
-        withAWS(region: "${env.AWS_DEFAULT_REGION}", credentials: 'aws-credentials-id') {
+        withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
           sh '''
             IDLE_TG=$(cat ${WORKSPACE}/idle_tg.txt)
             ACTIVE_TG=$(cat ${WORKSPACE}/active_tg.txt)

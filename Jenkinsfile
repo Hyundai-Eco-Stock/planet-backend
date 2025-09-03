@@ -55,8 +55,8 @@ pipeline {
       steps {
         sh '''
           echo "[INFO] Building with Jenkins Gradle Tool (skipping tests)..."
-          export GRADLE_USER_HOME=$WORKSPACE/.gradle
-          gradle build -x test --no-daemon --build-cache
+          chmod +x ./gradlew
+          ./gradlew build -x test --no-daemon --build-cache
 
           echo "[INFO] Build artifacts:"
           ls -la build/libs/

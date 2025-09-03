@@ -123,11 +123,11 @@
         ds.name               AS storeName,
         oh.final_pay_price    AS totalAmount,
         oh.member_id          AS memberId,
-        oh.donation_price     AS donationPrice
+        oh.donation_price     AS donationPrice,
+        oh.order_status       AS orderStatus
         FROM order_history oh
         JOIN department_store ds ON oh.department_store_id = ds.department_store_id
         WHERE oh.order_history_id = #{orderHistoryId}
-        AND oh.order_status = 'DONE'
     </select>
     
     <select id="selectOrderProducts" parameterType="long" resultType="org.phoenix.planet.dto.pickup.raw.ProductQrInfo">

@@ -1,5 +1,7 @@
 package org.phoenix.planet.dto.pickup.raw;
 
+import org.phoenix.planet.constant.OrderStatus;
+
 public record OrderQrHeader(
     Long orderId,
     String orderNumber,
@@ -7,7 +9,8 @@ public record OrderQrHeader(
     String storeName,
     Long totalAmount,
     Long memberId,
-    Long donationPrice
+    Long donationPrice,
+    OrderStatus orderStatus
 ) {
 
 }

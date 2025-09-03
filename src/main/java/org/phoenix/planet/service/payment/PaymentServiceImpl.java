@@ -488,7 +488,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (salePercent <= 0) {
             return originalPrice;
         }
-        return Math.round(originalPrice * (100 - salePercent / 100.0));
+        return Math.round(originalPrice * (1 - salePercent / 100.0));
     }
 
     private PaymentConfirmResponse.PaymentResultData createSuccessResponse(

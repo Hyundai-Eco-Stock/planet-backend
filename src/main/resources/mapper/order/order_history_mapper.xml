@@ -114,5 +114,33 @@
         updated_at = #{updatedAt}
         WHERE order_history_id = #{orderHistoryId}
     </update>
+    
+    <select id="selectOrderQrHeader" parameterType="long" resultType="org.phoenix.planet.dto.pickup.raw.OrderQrHeader">
+        SELECT
+        oh.order_history_id   AS orderId,
+        oh.order_number       AS orderNumber,
+        ds.department_store_id AS storeId,
+        ds.name               AS storeName,
+        oh.final_pay_price    AS totalAmount,
+        oh.member_id          AS memberId,
+        oh.donation_price     AS donationPrice
+        FROM order_history oh
+        JOIN department_store ds ON oh.department_store_id = ds.department_store_id
+        WHERE oh.order_history_id = #{orderHistoryId}
+        AND oh.order_status = 'DONE'
+    </select>
+    
+    <select id="selectOrderProducts" parameterType="long" resultType="org.phoenix.planet.dto.pickup.raw.ProductQrInfo">
+        SELECT
+        p.product_id    AS productId,
+        p.name          AS productName,
+        op.quantity     AS quantity
+        FROM order_product op
+        JOIN product p ON op.product_id = p.product_id
+        WHERE op.order_history_id = #{orderHistoryId}
+        AND op.cancel_status = 'N'
+        AND op.order_type = 'PICKUP'
+        ORDER BY op.order_product_id
+    </select>
 
 </mapper>

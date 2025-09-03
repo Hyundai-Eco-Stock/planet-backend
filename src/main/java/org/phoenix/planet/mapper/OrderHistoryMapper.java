@@ -1,11 +1,14 @@
 package org.phoenix.planet.mapper;
 
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.constant.OrderStatus;
 import org.phoenix.planet.dto.order.raw.OrderHistory;
 
 import java.time.LocalDateTime;
+import org.phoenix.planet.dto.pickup.raw.OrderQrHeader;
+import org.phoenix.planet.dto.pickup.raw.ProductQrInfo;
 
 @Mapper
 public interface OrderHistoryMapper {
@@ -27,5 +30,9 @@ public interface OrderHistoryMapper {
             @Param("orderStatus") OrderStatus orderStatus,
             @Param("updatedAt") LocalDateTime updatedAt
     );
+
+    OrderQrHeader selectOrderQrHeader(Long orderHistoryId);
+
+    List<ProductQrInfo> selectOrderProducts(Long orderHistoryId);
 
 }

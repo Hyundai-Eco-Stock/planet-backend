@@ -1,5 +1,7 @@
 package org.phoenix.planet.service.admin;
 
+import org.phoenix.planet.dto.admin.donation.DonationAmountsByDayResponse;
+import org.phoenix.planet.dto.admin.donation.DonatorPercentageResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMemberResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockIssuePercentageResponse;
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByCategoryResponse;
@@ -20,4 +22,8 @@ public interface AdminService {
     MemberPercentageByPhtiResponse fetchMemberPercentageByPhti();
 
     IssueAndOrderPatternsByPhtiResponse fetchIssueAndOrderPatternsByPhti();
+
+    DonationAmountsByDayResponse fetchDonationAmountsByDay();
+
+    DonatorPercentageResponse fetchDonatorPercentage();
 }

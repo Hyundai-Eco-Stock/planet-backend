@@ -91,4 +91,34 @@
         GROUP BY mp.primary_phti
         ORDER BY type
     </select>
+    
+    <!-- 날짜별 기부 금액 추이 -->
+    <select id="selectDonationAmountsByDay"
+        resultType="org.phoenix.planet.dto.admin.donation.DonationAmountsByDayItem">
+        SELECT
+        TO_CHAR(created_at, 'YYYY-MM-DD') AS order_date,
+        SUM(donation_price) AS donation
+        FROM order_history
+        WHERE donation_price IS NOT NULL
+        GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
+        ORDER BY order_date
+    </select>
+    
+    <!-- 사용자별 기부 참여율 -->
+    <select id="selectDonatorPercentage"
+        resultType="org.phoenix.planet.dto.admin.donation.DonatorPercentageItem">
+        SELECT '참여' AS name,
+        COUNT(DISTINCT member_id) AS users,
+        '#10B981' AS color
+        FROM order_history
+        WHERE donation_price > 0
+        
+        UNION ALL
+        
+        SELECT '미참여' AS name,
+        (SELECT COUNT(*) FROM member) -
+        (SELECT COUNT(DISTINCT member_id) FROM order_history WHERE donation_price > 0) AS users,
+        '#EF4444' AS color
+        FROM dual
+    </select>
 </mapper>

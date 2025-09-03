@@ -2,6 +2,8 @@ package org.phoenix.planet.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.dto.admin.donation.DonationAmountsByDayResponse;
+import org.phoenix.planet.dto.admin.donation.DonatorPercentageResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMemberResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockIssuePercentageResponse;
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByCategoryResponse;
@@ -94,5 +96,28 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 날짜별 총 기부 금액 추이 데이터 + 총 기부 금액
+     *
+     * @return
+     */
+    @GetMapping("/donation-amounts-by-day")
+    public ResponseEntity<DonationAmountsByDayResponse> fetchDonationAmountsByDay() {
+
+        DonationAmountsByDayResponse response = adminService.fetchDonationAmountsByDay();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 사용자별 기부 금액 참여율 + 참여 사용자 수 + 참여율
+     *
+     * @return
+     */
+    @GetMapping("/donator-percentage")
+    public ResponseEntity<DonatorPercentageResponse> fetchDonatorPercentage() {
+
+        DonatorPercentageResponse response = adminService.fetchDonatorPercentage();
+        return ResponseEntity.ok(response);
+    }
 
 }

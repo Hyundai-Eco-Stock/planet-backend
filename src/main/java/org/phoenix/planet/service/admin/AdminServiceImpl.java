@@ -3,6 +3,10 @@ package org.phoenix.planet.service.admin;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.dto.admin.donation.DonationAmountsByDayItem;
+import org.phoenix.planet.dto.admin.donation.DonationAmountsByDayResponse;
+import org.phoenix.planet.dto.admin.donation.DonatorPercentageItem;
+import org.phoenix.planet.dto.admin.donation.DonatorPercentageResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMemberResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockIssuePercentageResponse;
 import org.phoenix.planet.dto.admin.eco_stock.HoldingItem;
@@ -128,6 +132,45 @@ public class AdminServiceImpl implements AdminService {
 
         return IssueAndOrderPatternsByPhtiResponse.builder()
             .avgOrders(avgOrders)
+            .items(items)
+            .build();
+    }
+
+    @Override
+    public DonationAmountsByDayResponse fetchDonationAmountsByDay() {
+
+        List<DonationAmountsByDayItem> items = adminMapper.selectDonationAmountsByDay();
+
+        long totalDonation = items.stream()
+            .mapToLong(DonationAmountsByDayItem::donation)
+            .sum();
+
+        return DonationAmountsByDayResponse.builder()
+            .totalDonation(totalDonation)
+            .items(items)
+            .build();
+    }
+
+    @Override
+    public DonatorPercentageResponse fetchDonatorPercentage() {
+
+        List<DonatorPercentageItem> items = adminMapper.selectDonatorPercentage();
+
+        long totalUsers = items.stream()
+            .mapToLong(DonatorPercentageItem::users)
+            .sum();
+
+        long participation = items.stream()
+            .filter(i -> i.name().equals("참여"))
+            .mapToLong(DonatorPercentageItem::users)
+            .sum();
+
+        long participationRate =
+            totalUsers > 0 ? Math.round((participation * 100.0) / totalUsers) : 0;
+
+        return DonatorPercentageResponse.builder()
+            .totalUsers(totalUsers)
+            .participationRate(participationRate)
             .items(items)
             .build();
     }

@@ -6,10 +6,6 @@ pipeline {
     }
   }
 
-  tools {
-    gradle 'gradle-8.14'
-  }
-
   options {
     timestamps()
     timeout(time: 20, unit: 'MINUTES')

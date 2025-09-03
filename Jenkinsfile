@@ -57,6 +57,26 @@ pipeline {
       }
     }
 
+      stage('Docker Debug') {
+        steps {
+          sh '''
+            echo "[DEBUG] Current container info:"
+            whoami
+            pwd
+
+            echo "[DEBUG] Docker check:"
+            which docker || echo "Docker not in PATH"
+            ls -la /usr/bin/docker* || echo "No docker in /usr/bin"
+
+            echo "[DEBUG] Docker socket check:"
+            ls -la /var/run/docker.sock || echo "No docker socket"
+
+            echo "[DEBUG] PATH:"
+            echo $PATH
+          '''
+        }
+      }
+
     stage('Build') {
       steps {
         sh '''

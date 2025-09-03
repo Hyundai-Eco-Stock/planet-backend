@@ -6,6 +6,8 @@ import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMember
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockIssuePercentageResponse;
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByCategoryResponse;
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByDayResponse;
+import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiResponse;
+import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiResponse;
 import org.phoenix.planet.service.admin.AdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,5 +69,30 @@ public class AdminController {
         ProductOrderDataGroupByCategoryResponse response = adminService.fetchProductOrderDataGroupByCategory();
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * PHTI 유형별 사용자 분포 데이터 + 설문참여한 총 사용자 + 최다 사용자 PHTI
+     *
+     * @return
+     */
+    @GetMapping("/member-percentage-by-phti")
+    public ResponseEntity<MemberPercentageByPhtiResponse> fetchMemberPercentageByPhti() {
+
+        MemberPercentageByPhtiResponse response = adminService.fetchMemberPercentageByPhti();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * PHTI 유형별 주문/교환 패턴 데이터 + 평균 주문 건수
+     *
+     * @return
+     */
+    @GetMapping("/issue-and-order-patterns-by-phti")
+    public ResponseEntity<IssueAndOrderPatternsByPhtiResponse> fetchIssueAndOrderPatternsByPhti() {
+
+        IssueAndOrderPatternsByPhtiResponse response = adminService.fetchIssueAndOrderPatternsByPhti();
+        return ResponseEntity.ok(response);
+    }
+
 
 }

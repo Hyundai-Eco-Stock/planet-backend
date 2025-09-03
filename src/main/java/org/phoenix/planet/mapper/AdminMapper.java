@@ -6,6 +6,8 @@ import org.phoenix.planet.dto.admin.eco_stock.HoldingItem;
 import org.phoenix.planet.dto.admin.eco_stock.IssueItem;
 import org.phoenix.planet.dto.admin.order_product.CategoryItem;
 import org.phoenix.planet.dto.admin.order_product.DayItem;
+import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiItem;
+import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiItem;
 
 @Mapper
 public interface AdminMapper {
@@ -17,4 +19,8 @@ public interface AdminMapper {
     List<DayItem> selectProductOrderDataGroupByDay();
 
     List<CategoryItem> selectProductOrderDataGroupByCategory();
+
+    List<MemberPercentageByPhtiItem> selectMemberPercentageByPhti();
+
+    List<IssueAndOrderPatternsByPhtiItem> selectIssueAndOrderPatternsByPhti();
 }

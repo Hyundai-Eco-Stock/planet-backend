@@ -4,6 +4,8 @@ import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMember
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockIssuePercentageResponse;
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByCategoryResponse;
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByDayResponse;
+import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiResponse;
+import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiResponse;
 
 public interface AdminService {
 
@@ -14,4 +16,8 @@ public interface AdminService {
     ProductOrderDataGroupByDayResponse fetchProductOrderDataGroupByDay();
 
     ProductOrderDataGroupByCategoryResponse fetchProductOrderDataGroupByCategory();
+
+    MemberPercentageByPhtiResponse fetchMemberPercentageByPhti();
+
+    IssueAndOrderPatternsByPhtiResponse fetchIssueAndOrderPatternsByPhti();
 }

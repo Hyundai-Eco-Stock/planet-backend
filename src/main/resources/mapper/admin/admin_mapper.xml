@@ -66,4 +66,29 @@
         GROUP BY pc.name
         ORDER BY value DESC
     </select>
+    
+    <!-- PHTI 사용자 분포 -->
+    <select id="selectMemberPercentageByPhti"
+        resultType="org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiItem">
+        SELECT
+        primary_phti AS type,
+        COUNT(member_id) AS users
+        FROM member_phti
+        GROUP BY primary_phti
+        ORDER BY users DESC
+    </select>
+    
+    <!-- PHTI 주문/교환 패턴 -->
+    <select id="selectIssueAndOrderPatternsByPhti"
+        resultType="org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiItem">
+        SELECT
+        mp.primary_phti AS type,
+        COUNT(DISTINCT oh.order_history_id) AS orders,
+        COUNT(DISTINCT si.stock_issue_id) AS exchanges
+        FROM member_phti mp
+        LEFT JOIN order_history oh ON mp.member_id = oh.member_id
+        LEFT JOIN stock_issue si ON mp.member_id = si.member_id
+        GROUP BY mp.primary_phti
+        ORDER BY type
+    </select>
 </mapper>

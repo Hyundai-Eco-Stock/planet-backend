@@ -11,7 +11,12 @@ import org.phoenix.planet.dto.admin.order_product.CategoryItem;
 import org.phoenix.planet.dto.admin.order_product.DayItem;
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByCategoryResponse;
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByDayResponse;
+import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiItem;
+import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiResponse;
+import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiItem;
+import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiResponse;
 import org.phoenix.planet.mapper.AdminMapper;
+import org.phoenix.planet.mapper.MemberPhtiMapper;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -20,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class AdminServiceImpl implements AdminService {
 
     private final AdminMapper adminMapper;
+    private final MemberPhtiMapper memberPhtiMapper;
 
     @Override
     public EcoStockIssuePercentageResponse fetchEcoStockIssuePercentageData() {
@@ -57,6 +63,7 @@ public class AdminServiceImpl implements AdminService {
             .build();
     }
 
+    @Override
     public ProductOrderDataGroupByDayResponse fetchProductOrderDataGroupByDay() {
 
         List<DayItem> items = adminMapper.selectProductOrderDataGroupByDay();
@@ -77,6 +84,7 @@ public class AdminServiceImpl implements AdminService {
             .build();
     }
 
+    @Override
     public ProductOrderDataGroupByCategoryResponse fetchProductOrderDataGroupByCategory() {
 
         List<CategoryItem> items = adminMapper.selectProductOrderDataGroupByCategory();
@@ -85,6 +93,41 @@ public class AdminServiceImpl implements AdminService {
 
         return ProductOrderDataGroupByCategoryResponse.builder()
             .topCategory(topCategory)
+            .items(items)
+            .build();
+    }
+
+    @Override
+    public MemberPercentageByPhtiResponse fetchMemberPercentageByPhti() {
+
+        List<MemberPercentageByPhtiItem> items = adminMapper.selectMemberPercentageByPhti();
+
+        long totalUsers = items.stream()
+            .mapToLong(MemberPercentageByPhtiItem::users)
+            .sum();
+
+        String topPhti = items.isEmpty() ? "" : items.get(0).type();
+
+        return MemberPercentageByPhtiResponse.builder()
+            .totalUsers(totalUsers)
+            .topPhti(topPhti)
+            .items(items)
+            .build();
+    }
+
+    @Override
+    public IssueAndOrderPatternsByPhtiResponse fetchIssueAndOrderPatternsByPhti() {
+
+        List<IssueAndOrderPatternsByPhtiItem> items = adminMapper.selectIssueAndOrderPatternsByPhti();
+
+        long totalOrders = items.stream()
+            .mapToLong(IssueAndOrderPatternsByPhtiItem::orders)
+            .sum();
+
+        long avgOrders = items.isEmpty() ? 0 : totalOrders / items.size();
+
+        return IssueAndOrderPatternsByPhtiResponse.builder()
+            .avgOrders(avgOrders)
             .items(items)
             .build();
     }

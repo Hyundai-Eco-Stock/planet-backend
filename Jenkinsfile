@@ -55,8 +55,7 @@ pipeline {
       steps {
         sh '''
           echo "[INFO] Building with Jenkins Gradle Tool (skipping tests)..."
-          chmod +x ./gradlew
-          ./gradlew build -x test --no-daemon --build-cache
+          gradle build -x test --no-daemon --build-cache
 
           echo "[INFO] Build artifacts:"
           ls -la build/libs/

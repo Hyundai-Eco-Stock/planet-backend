@@ -42,38 +42,60 @@ pipeline {
 
     stage('Setup') {
       steps {
-        sh '''
-          echo "[INFO] Tool versions:"
-          java -version
-          gradle -v
-          git --version || echo "git not found"
-        '''
+        withEnv([
+          "AWS_REGION=${AWS_REGION}",
+          "ECR_REPO=${ECR_REPO}",
+          "IMAGE_TAG=${IMAGE_TAG}"
+        ]) {
+          sh '''
+            echo "[INFO] Tool versions:"
+            java -version
+            gradle -v
+            git --version || echo "git not found"
+          '''
+        }
       }
     }
 
     stage('Build') {
       steps {
-        sh '''
-          echo "[INFO] Building with Jenkins Gradle Tool (skipping tests)..."
-          gradle build -x test --no-daemon --build-cache
+        withEnv([
+          "AWS_REGION=${AWS_REGION}",
+          "ECR_REPO=${ECR_REPO}",
+          "IMAGE_TAG=${IMAGE_TAG}"
+        ]) {
+          sh '''
+            echo "[INFO] Building with Gradle (skipping tests)..."
+            gradle build -x test --no-daemon --build-cache
 
-          echo "[INFO] Build artifacts:"
-          ls -la build/libs/
-        '''
+            echo "[INFO] Build artifacts:"
+            ls -la build/libs/
+          '''
+        }
       }
     }
 
     stage('Docker Build & Push') {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
-          sh '''
-            echo "[INFO] Login to ECR..."
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+          withEnv([
+            "AWS_REGION=${AWS_REGION}",
+            "ECR_REPO=${ECR_REPO}",
+            "IMAGE_TAG=${IMAGE_TAG}"
+          ]) {
+            sh '''
+              echo "[DEBUG] AWS_REGION=$AWS_REGION"
+              echo "[DEBUG] ECR_REPO=$ECR_REPO"
+              echo "[DEBUG] IMAGE_TAG=$IMAGE_TAG"
 
-            echo "[INFO] Build & push Docker image..."
-            docker build -t $ECR_REPO:$IMAGE_TAG .
-            docker push $ECR_REPO:$IMAGE_TAG
-          '''
+              echo "[INFO] Login to ECR..."
+              aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+
+              echo "[INFO] Build & push Docker image..."
+              docker build -t $ECR_REPO:$IMAGE_TAG .
+              docker push $ECR_REPO:$IMAGE_TAG
+            '''
+          }
         }
       }
     }
@@ -81,73 +103,79 @@ pipeline {
     stage('Deploy to Idle Stack') {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
-          sh '''
-            echo "[INFO] Creating new Launch Template version..."
-            CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
-              --launch-template-name planet-backend \
-              --query 'LaunchTemplateVersions|sort_by(@,&VersionNumber)[-1].VersionNumber' \
-              --output text)
+          withEnv([
+            "AWS_REGION=${AWS_REGION}",
+            "ECR_REPO=${ECR_REPO}",
+            "IMAGE_TAG=${IMAGE_TAG}"
+          ]) {
+            sh '''
+              echo "[INFO] Creating new Launch Template version..."
+              CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
+                --launch-template-name planet-backend \
+                --query 'LaunchTemplateVersions|sort_by(@,&VersionNumber)[-1].VersionNumber' \
+                --output text)
 
-            NEW_VERSION=$(aws ec2 create-launch-template-version \
-              --launch-template-id $LT_ID \
-              --source-version $CURRENT_VERSION \
-              --version-description "CI/CD deploy $(date +%Y%m%d%H%M%S)" \
-              --launch-template-data '{}' \
-              --query 'LaunchTemplateVersion.VersionNumber' \
-              --output text)
+              NEW_VERSION=$(aws ec2 create-launch-template-version \
+                --launch-template-id $LT_ID \
+                --source-version $CURRENT_VERSION \
+                --version-description "CI/CD deploy $(date +%Y%m%d%H%M%S)" \
+                --launch-template-data '{}' \
+                --query 'LaunchTemplateVersion.VersionNumber' \
+                --output text)
 
-            echo "[INFO] Created Launch Template version: $NEW_VERSION"
+              echo "[INFO] Created Launch Template version: $NEW_VERSION"
 
-            echo "[INFO] Detecting active TargetGroup..."
-            ACTIVE_TG=$(aws elbv2 describe-listeners \
-              --listener-arns $LISTENER_ARN \
-              --query 'Listeners[0].DefaultActions[0].ForwardConfig.TargetGroups[?Weight==`1`].TargetGroupArn' \
-              --output text)
+              echo "[INFO] Detecting active TargetGroup..."
+              ACTIVE_TG=$(aws elbv2 describe-listeners \
+                --listener-arns $LISTENER_ARN \
+                --query 'Listeners[0].DefaultActions[0].ForwardConfig.TargetGroups[?Weight==`1`].TargetGroupArn' \
+                --output text)
 
-            echo "[DEBUG] Active TG: $ACTIVE_TG"
+              echo "[DEBUG] Active TG: $ACTIVE_TG"
 
-            if [ "$ACTIVE_TG" = "$GREEN_TG" ]; then
-              IDLE_STACK=planet-blue-asg
-              IDLE_TG=$BLUE_TG
-              IDLE_COLOR=blue
-            else
-              IDLE_STACK=planet-green-asg
-              IDLE_TG=$GREEN_TG
-              IDLE_COLOR=green
-            fi
+              if [ "$ACTIVE_TG" = "$GREEN_TG" ]; then
+                IDLE_STACK=planet-blue-asg
+                IDLE_TG=$BLUE_TG
+                IDLE_COLOR=blue
+              else
+                IDLE_STACK=planet-green-asg
+                IDLE_TG=$GREEN_TG
+                IDLE_COLOR=green
+              fi
 
-            echo "[INFO] Deploying to $IDLE_STACK ($IDLE_COLOR)"
+              echo "[INFO] Deploying to $IDLE_STACK ($IDLE_COLOR)"
 
-            printf '[
-              {"ParameterKey":"VpcId","ParameterValue":"%s"},
-              {"ParameterKey":"Subnets","ParameterValue":"%s"},
-              {"ParameterKey":"LaunchTemplateId","ParameterValue":"%s"},
-              {"ParameterKey":"LaunchTemplateVersion","ParameterValue":"%s"},
-              {"ParameterKey":"TargetGroupArn","ParameterValue":"%s"},
-              {"ParameterKey":"DeploymentColor","ParameterValue":"%s"}
-            ]' "$VPC_ID" "$SUBNETS" "$LT_ID" "$NEW_VERSION" "$IDLE_TG" "$IDLE_COLOR" > /tmp/cf-params.json
+              printf '[
+                {"ParameterKey":"VpcId","ParameterValue":"%s"},
+                {"ParameterKey":"Subnets","ParameterValue":"%s"},
+                {"ParameterKey":"LaunchTemplateId","ParameterValue":"%s"},
+                {"ParameterKey":"LaunchTemplateVersion","ParameterValue":"%s"},
+                {"ParameterKey":"TargetGroupArn","ParameterValue":"%s"},
+                {"ParameterKey":"DeploymentColor","ParameterValue":"%s"}
+              ]' "$VPC_ID" "$SUBNETS" "$LT_ID" "$NEW_VERSION" "$IDLE_TG" "$IDLE_COLOR" > /tmp/cf-params.json
 
-            echo "[INFO] Creating/updating CloudFormation stack..."
-            if aws cloudformation describe-stacks --stack-name $IDLE_STACK >/dev/null 2>&1; then
-              aws cloudformation update-stack \
-                --stack-name $IDLE_STACK \
-                --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
-                --capabilities CAPABILITY_NAMED_IAM \
-                --parameters file:///tmp/cf-params.json
-              aws cloudformation wait stack-update-complete --stack-name $IDLE_STACK
-            else
-              aws cloudformation create-stack \
-                --stack-name $IDLE_STACK \
-                --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
-                --capabilities CAPABILITY_NAMED_IAM \
-                --parameters file:///tmp/cf-params.json
-              aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK
-            fi
+              echo "[INFO] Creating/updating CloudFormation stack..."
+              if aws cloudformation describe-stacks --stack-name $IDLE_STACK >/dev/null 2>&1; then
+                aws cloudformation update-stack \
+                  --stack-name $IDLE_STACK \
+                  --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
+                  --capabilities CAPABILITY_NAMED_IAM \
+                  --parameters file:///tmp/cf-params.json
+                aws cloudformation wait stack-update-complete --stack-name $IDLE_STACK
+              else
+                aws cloudformation create-stack \
+                  --stack-name $IDLE_STACK \
+                  --template-url https://s3.ap-northeast-2.amazonaws.com/planet-cf-templates/blue-green.yml \
+                  --capabilities CAPABILITY_NAMED_IAM \
+                  --parameters file:///tmp/cf-params.json
+                aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK
+              fi
 
-            echo "$IDLE_TG" > $WORKSPACE/idle_tg.txt
-            echo "$ACTIVE_TG" > $WORKSPACE/active_tg.txt
-            echo "$LISTENER_ARN" > $WORKSPACE/listener_arn.txt
-          '''
+              echo "$IDLE_TG" > $WORKSPACE/idle_tg.txt
+              echo "$ACTIVE_TG" > $WORKSPACE/active_tg.txt
+              echo "$LISTENER_ARN" > $WORKSPACE/listener_arn.txt
+            '''
+          }
         }
       }
     }
@@ -155,24 +183,26 @@ pipeline {
     stage('Wait for Idle Stack Health') {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
-          sh '''
-            IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
-            for i in {1..60}; do
-              HEALTH=$(aws elbv2 describe-target-health \
-                --target-group-arn $IDLE_TG \
-                --query 'TargetHealthDescriptions[*].TargetHealth.State' \
-                --output text | grep -v draining | uniq | awk '{print $1}')
+          withEnv(["AWS_REGION=${AWS_REGION}"]) {
+            sh '''
+              IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
+              for i in {1..60}; do
+                HEALTH=$(aws elbv2 describe-target-health \
+                  --target-group-arn $IDLE_TG \
+                  --query 'TargetHealthDescriptions[*].TargetHealth.State' \
+                  --output text | grep -v draining | uniq | awk '{print $1}')
 
-              echo "Current health: $HEALTH"
-              if [ "$HEALTH" = "healthy" ]; then
-                echo "[INFO] New stack is healthy!"
-                exit 0
-              fi
-              sleep 10
-            done
-            echo "[ERROR] New stack did not become healthy in time"
-            exit 1
-          '''
+                echo "Current health: $HEALTH"
+                if [ "$HEALTH" = "healthy" ]; then
+                  echo "[INFO] New stack is healthy!"
+                  exit 0
+                fi
+                sleep 10
+              done
+              echo "[ERROR] New stack did not become healthy in time"
+              exit 1
+            '''
+          }
         }
       }
     }
@@ -180,24 +210,26 @@ pipeline {
     stage('Switch Traffic') {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
-          sh '''
-            IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
-            ACTIVE_TG=$(cat $WORKSPACE/active_tg.txt)
-            LISTENER_ARN=$(cat $WORKSPACE/listener_arn.txt)
+          withEnv(["AWS_REGION=${AWS_REGION}"]) {
+            sh '''
+              IDLE_TG=$(cat $WORKSPACE/idle_tg.txt)
+              ACTIVE_TG=$(cat $WORKSPACE/active_tg.txt)
+              LISTENER_ARN=$(cat $WORKSPACE/listener_arn.txt)
 
-            echo "[INFO] Switching traffic from $ACTIVE_TG to $IDLE_TG..."
-            aws elbv2 modify-listener \
-              --listener-arn $LISTENER_ARN \
-              --default-actions '[{
-                "Type": "forward",
-                "ForwardConfig": {
-                  "TargetGroups": [
-                    {"TargetGroupArn": "'$IDLE_TG'", "Weight": 1},
-                    {"TargetGroupArn": "'$ACTIVE_TG'", "Weight": 0}
-                  ]
-                }
-              }]'
-          '''
+              echo "[INFO] Switching traffic from $ACTIVE_TG to $IDLE_TG..."
+              aws elbv2 modify-listener \
+                --listener-arn $LISTENER_ARN \
+                --default-actions '[{
+                  "Type": "forward",
+                  "ForwardConfig": {
+                    "TargetGroups": [
+                      {"TargetGroupArn": "'$IDLE_TG'", "Weight": 1},
+                      {"TargetGroupArn": "'$ACTIVE_TG'", "Weight": 0}
+                    ]
+                  }
+                }]'
+            '''
+          }
         }
       }
     }

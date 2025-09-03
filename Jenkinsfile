@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'debian:bookworm-slim'
-      args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
+      args "--user root -v /usr/lib/jvm/java-21-openjdk-amd64:/usr/lib/jvm/java-21-openjdk-amd64 -v /var/run/docker.sock:/var/run/docker.sock"
     }
   }
 

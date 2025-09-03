@@ -1,3 +1,0 @@
-INSERT INTO member_car(MEMBER_CAR_ID, MEMBER_ID, CAR_NUMBER)
-VALUES (1, 1, '157더6629');
-commit;

@@ -11,7 +11,8 @@ public record MemberProfileResponse(
         String birth,
         String profileUrl,
         String address,
-        String detailAddress
+        String detailAddress,
+        Long point
 ) {
 
 }

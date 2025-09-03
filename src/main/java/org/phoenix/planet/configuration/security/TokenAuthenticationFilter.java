@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -41,23 +43,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 
         String path = request.getRequestURI();
-
-        return path.equals("/")
-            || path.equals("/error")
-            || path.equals("/favicon.ico")
-            || path.startsWith("/h2-console")
-            || path.startsWith("/swagger-ui")
-            || path.startsWith("/v3/api-docs")
-            || path.equals("/auth/access-token/regenerate")
-            || path.equals("/auth/login")
-            || path.equals("/health")
-            || path.startsWith("/oauth2/authorization")
-            || path.equals("/auth/password-change-mail")
-            || path.equals("/auth/password-change-token/valid")
-            || path.equals("/auth/change-password")
-            || path.startsWith("/eco-stock/list")
-            || path.startsWith("/eco-stock/history")
-            || path.startsWith("/ws");
+        return Arrays.stream(SecurityWhitelist.PATHS)
+            .anyMatch(pattern -> new AntPathRequestMatcher(pattern).matches(request))
+            || path.startsWith("/oauth2/authorization");
     }
 
     @Override

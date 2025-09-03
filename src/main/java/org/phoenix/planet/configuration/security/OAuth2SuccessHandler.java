@@ -55,7 +55,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String profileUrl = principalDetails.member().getProfileUrl();
         if (profileUrl != null) {
             if (!profileUrl.startsWith("http")) {
-                profileUrl = cloudFrontFileUtil.generateSignedUrl(profileUrl, 60);
+                profileUrl = cloudFrontFileUtil.generateUrl(profileUrl);
             }
             profileUrl = URLEncoder.encode(profileUrl, StandardCharsets.UTF_8);
         }

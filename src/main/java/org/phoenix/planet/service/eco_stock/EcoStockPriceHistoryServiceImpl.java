@@ -111,8 +111,8 @@ public class EcoStockPriceHistoryServiceImpl implements EcoStockPriceHistoryServ
         int baseSellCount = record.transactionHistoryCount() + record.raffleHistoryCount();
         int baseBuyCount = record.stockIssueCount();
 
-        int sellNoiseRange = Math.max(random.nextInt(100), baseSellCount / 10);
-        int buyNoiseRange = Math.max(random.nextInt(300), baseBuyCount / 10);
+        int sellNoiseRange = Math.max(random.nextInt(10), baseSellCount / 10);
+        int buyNoiseRange = Math.max(random.nextInt(30), baseBuyCount / 10);
 
         return new NoiseNewPriceData(sellNoiseRange, buyNoiseRange);
     }

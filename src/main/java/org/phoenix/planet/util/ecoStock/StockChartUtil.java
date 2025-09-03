@@ -92,7 +92,7 @@ public class StockChartUtil {
 
             String color = determineVolumeColor(total, stockData.getBuyCount(), stockData.getSellCount());
 
-            result.add(new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color));
+            result.add(new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color, stockData.getSellCount(),stockData.getBuyCount()));
         }
         return result;
     }
@@ -130,7 +130,7 @@ public class StockChartUtil {
 
         String color = determineVolumeColor(total, stockData.getBuyCount(), stockData.getSellCount());
 
-        return new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color);
+        return new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color,stockData.getBuyCount(),stockData.getSellCount());
     }
 
 
@@ -161,12 +161,34 @@ public class StockChartUtil {
         return new OhlcDto(
                 current.getStockPriceHistoryId(),
                 timestamp,
-                prevStockPrice,                          // open
-                current.getStockPrice(),
-                current.getStockPrice(),
+                prevStockPrice,                                // open
+                current.getStockPrice(),                       // high
+                current.getStockPrice(),                       //low
                 current.getStockPrice(),                       // close
                 current.getStockPriceHistoryId() < 0L          // fake 데이터 여부
         );
+    }
+
+    public static VolumeDto updateVolumeDto(VolumeDto beforeVolumeDto, StockData stockData) {
+
+        long timestamp = stockData.getStockTime()
+                .atZone(KOREA_ZONE)
+                .toEpochSecond() + KST_OFFSET;
+
+        if (beforeVolumeDto == null) {
+            int total = stockData.getBuyCount() + stockData.getSellCount();
+
+            String color = determineVolumeColor(total, stockData.getBuyCount(), stockData.getSellCount());
+
+            return new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color,stockData.getSellCount(),stockData.getBuyCount());
+        }
+
+        int newBuyCount = stockData.getBuyCount()+ beforeVolumeDto.buyCount();
+        int newSellCount = stockData.getSellCount()+beforeVolumeDto.sellCount();
+        int total = newBuyCount+ newSellCount;
+        String color = determineVolumeColor(total, newBuyCount, newSellCount);
+
+        return new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color,newBuyCount,newSellCount);
     }
 
     /**
@@ -181,5 +203,12 @@ public class StockChartUtil {
             return "SAME";
         }
         return buyCount > sellCount ? "BUY" : "SELL";
+    }
+
+    public static long convertLocalDateTimeToEpoch(LocalDateTime localDateTime) {
+
+        return localDateTime
+                .atZone(KOREA_ZONE)
+                .toEpochSecond() + KST_OFFSET;
     }
 }

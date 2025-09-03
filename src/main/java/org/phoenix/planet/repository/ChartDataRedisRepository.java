@@ -1,5 +1,11 @@
 package org.phoenix.planet.repository;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.eco_stock.raw.OhlcDto;
 import org.phoenix.planet.dto.eco_stock.raw.VolumeDto;
@@ -8,9 +14,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -201,8 +204,8 @@ public class ChartDataRedisRepository {
         long timeDifference = currentTimestamp - lastTimestamp;
 
         // 🔥 초 단위로 수정!
-        long oneMinute = 60L;        // 60초 = 1분
-        long allowedError = 10L;     // 10초 허용 오차
+        long oneMinute = 5L;        // 5초 기준
+        long allowedError = 3L;     // 3초 허용 오차
 
         // 시간 차이가 1분±10초 범위를 벗어나면 재초기화 필요
         boolean isNormalInterval = (timeDifference == 0) ||
@@ -238,11 +241,7 @@ public class ChartDataRedisRepository {
     }
 
     private List<String> toVolumeRedisArgs(VolumeDto volume) {
-        String timestampStr = String.valueOf(volume.time());
-        return List.of(
-                timestampStr,                    // timestamp (key)
-                timestampStr,                    // timestamp (score)
-                StockDataJsonUtil.serializeVolume(volume)         // JSON data
-        );
+
+        return null;
     }
 }

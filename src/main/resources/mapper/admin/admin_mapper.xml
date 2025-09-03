@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.phoenix.planet.mapper.AdminMapper">
+    
+    <!-- 에코스톡 발급 비율 -->
+    <select id="selectEcoStockIssuePercentageData"
+        resultType="org.phoenix.planet.dto.admin.eco_stock.IssueItem">
+        SELECT
+        e.name AS name,
+        COUNT(si.stock_issue_id) AS count,
+        ROUND(COUNT(si.stock_issue_id) * 100.0 / SUM(COUNT(si.stock_issue_id)) OVER(), 1) AS value,
+        '#3B82F6' AS color -- TODO: 프론트에서 색상 매핑 가능
+        FROM stock_issue si
+        JOIN eco_stock e ON si.eco_stock_id = e.eco_stock_id
+        WHERE si.status = 'ISSUED'
+        GROUP BY e.name
+        ORDER BY count DESC
+    </select>
+    
+    <!-- 사용자별 에코스톡 보유 현황 -->
+    <select id="selectEcoStockHoldingAmountDataGroupByMember"
+        resultType="org.phoenix.planet.dto.admin.eco_stock.HoldingItem">
+        SELECT range, COUNT(*) AS userCount,
+        ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 1) AS percentage
+        FROM (
+        SELECT
+        CASE
+        WHEN msi.current_total_quantity BETWEEN 1 AND 10 THEN '1-10개'
+        WHEN msi.current_total_quantity BETWEEN 11 AND 50 THEN '11-50개'
+        WHEN msi.current_total_quantity BETWEEN 51 AND 150 THEN '51-150개'
+        WHEN msi.current_total_quantity BETWEEN 151 AND 500 THEN '151-500개'
+        WHEN msi.current_total_quantity BETWEEN 501 AND 1000 THEN '501-1000개'
+        ELSE '1000개 이상'
+        END AS range
+        FROM member_stock_info msi
+        )
+        GROUP BY range
+        ORDER BY range
+    </select>
+
+</mapper>

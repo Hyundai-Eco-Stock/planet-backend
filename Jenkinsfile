@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'cimg/openjdk:21.0'
+      image 'parkjunhyeon/planet-custom:latest'
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }

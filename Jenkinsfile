@@ -58,12 +58,9 @@ pipeline {
     stage('Build') {
       steps {
         sh '''
-          echo "[INFO] Setting executable permissions..."
-          chmod +x ./gradlew
-
-          echo "[INFO] Building with Gradle (skipping tests)..."
-          export GRADLE_USER_HOME=~/.gradle
-          ./gradlew build -x test --no-daemon --build-cache
+          echo "[INFO] Building with Jenkins Gradle Tool (skipping tests)..."
+          export GRADLE_USER_HOME=$WORKSPACE/.gradle
+          gradle build -x test --no-daemon --build-cache
 
           echo "[INFO] Build artifacts:"
           ls -la build/libs/

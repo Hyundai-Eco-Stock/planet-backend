@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMemberResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockIssuePercentageResponse;
+import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByCategoryResponse;
+import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByDayResponse;
 import org.phoenix.planet.service.admin.AdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +41,30 @@ public class AdminController {
     public ResponseEntity<EcoStockHoldingAmountGroupByMemberResponse> fetchEcoStockHoldingAmountDataGroupByMember() {
 
         EcoStockHoldingAmountGroupByMemberResponse response = adminService.fetchEcoStockHoldingAmountDataGroupByMember();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 일별 주문건수/매출 데이터 + 총 주문 건수 + 총 매출액 + 평균 주문 금액
+     *
+     * @return
+     */
+    @GetMapping("/product-orders-group-by-day")
+    public ResponseEntity<ProductOrderDataGroupByDayResponse> fetchProductOrderDataGroupByDay() {
+
+        ProductOrderDataGroupByDayResponse response = adminService.fetchProductOrderDataGroupByDay();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 카테고리별 판매 비율 데이터 + Top 카테고리
+     *
+     * @return
+     */
+    @GetMapping("/product-orders-group-by-category")
+    public ResponseEntity<ProductOrderDataGroupByCategoryResponse> fetchProductOrderDataGroupByCategory() {
+
+        ProductOrderDataGroupByCategoryResponse response = adminService.fetchProductOrderDataGroupByCategory();
         return ResponseEntity.ok(response);
     }
 

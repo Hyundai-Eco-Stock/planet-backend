@@ -55,9 +55,9 @@ public class StockDataScheduler {
             .withNano(0);
 
         List<EcoStockUpdatePriceRecord> ecoStockUpdatePriceRecords =
-            ecoStockService.findAllHistory(targetTime);
+                ecoStockService.findAllHistory(targetTime);
 
-        log.trace(" 로우 값 {} ", ecoStockUpdatePriceRecords);
+        log.info(" 로우 값 {} ", ecoStockUpdatePriceRecords);
         for (EcoStockUpdatePriceRecord record : ecoStockUpdatePriceRecords) {
             Long stockId = record.ecoStockId();
 
@@ -65,12 +65,12 @@ public class StockDataScheduler {
                 record, nowTime);
 
             StockData stockData = stockCalculationResult.stockData();
-            log.debug("stockData:{}", stockData);
+            log.info("stockData:{}", stockData);
 
             int result = ecoStockPriceHistoryService.saveIfNotExists(stockData);
 
             if (result == 0) {
-                log.trace("이미 존재하는 데이터입니다");
+                log.info("이미 존재하는 데이터입니다");
                 continue;
             }
 
@@ -104,7 +104,7 @@ public class StockDataScheduler {
         if (!chartDataRedisRepository.existOhlcDto(stockId)
             || !chartDataRedisRepository.existVolumeDto(stockId)) {
 
-            log.trace("Redis 데이터 재초기화 필요 (stockId={})", stockId);
+            log.info("Redis 데이터 재초기화 필요 (stockId={})", stockId);
 
             ecoStockPriceHistoryService.updateRedisData(stockId);
 
@@ -155,7 +155,7 @@ public class StockDataScheduler {
         if (!chartDataRedisRepository.existOhlcDto(stockId)
             || !chartDataRedisRepository.existVolumeDto(stockId)) {
 
-            log.trace("Redis 데이터 재초기화 필요 (stockId={})", stockId);
+            log.info("Redis 데이터 재초기화 필요 (stockId={})", stockId);
 
             ecoStockPriceHistoryService.updateRedisData(stockId);
 
@@ -201,7 +201,7 @@ public class StockDataScheduler {
         if (!chartDataRedisRepository.existOhlcDto(stockId)
             || !chartDataRedisRepository.existVolumeDto(stockId)) {
 
-            log.trace("Redis 데이터 재초기화 필요 (stockId={})", stockId);
+            log.info("Redis 데이터 재초기화 필요 (stockId={})", stockId);
 
             ecoStockPriceHistoryService.updateRedisData(stockId);
 

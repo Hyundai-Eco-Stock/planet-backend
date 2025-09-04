@@ -197,49 +197,31 @@ EOF
             IDLE_TG=$(cat ${WORKSPACE}/idle_tg.txt)
             echo "[INFO] Waiting for health check on: $IDLE_TG"
 
-            for i in {1..90}; do   # 최대 15분까지 대기
-              echo "[INFO] Health check attempt $i/90..."
-
-              # 현재 상태 모두 조회 (draining/initial 포함)
+            # 12번(= 120초) 시도, 10초 간격
+            for i in {1..12}; do
               RAW_HEALTH=$(aws elbv2 describe-target-health \
-                --target-group-arn $IDLE_TG \
+                --target-group-arn "$IDLE_TG" \
                 --query "TargetHealthDescriptions[*].TargetHealth.State" \
-                --output text | sort | uniq)
+                --output text)
 
-              echo "[DEBUG] Raw health states: $RAW_HEALTH"
+              echo "[DEBUG] Attempt $i: $RAW_HEALTH"
 
-              # 등록 중(initial), 드레이닝(draining)은 제외하고 상태 확인
-              HEALTH=$(echo "$RAW_HEALTH" | grep -v -E "draining|initial" || true)
-
-              # 모두 healthy면 성공
-              if [ "$HEALTH" = "healthy" ]; then
-                echo "[INFO] ✅ New stack is healthy!"
+              if [[ "$RAW_HEALTH" == *"healthy"* ]]; then
+                echo "[INFO] ✅ Target became healthy"
                 exit 0
               fi
 
-              # 만약 unhealthy가 잡히면 즉시 실패
-              if [ "$HEALTH" = "unhealthy" ]; then
-                echo "[ERROR] ❌ Target reported unhealthy!"
-                aws elbv2 describe-target-health --target-group-arn $IDLE_TG
-                exit 1
-              fi
-
-              echo "[INFO] Waiting 10 seconds before next check..."
+              echo "[INFO] Waiting 10s before next check..."
               sleep 10
             done
 
-            echo "[ERROR] ❌ New stack did not become healthy in time (15 minutes)"
-
-            # 최종 상태 출력
-            echo "[DEBUG] Final target health details:"
-            aws elbv2 describe-target-health --target-group-arn $IDLE_TG
-
+            echo "[ERROR] ❌ Target did not become healthy within 2 minutes"
+            aws elbv2 describe-target-health --target-group-arn "$IDLE_TG"
             exit 1
           '''
         }
       }
     }
-
     stage('Switch Traffic') {
       steps {
         withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {

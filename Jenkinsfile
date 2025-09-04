@@ -197,7 +197,9 @@ EOF
             IDLE_TG=$(cat ${WORKSPACE}/idle_tg.txt)
             echo "[INFO] Waiting for health check on: $IDLE_TG"
 
-            for i in {1..30}; do   # 최대 5분 대기
+            UNHEALTHY_COUNT=0
+
+            for i in $(seq 1 30); do   # 최대 5분 대기 (30회 × 10초)
               RAW_HEALTH=$(aws elbv2 describe-target-health \
                 --target-group-arn "$IDLE_TG" \
                 --query "TargetHealthDescriptions[*].TargetHealth.State" \
@@ -211,9 +213,14 @@ EOF
               fi
 
               if echo "$RAW_HEALTH" | grep -q "unhealthy"; then
-                echo "[ERROR] ❌ Target reported unhealthy"
-                aws elbv2 describe-target-health --target-group-arn "$IDLE_TG"
-                exit 1
+                UNHEALTHY_COUNT=$((UNHEALTHY_COUNT+1))
+                echo "[WARN] Target is unhealthy ($UNHEALTHY_COUNT times)"
+                # 최소 12번(=2분) 동안은 계속 대기
+                if [ $UNHEALTHY_COUNT -ge 12 ]; then
+                  echo "[ERROR] ❌ Target stayed unhealthy for over 2 minutes"
+                  aws elbv2 describe-target-health --target-group-arn "$IDLE_TG"
+                  exit 1
+                fi
               fi
 
               echo "[INFO] Waiting 10s before next check..."
@@ -224,10 +231,10 @@ EOF
             aws elbv2 describe-target-health --target-group-arn "$IDLE_TG"
             exit 1
           '''
-
         }
       }
     }
+
     stage('Switch Traffic') {
       steps {
         withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {

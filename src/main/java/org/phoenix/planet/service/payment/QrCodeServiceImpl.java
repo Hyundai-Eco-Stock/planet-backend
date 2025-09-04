@@ -38,6 +38,9 @@ public class QrCodeServiceImpl implements QrCodeService {
     @Value("${cloudfront.distribution-domain}")
     private String cloudFrontDomain;
 
+    @Value("${qr.base-url}")
+    private String qrBaseUrl;
+
     private static final int QR_CODE_SIZE = 300;
     private static final String QR_CODE_FORMAT = "PNG";
 
@@ -107,12 +110,28 @@ public class QrCodeServiceImpl implements QrCodeService {
      * QR 코드 데이터 생성
      */
     private String generateQRData(Long orderHistoryId) {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String plainData = String.format("ORDER:%d:TIME:%s", orderHistoryId, timestamp);
-        String secureHash = generateSecureHash(plainData);
-        String qrData = String.format("%s:HASH:%s", plainData, secureHash);
+        String payload = buildPayload(orderHistoryId);
+        String encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
+        return qrBaseUrl + "?d=" + encoded;
+    }
 
-        return Base64.getEncoder().encodeToString(qrData.getBytes());
+    private String buildPayload(Long orderHistoryId) {
+        String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String plain = String.format("v1|ORDER_ID|%d|TIME|%s", orderHistoryId, ts);
+        String sig = hmacSha256Base64Url(plain, qrSecretKey);
+        return plain + "|SIG|" + sig;
+    }
+
+    private String hmacSha256Base64Url(String data, String secret) {
+
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(secret.getBytes(), "HmacSHA256"));
+            byte[] out = mac.doFinal(data.getBytes());
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(out);
+        } catch (Exception e) {
+            throw new PaymentException(PaymentError.QR_CODE_GENERATION_FAILED);
+        }
     }
 
     /**

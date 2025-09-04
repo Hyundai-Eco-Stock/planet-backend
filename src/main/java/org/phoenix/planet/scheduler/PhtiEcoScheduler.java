@@ -20,8 +20,8 @@ public class PhtiEcoScheduler {
     private final MemberDeviceTokenService memberDeviceTokenService;
     private final MemberPhtiMapper memberPhtiMapper;
 
-    @Scheduled(cron = "0 0 * * * *") // 개발 시
-//    @Scheduled(cron = "0 0 9 * * *") // 운영 시
+    //    @Scheduled(cron = "0 0 * * * *") // 개발 시
+    @Scheduled(cron = "0 0 9 * * *") // 운영 시
     @DistributedScheduled(lockKey = "planet:prod:phti:eco:notification")
     public void runTask() {
 

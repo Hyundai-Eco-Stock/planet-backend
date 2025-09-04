@@ -23,4 +23,12 @@ public class FcmService {
 //        log.info("[CUSTOM NOTIFICATION] Sending notification to fcm tokens]");
         FcmUtil.sendNotificationToMany(fcmTokens, title, body);
     }
+
+    public void sendPhtiSurvey(List<String> fcmTokens) {
+
+        FcmUtil.sendNotificationToMany(
+            fcmTokens,
+            "\uD83E\uDD14 나는 어떤 에코 유형일까?",
+            "3분만에 확인 가능한 나의 PHTI 성향 테스트!");
+    }
 }

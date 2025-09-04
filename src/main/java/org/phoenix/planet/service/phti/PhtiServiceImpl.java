@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.dto.openai.OpenAiChatRequest;
+import org.phoenix.planet.dto.openai.OpenAiChatResponse;
+import org.phoenix.planet.dto.openai.OpenAiMessage;
 import org.phoenix.planet.dto.phti.raw.MemberPhtiSaveRequest;
 import org.phoenix.planet.dto.phti.raw.Phti;
 import org.phoenix.planet.dto.phti.raw.PhtiQuestionWithChoicesAndAnswer;
@@ -16,26 +19,36 @@ import org.phoenix.planet.mapper.MemberPhtiMapper;
 import org.phoenix.planet.mapper.PhtiMapper;
 import org.phoenix.planet.mapper.PhtiQuestionMapper;
 import org.phoenix.planet.util.prompt.PhtiPromptBuilder;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PhtiServiceImpl implements PhtiService {
 
-    private final ChatModel chatModel;
     private final ObjectMapper objectMapper;
     private final PhtiPromptBuilder phtiPromptBuilder;
+    private final PhtiApiKeyManager phtiApiKeyManager;
+    private final RestTemplate restTemplate;
+
     // Mapper
     private final PhtiMapper phtiMapper;
     private final MemberPhtiMapper memberPhtiMapper;
     private final PhtiQuestionMapper phtiQuestionMapper;
+
+    @Value("${spring.ai.openai.chat.options.model}")
+    private String model;
+
+    private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+
 
     @Override
     public List<PhtiQuestionWithChoicesResponse> fetchAllQuestionsWithChoices() {
@@ -50,7 +63,7 @@ public class PhtiServiceImpl implements PhtiService {
         List<PhtiQuestionWithChoicesAndAnswer> aiRequestSource = parseToAiRequest(phtiSurveyAnswer);
         // 2. AI 응답 받기
         String aiResponse = analyzePhti(aiRequestSource);
-        log.info("[AI Response]\n:{}", aiResponse);
+        log.debug("[AI Response]\n:{}", aiResponse);
         // 3. AI 응답을 json -> class 타입 변환
         PhtiResultResponse phtiResultResponse = parseJsonType(aiResponse);
         // 4. save dto로 변환
@@ -61,7 +74,8 @@ public class PhtiServiceImpl implements PhtiService {
         return phtiResultResponse;
     }
 
-    private List<Phti> fetchAllPhtiList() {
+    @Override
+    public List<Phti> fetchAllPhtiList() {
 
         return phtiMapper.selectAll();
     }
@@ -128,26 +142,48 @@ public class PhtiServiceImpl implements PhtiService {
     }
 
     private String analyzePhti(List<PhtiQuestionWithChoicesAndAnswer> request) {
+        // 1. 분산락으로 API 키 가져오기
+        String apiKey = phtiApiKeyManager.getNextKey();
 
-        // PHTI 목록
+        // 2. HTTP 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        // 3. 프롬프트 생성
         List<Phti> phtiList = fetchAllPhtiList();
-
         String systemPrompt = phtiPromptBuilder.buildSystemPrompt(phtiList);
-        log.info("[SYSTEM PROMPT] \n{}", systemPrompt);
+        log.trace("[SYSTEM PROMPT] \n{}", systemPrompt);
         String userPrompt = phtiPromptBuilder.buildUserPrompt(request);
-        log.info("[USER PROMPT] \n{}", userPrompt);
+        log.trace("[USER PROMPT] \n{}", userPrompt);
 
-        // System + User 메시지 구성
-        List<Message> messages = List.of(
-            SystemMessage.builder().text(systemPrompt).build(),
-            UserMessage.builder().text(userPrompt).build()
+        // 4. OpenAI 요청 본문 생성
+        List<OpenAiMessage> messages = List.of(
+            new OpenAiMessage("system", systemPrompt),
+            new OpenAiMessage("user", userPrompt)
         );
+        OpenAiChatRequest chatRequest = new OpenAiChatRequest(model, messages);
 
-        return chatModel.call(
-                Prompt.builder()
-                    .messages(messages)
-                    .build())
-            .getResult().getOutput().getText();
+        // 5. API 호출
+        HttpEntity<OpenAiChatRequest> requestEntity = new HttpEntity<>(chatRequest, headers);
+        try {
+            ResponseEntity<OpenAiChatResponse> responseEntity = restTemplate.exchange(
+                OPENAI_URL,
+                HttpMethod.POST,
+                requestEntity,
+                OpenAiChatResponse.class
+            );
+
+            OpenAiChatResponse response = responseEntity.getBody();
+            if (response == null || response.getChoices() == null || response.getChoices()
+                .isEmpty()) {
+                throw new RuntimeException("OpenAI API로부터 유효한 응답을 받지 못했습니다.");
+            }
+            return response.getChoices().get(0).getMessage().getContent();
+        } catch (Exception e) {
+            log.error("OpenAI API 호출 중 오류 발생", e);
+            throw new RuntimeException("OpenAI API 호출 중 오류가 발생했습니다.", e);
+        }
     }
 
     private String extractJson(String response) {

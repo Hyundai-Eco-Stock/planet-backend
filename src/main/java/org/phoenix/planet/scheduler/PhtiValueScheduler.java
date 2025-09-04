@@ -20,8 +20,8 @@ public class PhtiValueScheduler {
     private final MemberDeviceTokenService memberDeviceTokenService;
     private final MemberPhtiMapper memberPhtiMapper;
 
-    @Scheduled(cron = "0 30 * * * *") // 개발 시
-//    @Scheduled(cron = "0 0 12 * * *") // 운영 시
+    //    @Scheduled(cron = "0 30 * * * *") // 개발 시
+    @Scheduled(cron = "0 0 12 * * *") // 운영 시
     @DistributedScheduled(lockKey = "planet:prod:phti:value:notification")
     public void runTask() {
 

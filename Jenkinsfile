@@ -197,8 +197,7 @@ EOF
             IDLE_TG=$(cat ${WORKSPACE}/idle_tg.txt)
             echo "[INFO] Waiting for health check on: $IDLE_TG"
 
-            # 12번(= 120초) 시도, 10초 간격
-            for i in {1..12}; do
+            for i in {1..30}; do   # 최대 5분 대기
               RAW_HEALTH=$(aws elbv2 describe-target-health \
                 --target-group-arn "$IDLE_TG" \
                 --query "TargetHealthDescriptions[*].TargetHealth.State" \
@@ -206,19 +205,26 @@ EOF
 
               echo "[DEBUG] Attempt $i: $RAW_HEALTH"
 
-              if [[ "$RAW_HEALTH" == *"healthy"* ]]; then
+              if echo "$RAW_HEALTH" | grep -q "healthy"; then
                 echo "[INFO] ✅ Target became healthy"
                 exit 0
+              fi
+
+              if echo "$RAW_HEALTH" | grep -q "unhealthy"; then
+                echo "[ERROR] ❌ Target reported unhealthy"
+                aws elbv2 describe-target-health --target-group-arn "$IDLE_TG"
+                exit 1
               fi
 
               echo "[INFO] Waiting 10s before next check..."
               sleep 10
             done
 
-            echo "[ERROR] ❌ Target did not become healthy within 2 minutes"
+            echo "[ERROR] ❌ Target did not become healthy within 5 minutes"
             aws elbv2 describe-target-health --target-group-arn "$IDLE_TG"
             exit 1
           '''
+
         }
       }
     }

@@ -197,27 +197,38 @@ EOF
             IDLE_TG=$(cat ${WORKSPACE}/idle_tg.txt)
             echo "[INFO] Waiting for health check on: $IDLE_TG"
 
-            for i in {1..60}; do
-              echo "[INFO] Health check attempt $i/60..."
+            for i in {1..90}; do   # 최대 15분까지 대기
+              echo "[INFO] Health check attempt $i/90..."
 
-              HEALTH=$(aws elbv2 describe-target-health \
+              # 현재 상태 모두 조회 (draining/initial 포함)
+              RAW_HEALTH=$(aws elbv2 describe-target-health \
                 --target-group-arn $IDLE_TG \
-                --query 'TargetHealthDescriptions[*].TargetHealth.State' \
-                --output text | grep -v draining | sort | uniq)
+                --query "TargetHealthDescriptions[*].TargetHealth.State" \
+                --output text | sort | uniq)
 
-              echo "[DEBUG] Current health states: $HEALTH"
+              echo "[DEBUG] Raw health states: $RAW_HEALTH"
 
-              # 모든 타겟이 healthy인지 확인
-              if [ "$HEALTH" = "healthy" ] && [ -n "$HEALTH" ]; then
+              # 등록 중(initial), 드레이닝(draining)은 제외하고 상태 확인
+              HEALTH=$(echo "$RAW_HEALTH" | grep -v -E "draining|initial" || true)
+
+              # 모두 healthy면 성공
+              if [ "$HEALTH" = "healthy" ]; then
                 echo "[INFO] ✅ New stack is healthy!"
                 exit 0
+              fi
+
+              # 만약 unhealthy가 잡히면 즉시 실패
+              if [ "$HEALTH" = "unhealthy" ]; then
+                echo "[ERROR] ❌ Target reported unhealthy!"
+                aws elbv2 describe-target-health --target-group-arn $IDLE_TG
+                exit 1
               fi
 
               echo "[INFO] Waiting 10 seconds before next check..."
               sleep 10
             done
 
-            echo "[ERROR] ❌ New stack did not become healthy in time (10 minutes)"
+            echo "[ERROR] ❌ New stack did not become healthy in time (15 minutes)"
 
             # 최종 상태 출력
             echo "[DEBUG] Final target health details:"

@@ -181,6 +181,20 @@ EOF
               aws cloudformation wait stack-create-complete --stack-name $IDLE_STACK
             fi
 
+            echo "[INFO] Starting instance refresh for $IDLE_STACK..."
+            REFRESH_ID=$(aws autoscaling start-instance-refresh \
+              --auto-scaling-group-name $IDLE_STACK \
+              --strategy Rolling \
+              --query 'InstanceRefreshId' \
+              --output text)
+
+            echo "[INFO] Instance refresh started: $REFRESH_ID"
+
+            echo "[INFO] Waiting for instance refresh to complete..."
+            aws autoscaling wait instance-refresh-complete \
+              --auto-scaling-group-name $IDLE_STACK
+
+            echo "[INFO] ✅ Instance refresh completed successfully!"
             # 파일에 저장하여 다음 스테이지에서 사용
             echo "$IDLE_TG" > ${WORKSPACE}/idle_tg.txt
             echo "$ACTIVE_TG" > ${WORKSPACE}/active_tg.txt

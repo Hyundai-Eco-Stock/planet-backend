@@ -17,7 +17,8 @@ BEGIN
     INTO v_eco_stock_amount, v_eco_stock_id
     FROM RAFFLE
     WHERE RAFFLE_ID = p_raffle_id
-      AND SYSDATE BETWEEN START_DATE AND END_DATE;
+      AND SYSDATE >= START_DATE
+      AND SYSDATE < END_DATE + 1;
 
     -- 2. 원자적 업데이트 (중복 참여 방지 포함)
     UPDATE MEMBER_STOCK_INFO

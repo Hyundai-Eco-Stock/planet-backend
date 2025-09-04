@@ -16,4 +16,5 @@ public class ProductDetailResponse {
     private Long productImageId;
     private String productImageUrl;
     private String brandName;
+    private int sortOrder;
 }

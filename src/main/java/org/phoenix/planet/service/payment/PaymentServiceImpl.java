@@ -74,7 +74,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // QR 코드 생성
         String qrCodeUrl = null;
-        if ("매장 픽업".equals(request.orderType().getValue())) {
+        if ("PICKUP".equals(request.orderType().name())) {
             qrCodeUrl = qrCodeService.generatePickupQRCode(orderHistoryId);
             orderHistoryMapper.updateQRCodeUrl(orderHistoryId, qrCodeUrl);
         }
@@ -410,13 +410,16 @@ public class PaymentServiceImpl implements PaymentService {
                 (request.donationAmount() != null ? request.donationAmount() : 0);
 
         Long departmentStoreId = null;
-        if ("PICKUP".equals(request.orderType().getValue()) && request.pickupInfo() != null) {
+        OrderStatus orderStatus = OrderStatus.PAID;
+
+        if ("PICKUP".equals(request.orderType().name()) && request.pickupInfo() != null) {
             departmentStoreId = request.pickupInfo().departmentStoreId();
+            orderStatus = OrderStatus.DONE;
         }
 
         OrderHistory orderHistory = OrderHistory.builder()
                 .orderNumber(orderNumber)
-                .orderStatus(OrderStatus.PAID)
+                .orderStatus(orderStatus)
                 .originPrice(totalProductAmount)
                 .usedPoint((long) (request.pointsUsed() != null ? request.pointsUsed() : 0))
                 .donationPrice((long) (request.donationAmount() != null ? request.donationAmount() : 0))
@@ -485,7 +488,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (salePercent <= 0) {
             return originalPrice;
         }
-        return Math.round(originalPrice * (100 - salePercent / 100.0));
+        return Math.round(originalPrice * (1 - salePercent / 100.0));
     }
 
     private PaymentConfirmResponse.PaymentResultData createSuccessResponse(

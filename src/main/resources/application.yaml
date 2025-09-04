@@ -97,3 +97,5 @@ toss:
     api-url: https://api.tosspayments.com
     secret-key: ${TOSS_SECRET_KEY}
 
+qr:
+  base-url: ${QR_BASE_URL}

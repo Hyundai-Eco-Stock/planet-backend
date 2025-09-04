@@ -26,6 +26,7 @@ public class ProductController {
     /* 유사 상품 추천 */
     @GetMapping("/recommend")
     public ResponseEntity<List<ProductResponse>> recommend(RecommendRequest req) {
+
         return ResponseEntity.ok(productService.recommend(req));
     }
 
@@ -53,8 +54,8 @@ public class ProductController {
     /* 상품 상세 */
     @GetMapping("/{product-id}")
     public ResponseEntity<List<ProductDetailResponse>> getProductDetail(
-            @PathVariable("product-id") long productId) {
-        log.info(" 안녕하세요 ");
+        @PathVariable("product-id") long productId) {
+
         return ResponseEntity.ok(productService.getProductDetail(productId));
     }
 }

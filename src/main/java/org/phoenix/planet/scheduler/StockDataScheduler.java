@@ -34,25 +34,26 @@ public class StockDataScheduler {
     public void broadcastStockData() {
 
         LocalDateTime time = LocalDateTime.now()
-                .withSecond(0)   // 초를 0으로
-                .withNano(0);
+            .withSecond(0)   // 초를 0으로
+            .withNano(0);
 
         LocalDateTime targetTime = time
-                .minusMinutes(1)
-                .withSecond(0)   // 초를 0으로
-                .withNano(0);
+            .minusMinutes(1)
+            .withSecond(0)   // 초를 0으로
+            .withNano(0);
 
         List<EcoStockUpdatePriceRecord> ecoStockUpdatePriceRecords =
-                ecoStockService.findAllHistory(targetTime);
+            ecoStockService.findAllHistory(targetTime);
 
-        log.info(" 로우 값 {} ", ecoStockUpdatePriceRecords);
+        log.trace(" 로우 값 {} ", ecoStockUpdatePriceRecords);
         for (EcoStockUpdatePriceRecord record : ecoStockUpdatePriceRecords) {
             Long stockId = record.ecoStockId();
 
-            StockCalculationResult stockCalculationResult = ecoStockPriceHistoryService.calculatePriceHistory(record, time);
+            StockCalculationResult stockCalculationResult = ecoStockPriceHistoryService.calculatePriceHistory(
+                record, time);
 
             StockData stockData = stockCalculationResult.stockData();
-            log.info("stockData:{}", stockData);
+            log.debug("stockData:{}", stockData);
 
             int result = ecoStockPriceHistoryService.saveIfNotExists(stockData);
 
@@ -67,8 +68,8 @@ public class StockDataScheduler {
             VolumeDto volumeDto = StockChartUtil.convertSingleToVolume(stockData);
 
             if (!chartDataRedisRepository.existOhlcDto(stockId)
-                    || !chartDataRedisRepository.existVolumeDto(stockId)
-                    || chartDataRedisRepository.checkTimestamp(stockId, ohlcDto)) {
+                || !chartDataRedisRepository.existVolumeDto(stockId)
+                || chartDataRedisRepository.checkTimestamp(stockId, ohlcDto)) {
 
                 log.info("Redis 데이터 재초기화 필요 (stockId={})", stockId);
 
@@ -81,10 +82,10 @@ public class StockDataScheduler {
             }
 
             ChartSingleDataResponse chartData = ChartSingleDataResponse.builder()
-                    .ecoStockId(stockId)
-                    .volumeData(volumeDto)
-                    .ohlcData(ohlcDto)
-                    .build();
+                .ecoStockId(stockId)
+                .volumeData(volumeDto)
+                .ohlcData(ohlcDto)
+                .build();
             stockDataPublish.pushData(chartData);
         }
     }

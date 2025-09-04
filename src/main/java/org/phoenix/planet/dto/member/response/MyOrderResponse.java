@@ -23,9 +23,10 @@ public class MyOrderResponse {
     private String cancelStatus;
     private String orderType;
     private Long productId;
-    private int discountPrice;
     private String ecoDealStatus;
     private String productName;
     private String productImageUrl;
     private String paymentStatus;
+    private int salePercent;
+    private int finalProductPrice;
 }

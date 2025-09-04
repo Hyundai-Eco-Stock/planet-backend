@@ -20,8 +20,8 @@ public class PhtiRaffleScheduler {
     private final MemberDeviceTokenService memberDeviceTokenService;
     private final MemberPhtiMapper memberPhtiMapper;
 
-    @Scheduled(cron = "0 20 * * * *") // 개발 시
-//    @Scheduled(cron = "0 0 11 * * *") // 운영 시
+    //    @Scheduled(cron = "0 20 * * * *") // 개발 시
+    @Scheduled(cron = "0 0 11 * * *") // 운영 시
     @DistributedScheduled(lockKey = "planet:prod:phti:raffle:notification")
     public void runTask() {
 

@@ -191,8 +191,26 @@ EOF
             echo "[INFO] Instance refresh started: $REFRESH_ID"
 
             echo "[INFO] Waiting for instance refresh to complete..."
-            aws autoscaling wait instance-refresh-complete \
-              --auto-scaling-group-name $IDLE_STACK
+
+            for i in {1..90}; do   # 최대 15분 대기
+              STATUS=$(aws autoscaling describe-instance-refreshes \
+                --auto-scaling-group-name $IDLE_STACK \
+                --query 'InstanceRefreshes[0].Status' \
+                --output text)
+
+              echo "[DEBUG] Refresh status: $STATUS"
+
+              if [ "$STATUS" = "Successful" ]; then
+                echo "[INFO] ✅ Instance refresh completed successfully!"
+                break
+              elif [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ]; then
+                echo "[ERROR] ❌ Instance refresh $STATUS"
+                exit 1
+              fi
+
+              echo "[INFO] Waiting 10s before next check..."
+              sleep 10
+            done
 
             echo "[INFO] ✅ Instance refresh completed successfully!"
             # 파일에 저장하여 다음 스테이지에서 사용

@@ -15,7 +15,7 @@ public class MemberDeviceTokenService {
 
     private final MemberDeviceTokenMapper mapper;
 
-    public void saveOrUpdate(Long memberId, String fcmToken) {
+    public void saveOrUpdate(long memberId, String fcmToken) {
 
         List<String> tokens = mapper.searchFcmTokenByMemberId(memberId);
 
@@ -26,9 +26,14 @@ public class MemberDeviceTokenService {
         }
     }
 
-    public List<String> getTokens(Long memberId) {
+    public List<String> getTokens(long memberId) {
 
         return mapper.searchFcmTokenByMemberId(memberId);
+    }
+
+    public List<MemberFcmToken> getTokens(List<Long> memberIdList) {
+
+        return mapper.searchFcmTokensByMemberIds(memberIdList);
     }
 
     public void removeToken(Long memberId, String fcmToken) {

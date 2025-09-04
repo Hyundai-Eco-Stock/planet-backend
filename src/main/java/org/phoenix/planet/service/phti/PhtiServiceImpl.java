@@ -74,7 +74,8 @@ public class PhtiServiceImpl implements PhtiService {
         return phtiResultResponse;
     }
 
-    private List<Phti> fetchAllPhtiList() {
+    @Override
+    public List<Phti> fetchAllPhtiList() {
 
         return phtiMapper.selectAll();
     }

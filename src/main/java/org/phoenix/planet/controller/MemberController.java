@@ -12,12 +12,16 @@ import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
 import org.phoenix.planet.dto.member.response.MyOrderResponse;
 import org.phoenix.planet.dto.member.response.MyRaffleResponse;
+import org.phoenix.planet.dto.member_card.MemberCardRegisterRequest;
+import org.phoenix.planet.dto.member_card.MemberCardsInfoResponse;
 import org.phoenix.planet.service.car.MemberCarService;
+import org.phoenix.planet.service.card.MemberCardService;
 import org.phoenix.planet.service.member.MemberService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +37,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MemberCarService memberCarService;
+    private final MemberCardService memberCardService;
 
     @GetMapping
     public ResponseEntity<List<MemberListResponse>> searchAllMembers() {
@@ -114,5 +119,34 @@ public class MemberController {
 
         System.out.println("여기까지 와요");
         return ResponseEntity.ok(memberService.getMyRaffles(memberId));
+    }
+
+    @GetMapping("/me/cards")
+    public ResponseEntity<MemberCardsInfoResponse> fetchMyCardInfos(
+        @LoginMemberId long loginMemberId
+    ) {
+
+        MemberCardsInfoResponse response = memberCardService.getInfoByMemberId(loginMemberId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/me/cards")
+    public ResponseEntity<Void> registerMyCardInfo(
+        @LoginMemberId long loginMemberId,
+        @RequestBody @Valid MemberCardRegisterRequest request
+    ) {
+
+        memberCardService.registerCardInfo(loginMemberId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/me/cards/{member-card-id}")
+    public ResponseEntity<Void> deleteMyCardInfo(
+        @LoginMemberId long loginMemberId,
+        @PathVariable("member-card-id") long memberCardId
+    ) {
+
+        memberCardService.deleteCardInfo(loginMemberId, memberCardId);
+        return ResponseEntity.ok().build();
     }
 }

@@ -36,8 +36,8 @@ public class QrResolveServiceImpl implements QrResolveService {
     @Transactional
     public OrderQrInfo resolve(String d) {
         // QR 파싱/검증
-        final QrCodec.Parsed parsed = QrCodec.parseAndVerify(d, qrSecretKey, allowedSkewSeconds);
-        final Long orderHistoryId = parsed.orderId;
+        QrCodec.Parsed parsed = QrCodec.parseAndVerify(d, qrSecretKey, allowedSkewSeconds);
+        Long orderHistoryId = parsed.orderId;
 
         // DB 조회
         OrderQrHeader header = orderHistoryMapper.selectOrderQrHeader(orderHistoryId);

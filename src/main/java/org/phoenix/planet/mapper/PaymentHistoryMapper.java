@@ -18,4 +18,10 @@ public interface PaymentHistoryMapper {
 
     int updatePaymentStatus(@Param("paymentId") Long paymentId, @Param("paymentStatus") PaymentStatus paymentStatus);
 
+    int updatePaymentStatusWithBalance(
+        @Param("paymentId") Long paymentId,
+        @Param("paymentStatus") PaymentStatus paymentStatus,
+        @Param("balanceAmount") Long balanceAmount
+    );
+
 }

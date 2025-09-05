@@ -3,8 +3,8 @@ package org.phoenix.planet.service.member;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.phoenix.planet.dto.member.raw.Member;
+import org.phoenix.planet.dto.member.request.KakaoSignUpRequest;
 import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
-import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
@@ -86,7 +86,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public SignUpResponse signUp(
         long loginMemberId,
-        SignUpRequest request,
+        KakaoSignUpRequest request,
         MultipartFile profileImage) {
 
         // 패스워드 해시화

@@ -11,11 +11,11 @@ import org.phoenix.planet.configuration.security.CookieProperties;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
+import org.phoenix.planet.dto.member.request.KakaoSignUpRequest;
 import org.phoenix.planet.dto.member.request.LoginRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
 import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
-import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.LoginResponse;
 import org.phoenix.planet.dto.member.response.SignUpResponse;
 import org.phoenix.planet.service.auth.AuthService;
@@ -50,7 +50,7 @@ public class AuthController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<SignUpResponse> signUpByKakao(
-        @RequestPart("signUp") @Valid SignUpRequest request,
+        @RequestPart("signUp") @Valid KakaoSignUpRequest request,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
         @LoginMemberId long loginMemberId
     ) {

@@ -94,5 +94,13 @@
         updated_at = SYSDATE
         WHERE payment_id = #{paymentId}
     </update>
+    
+    <update id="updatePaymentStatusWithBalance" parameterType="map">
+        UPDATE payment_history
+        SET payment_status = #{paymentStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+        balance_amount = #{balanceAmount, jdbcType=NUMERIC},
+        updated_at = SYSDATE
+        WHERE payment_id = #{paymentId}
+    </update>
 
 </mapper>

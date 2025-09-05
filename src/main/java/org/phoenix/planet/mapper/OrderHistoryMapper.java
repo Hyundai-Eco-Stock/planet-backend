@@ -37,7 +37,7 @@ public interface OrderHistoryMapper {
 
     int updateRefundDonationPrice(
         @Param("orderHistoryId") Long orderHistoryId,
-        @Param("donationAmount") Long donationAmount
+        @Param("refundDonationPrice") Long refundDonationPrice
     );
 
 }

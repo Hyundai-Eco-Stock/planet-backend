@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.phoenix.planet.mapper.PointExchangeHistoryMapper">
+    
+    <!-- 포인트 사용 내역 삽입 -->
+    <insert id="insert">
+        <selectKey keyProperty="pointExchangeHistoryId" resultType="Long" order="BEFORE">
+            SELECT SEQ_POINT_EXCHANGE_HISTORY.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO point_exchange_history (
+        point_exchange_history_id,
+        point_price,
+        status,
+        member_id,
+        created_at
+        ) VALUES (
+        #{pointExchangeHistoryId, jdbcType=NUMERIC},
+        #{pointPrice, jdbcType=NUMERIC},
+        #{status, jdbcType=VARCHAR},
+        #{memberId, jdbcType=VARCHAR},
+        SYSDATE
+        )
+    </insert>
+    
+</mapper>

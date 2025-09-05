@@ -6,7 +6,7 @@
 <mapper namespace="org.phoenix.planet.mapper.ProductMapper">
 
     <resultMap id="ProductResultMap" type="org.phoenix.planet.dto.product.raw.Product">
-        <id column="product_id" property="id"/>
+        <id column="product_id" property="productId"/>
         <result column="category_id" property="categoryId"/>
         <result column="brand_id" property="brandId"/>
         <result column="name" property="name"/>

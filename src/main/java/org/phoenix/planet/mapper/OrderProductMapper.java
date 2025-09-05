@@ -28,4 +28,9 @@ public interface OrderProductMapper {
 
     List<OrderProduct> findActiveOrderProducts(Long orderHistoryId);
 
+    void updateCancelStatusToProcessing(
+        @Param("orderProductId") Long orderProductId,
+        @Param("cancelStatus") CancelStatus cancelStatus
+    );
+
 }

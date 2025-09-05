@@ -6,6 +6,7 @@ import org.phoenix.planet.dto.member.request.KakaoSignUpRequest;
 import org.phoenix.planet.dto.member.request.LocalSignUpRequest;
 import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
+import org.phoenix.planet.dto.member.response.MemberPointWithHistoriesResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
 import org.phoenix.planet.dto.member.response.MyOrderResponse;
@@ -38,4 +39,6 @@ public interface MemberService {
     List<MyEcoDealResponse> getMyEcoDeals(Long memberId);
 
     List<MyRaffleResponse> getMyRaffles(Long memberId);
+
+    MemberPointWithHistoriesResponse fetchPointHistories(long memberId);
 }

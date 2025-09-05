@@ -8,6 +8,7 @@ import org.phoenix.planet.dto.member.request.KakaoSignUpRequest;
 import org.phoenix.planet.dto.member.request.LocalSignUpRequest;
 import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
+import org.phoenix.planet.dto.member.response.MemberPointWithHistoriesResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
 import org.phoenix.planet.dto.member.response.MyOrderResponse;
@@ -189,5 +190,11 @@ public class MemberServiceImpl implements MemberService {
     public List<MyRaffleResponse> getMyRaffles(Long memberId) {
 
         return memberMapper.getMyRaffles(memberId);
+    }
+
+    @Override
+    public MemberPointWithHistoriesResponse fetchPointHistories(long memberId) {
+
+        return memberMapper.selectPointWithHistories(memberId);
     }
 }

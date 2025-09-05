@@ -5,8 +5,6 @@ import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.constant.PaymentStatus;
 import org.phoenix.planet.dto.payment.raw.PaymentHistory;
 
-import java.time.OffsetDateTime;
-
 @Mapper
 public interface PaymentHistoryMapper {
 

@@ -15,7 +15,7 @@
             P.PRODUCT_ID      AS productId,
             P.NAME            AS productName,
             P.PRICE           AS price,
-            P.IMAGE_URL       AS imageUrl,
+            COALESCE(PI.IMAGE_URL, P.IMAGE_URL) AS imageUrl,
     
             B.NAME            AS brandName,
     
@@ -31,12 +31,13 @@
             JOIN PRODUCT P ON R.PRODUCT_ID = P.PRODUCT_ID
             JOIN ECO_STOCK ES ON R.ECO_STOCK_ID = ES.ECO_STOCK_ID
             JOIN BRAND B ON P.BRAND_ID = B.BRAND_ID
+            LEFT JOIN PRODUCT_IMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID AND PI.SORT_ORDER = 0
             LEFT JOIN RAFFLE_HISTORY RH ON RH.RAFFLE_ID = R.RAFFLE_ID
             LEFT JOIN MEMBER M ON RH.MEMBER_ID = M.MEMBER_ID
         WHERE R.END_DATE >= TRUNC(SYSDATE) - 7
         GROUP BY
             R.RAFFLE_ID, R.ECO_STOCK_AMOUNT, R.START_DATE, R.END_DATE,
-            P.PRODUCT_ID, P.NAME, P.PRICE, P.IMAGE_URL,
+            P.PRODUCT_ID, P.NAME, P.PRICE, PI.IMAGE_URL, P.IMAGE_URL,
             B.NAME,
             ES.ECO_STOCK_ID, ES.NAME
     </select>
@@ -94,6 +95,7 @@
         LEFT JOIN PRODUCT_IMAGE PI ON PI.PRODUCT_ID = P.PRODUCT_ID
 
         WHERE R.RAFFLE_ID = #{raffleId}
+        and PI.SORT_ORDER > 0
         ORDER BY PI.SORT_ORDER
     </select>
 

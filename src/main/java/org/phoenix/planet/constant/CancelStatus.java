@@ -8,6 +8,7 @@ import lombok.Getter;
 public enum CancelStatus {
 
     Y,  // 취소됨
-    N   // 정상
+    N,   // 정상
+    P   // 취소중
 
 }

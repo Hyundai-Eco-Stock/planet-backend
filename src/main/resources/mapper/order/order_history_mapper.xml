@@ -56,7 +56,8 @@
         member_id as memberId,
         department_store_id as departmentStoreId,
         created_at as createdAt,
-        updated_at as updatedAt
+        updated_at as updatedAt,
+        refund_donation_price as refundDonationPrice
         FROM order_history
         WHERE order_history_id = #{orderHistoryId}
     </select>
@@ -76,7 +77,8 @@
         member_id as memberId,
         department_store_id as departmentStoreId,
         created_at as createdAt,
-        updated_at as updatedAt
+        updated_at as updatedAt,
+        refund_donation_price as refundDonationPrice
         FROM order_history
         WHERE order_number = #{orderNumber}
     </select>
@@ -142,5 +144,11 @@
         AND op.order_type = 'PICKUP'
         ORDER BY op.order_product_id
     </select>
+    
+    <update id="updateRefundDonationPrice">
+        UPDATE order_history
+        SET refund_donation_price = #{refundDonationPrice}
+        WHERE order_history_id = #{orderHistoryId}
+    </update>
 
 </mapper>

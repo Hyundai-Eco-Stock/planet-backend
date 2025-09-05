@@ -11,6 +11,7 @@ CREATE TABLE order_history
     eco_deal_qr_url     VARCHAR2(500),
     member_id           NUMBER               NOT NULL,
     department_store_id NUMBER,
+    refund_donation_price NUMBER,
     created_at          DATE DEFAULT SYSDATE NOT NULL,
     updated_at          DATE,
     CONSTRAINT PK_ORDER_HISTORY PRIMARY KEY (order_history_id),
@@ -36,7 +37,7 @@ CREATE TABLE order_product
     created_at       DATE DEFAULT SYSDATE NOT NULL,
     updated_at       DATE,
     CONSTRAINT PK_ORDER_PRODUCT PRIMARY KEY (order_product_id),
-    CONSTRAINT ck_order_product_cancel_status CHECK (cancel_status IN ('Y', 'N')),
+    CONSTRAINT ck_order_product_cancel_status CHECK (cancel_status IN ('Y', 'N', 'P')),
     CONSTRAINT ck_order_product_order_type CHECK (order_type IN ('PICKUP', 'DELIVERY')),
     CONSTRAINT fk_order_product_order FOREIGN KEY (order_history_id)
         REFERENCES order_history (order_history_id),

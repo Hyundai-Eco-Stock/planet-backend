@@ -35,4 +35,9 @@ public interface OrderHistoryMapper {
 
     List<ProductQrInfo> selectOrderProducts(Long orderHistoryId);
 
+    int updateRefundDonationPrice(
+        @Param("orderHistoryId") Long orderHistoryId,
+        @Param("donationAmount") Long donationAmount
+    );
+
 }

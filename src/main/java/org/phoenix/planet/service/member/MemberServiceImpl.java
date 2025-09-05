@@ -2,8 +2,10 @@ package org.phoenix.planet.service.member;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.request.KakaoSignUpRequest;
+import org.phoenix.planet.dto.member.request.LocalSignUpRequest;
 import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
@@ -80,6 +82,42 @@ public class MemberServiceImpl implements MemberService {
                 loginMemberId);
             memberMapper.updateProfileUrl(loginMemberId, profileFilePath);
         }
+    }
+
+    @Override
+    @Transactional
+    public SignUpResponse signUp(
+        LocalSignUpRequest request,
+        MultipartFile profileImage) {
+
+        // 패스워드 해시화
+        String pwdHash = passwordEncoder.encode(request.password());
+
+        Member member = Member.builder()
+            .pwdHash(pwdHash)
+            .email(request.email())
+            .name(request.name())
+            .sex(request.sex())
+            .birth(request.birth())
+            .address(request.address())
+            .detailAddress(request.detailAddress())
+            .role(Role.USER)
+            .build();
+
+        // 새로운 멤버 정보 넣기
+        memberMapper.insert(member);
+
+        // 프로필 저장
+        String savedFilePath = null;
+        if (profileImage != null && !profileImage.isEmpty()) {
+            savedFilePath = s3FileUtil.uploadMemberProfile(profileImage, member.getId());
+            memberMapper.updateProfileUrl(member.getId(), savedFilePath);
+        }
+
+        return SignUpResponse.builder()
+            .profileUrl(
+                (savedFilePath != null) ? cloudFrontFileUtil.generateUrl(savedFilePath) : null)
+            .build();
     }
 
     @Override

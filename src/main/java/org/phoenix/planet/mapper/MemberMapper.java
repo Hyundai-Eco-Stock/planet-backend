@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.phoenix.planet.constant.Sex;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
+import org.phoenix.planet.dto.member.response.MemberPointWithHistoriesResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
 import org.phoenix.planet.dto.member.response.MyOrderResponse;
 import org.phoenix.planet.dto.member.response.MyRaffleResponse;
@@ -48,6 +49,8 @@ public interface MemberMapper {
         @Param("address") String address,
         @Param("detailAddress") String detailAddress);
 
+
+    MemberPointWithHistoriesResponse selectPointWithHistories(@Param("memberId") long memberId);
 
     List<MyOrderResponse> findMyOrders(Long memberId);
 

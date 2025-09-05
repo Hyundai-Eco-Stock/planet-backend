@@ -8,6 +8,7 @@ import org.phoenix.planet.dto.car.request.CarRegisterRequest;
 import org.phoenix.planet.dto.car.response.MemberCarResponse;
 import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
+import org.phoenix.planet.dto.member.response.MemberPointWithHistoriesResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
 import org.phoenix.planet.dto.member.response.MyOrderResponse;
@@ -148,5 +149,15 @@ public class MemberController {
 
         memberCardService.deleteCardInfo(loginMemberId, memberCardId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me/point-histories")
+    public ResponseEntity<MemberPointWithHistoriesResponse> fetchPointHistories(
+        @LoginMemberId long loginMemberId
+    ) {
+
+        MemberPointWithHistoriesResponse response = memberService.fetchPointHistories(
+            loginMemberId);
+        return ResponseEntity.ok(response);
     }
 }

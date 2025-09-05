@@ -29,10 +29,10 @@ INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, upda
 VALUES (4, '제로백(Bag)', 100, null, SYSDATE, NULL);
 
 INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, updated_at)
-VALUES (5, '봉시활동', 1000, null, SYSDATE, NULL);
+VALUES (5, '봉사활동', 1000, null, SYSDATE, NULL);
 
 INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, updated_at)
-VALUES (6, '기부온(Give_On)', 100, null, SYSDATE, NULL);
+VALUES (6, '기부온(Give On)', 100, null, SYSDATE, NULL);
 
 COMMIT;
 

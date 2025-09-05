@@ -11,11 +11,12 @@ import org.phoenix.planet.configuration.security.CookieProperties;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
+import org.phoenix.planet.dto.member.request.KakaoSignUpRequest;
+import org.phoenix.planet.dto.member.request.LocalSignUpRequest;
 import org.phoenix.planet.dto.member.request.LoginRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
 import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
-import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.LoginResponse;
 import org.phoenix.planet.dto.member.response.SignUpResponse;
 import org.phoenix.planet.service.auth.AuthService;
@@ -45,14 +46,30 @@ public class AuthController {
     private final CookieProperties cookieProps;
 
     @PostMapping(
+        value = "/signup/local",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<SignUpResponse> localSignUp(
+        @RequestPart("signUp") @Valid LocalSignUpRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) {
+
+        SignUpResponse signUpResponse = memberService.signUp(
+            request,
+            profileImage);
+        return ResponseEntity.ok(signUpResponse);
+    }
+
+    @PostMapping(
         value = "/signup/kakao",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<SignUpResponse> signUpByKakao(
-        @RequestPart("signUp") @Valid SignUpRequest request,
-        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
-        @LoginMemberId long loginMemberId
+        @LoginMemberId long loginMemberId,
+        @RequestPart("signUp") @Valid KakaoSignUpRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) {
 
         SignUpResponse signUpResponse = memberService.signUp(loginMemberId, request, profileImage);

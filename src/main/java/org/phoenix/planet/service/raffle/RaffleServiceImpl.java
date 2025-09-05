@@ -9,7 +9,9 @@ import org.phoenix.planet.dto.raffle.raw.RaffleHistory;
 import org.phoenix.planet.dto.raffle.raw.RaffleHistoryWithDetail;
 import org.phoenix.planet.dto.raffle.raw.WinnerInfo;
 import org.phoenix.planet.dto.raffle.response.ParticipateRaffleResponse;
+import org.phoenix.planet.dto.raffle.response.RaffleEntryStatus;
 import org.phoenix.planet.error.raffle.RaffleException;
+import org.phoenix.planet.mapper.RaffleHistoryMapper;
 import org.phoenix.planet.mapper.RaffleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ public class RaffleServiceImpl implements RaffleService {
     private final RaffleMapper raffleMapper;
     private final RaffleHistoryService raffleHistoryService;
     private static final SecureRandom secureRandom = new SecureRandom();
+    private final RaffleHistoryMapper raffleHistoryMapper;
 
 
     @Override
@@ -38,6 +41,12 @@ public class RaffleServiceImpl implements RaffleService {
     @Override
     public RaffleDetailResponse findDetailById(Long raffleId) {
         return raffleMapper.findDetailById(raffleId);
+    }
+
+    @Override
+    public RaffleEntryStatus checkRaffleEntry(Long memberId, Long raffleId) {
+        boolean result =  raffleHistoryMapper.checkRaffleEntry(memberId,raffleId);
+        return new RaffleEntryStatus(result);
     }
 
     @Override

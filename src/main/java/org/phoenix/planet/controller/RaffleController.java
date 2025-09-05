@@ -6,6 +6,7 @@ import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.raffle.RaffleDetailResponse;
 import org.phoenix.planet.dto.raffle.RaffleResponse;
 import org.phoenix.planet.dto.raffle.response.ParticipateRaffleResponse;
+import org.phoenix.planet.dto.raffle.response.RaffleEntryStatus;
 import org.phoenix.planet.service.raffle.RaffleService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,5 +46,14 @@ public class RaffleController {
         ParticipateRaffleResponse raffleResponse= raffleService.participateRaffle(raffleId, memberId);
 
         return ResponseEntity.ok(raffleResponse);
+    }
+
+    @GetMapping("/{raffleId}/entry")
+    public ResponseEntity<RaffleEntryStatus> checkRaffleEntry(@LoginMemberId Long memberId, @PathVariable Long raffleId) {
+
+        RaffleEntryStatus raffleEntryStatus = raffleService.checkRaffleEntry(memberId,raffleId);
+
+        log.info("RaffleEntryStatus: {}", raffleEntryStatus);
+        return ResponseEntity.ok(raffleEntryStatus);
     }
 }

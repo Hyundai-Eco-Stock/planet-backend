@@ -63,7 +63,6 @@
         quantity,
         cancel_status,
         order_type,
-        discount_price,
         order_history_id,
         product_id,
         created_at,
@@ -71,8 +70,7 @@
         FROM order_product
         WHERE order_product_id = #{orderProductId}
     </select>
-
-
+    
     <update id="updateCancelStatus">
         UPDATE order_product
         SET cancel_status = #{cancelStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
@@ -96,5 +94,14 @@
         AND cancel_status = 'N'
         ORDER BY order_product_id
     </select>
-
+    
+    <!-- 취소 진행중 상태로 변경 (보상 트랜잭션용) -->
+    <update id="updateCancelStatusToProcessing" parameterType="long">
+        UPDATE order_product
+        SET cancel_status = #{cancelStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler, jdbcType=VARCHAR},
+        updated_at = SYSDATE
+        WHERE order_product_id = #{orderProductId}
+        AND cancel_status = 'N'
+    </update>
+  
 </mapper>

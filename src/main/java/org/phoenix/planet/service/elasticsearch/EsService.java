@@ -22,7 +22,7 @@ public class EsService {
 
     private final ElasticsearchClient esClient;
 
-    private final String index = "planet_product_0903_pn_001";
+    private final String index = "planet_product_v3";
     private final int defaultSize = 10;
 
     public List<String> searchMltMatchAll(String likeText, String categoryId, Integer size) {
@@ -34,21 +34,42 @@ public class EsService {
                 ? Query.of(q -> q.term(t -> t.field("categoryId").value(categoryId)))
                 : null;
 
-        // should 절
+        // should 절 (productName + brandName 모두 커버)
         List<Query> shouldQueries = List.of(
+                // 1) Exact match on keyword subfields
                 Query.of(q -> q.term(
                         t -> t.field("productName.keyword").value(likeText).boost(8.0f))),
+                Query.of(
+                        q -> q.term(t -> t.field("brandName.keyword").value(likeText).boost(7.0f))),
+
+                // 2) Phrase matches on analyzed text fields
                 Query.of(q -> q.matchPhrase(
                         m -> m.field("productName").query(likeText).boost(5.0f))),
+                Query.of(q -> q.matchPhrase(m -> m.field("brandName").query(likeText).boost(4.0f))),
+
+                // 3) Strict AND matches for full-token coverage
                 Query.of(q -> q.match(m -> m.field("productName").query(likeText)
                         .operator(Operator.And)
                         .minimumShouldMatch("100%")
                         .boost(3.0f))),
+                Query.of(q -> q.match(m -> m.field("brandName").query(likeText)
+                        .operator(Operator.And)
+                        .minimumShouldMatch("100%")
+                        .boost(2.5f))),
+
+                // 4) Fuzzy multi-field (helps with typos)
                 Query.of(q -> q.multiMatch(mm -> mm.query(likeText)
-                        .fields("productName^2", "brandName")
+                        .fields("productName^2", "brandName^2")
                         .fuzziness("AUTO")
+                        .lenient(true)
                         .boost(1.0f))),
+
+                // 5) Prefix-friendly phrase prefix (incremental typing)
                 Query.of(q -> q.matchPhrasePrefix(mpp -> mpp.field("productName")
+                        .query(likeText)
+                        .maxExpansions(50)
+                        .boost(1.0f))),
+                Query.of(q -> q.matchPhrasePrefix(mpp -> mpp.field("brandName")
                         .query(likeText)
                         .maxExpansions(50)
                         .boost(1.0f)))

@@ -229,7 +229,7 @@
         join ORDER_PRODUCT OP on OP.ORDER_HISTORY_ID = OH.ORDER_HISTORY_ID
         join PRODUCT P on P.PRODUCT_ID = OP.PRODUCT_ID
         where MEMBER_ID = #{member_id} and P.ECO_DEAL_STATUS = 'Y'
-        order by H.ORDER_HISTORY_ID desc, OP.ORDER_PRODUCT_ID desc
+        order by OH.ORDER_HISTORY_ID desc, OP.ORDER_PRODUCT_ID desc
     </select>
     
     <select id="getMyRaffles" parameterType="long"

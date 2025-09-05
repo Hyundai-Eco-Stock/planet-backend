@@ -7,6 +7,7 @@ import org.phoenix.planet.dto.raffle.raw.WinnerInfo;
 import java.time.LocalDate;
 import java.util.List;
 import org.phoenix.planet.dto.raffle.response.ParticipateRaffleResponse;
+import org.phoenix.planet.dto.raffle.response.RaffleEntryStatus;
 
 public interface RaffleService {
 
@@ -17,4 +18,6 @@ public interface RaffleService {
     ParticipateRaffleResponse participateRaffle(Long raffleId, Long memberId);
 
     List<WinnerInfo> raffleWinningProcess(LocalDate yesterday);
+
+    RaffleEntryStatus checkRaffleEntry(Long memberId, Long raffleId);
 }

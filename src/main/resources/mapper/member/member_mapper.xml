@@ -182,6 +182,7 @@
         H.ECO_DEAL_QR_URL,
         H.MEMBER_ID,
         H.CREATED_AT,
+        H.REFUND_DONATION_PRICE,
         OP.ORDER_PRODUCT_ID,
         OP.PRICE,
         OP.QUANTITY,

@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.dto.eco_stock.raw.MemberStockInfo;
+import org.phoenix.planet.dto.eco_stock_info.response.EcoStockPriceResponse;
 import org.phoenix.planet.dto.eco_stock_info.response.MemberStockInfoWithDetail;
 import org.phoenix.planet.mapper.MemberStockInfoMapper;
 import org.springframework.stereotype.Service;
@@ -34,5 +35,9 @@ public class MemberStockInfoServiceImpl implements MemberStockInfoService {
         //  current_total_quantity 갯수에 quantity(인자) 더하기 (업데이트)
         //  current_total_amount(내가 보유한 에코스톡의 구매 당시 가격 합)에 quantity * cur_price 더하기 (업데이트)
         memberStockInfoMapper.updateOrInsert(memberId, ecoStockId, quantity);
+    }
+
+    public List<EcoStockPriceResponse> getAllEcosStockPrice() {
+        return memberStockInfoMapper.findAllEcoStockPrice();
     }
 }

@@ -46,7 +46,7 @@
         SYSDATE
         )
     </update>
-    
+
     <select id="findPersonalStockInfoById"
         resultType="org.phoenix.planet.dto.eco_stock.raw.MemberStockInfo">
         SELECT
@@ -62,13 +62,13 @@
         AND msi.ECO_STOCK_ID = #{ecoStockId}
         WHERE m.MEMBER_ID = #{memberId}
     </select>
-    
+
     <!-- 회원 스톡 정보 신규 생성 -->
     <insert id="insertMemberStockInfo">
         <selectKey keyProperty="memberStockInfoId" resultType="Long" order="BEFORE">
             SELECT SEQ_ORDER_HISTORY.NEXTVAL FROM dual
         </selectKey>
-        
+
         INSERT INTO member_stock_info (
         member_stock_info_id,
         member_id,
@@ -87,7 +87,7 @@
         SYSDATE
         )
     </insert>
-    
+
     <!-- 회원 스톡 정보 업데이트 -->
     <update id="updateMemberStockInfo">
         UPDATE member_stock_info
@@ -96,7 +96,7 @@
         updated_at = SYSDATE
         WHERE member_stock_info_id = #{memberStockInfoId}
     </update>
-    
+
     <select id="findAllPersonalStockInfoByMemberId"
         resultType="org.phoenix.planet.dto.eco_stock_info.response.MemberStockInfoWithDetail">
         SELECT
@@ -115,4 +115,25 @@
         WHERE m.MEMBER_ID = #{memberId}
     </select>
 
+
+    <select id="findAllEcoStockPrice"
+        resultType="org.phoenix.planet.dto.eco_stock_info.response.EcoStockPriceResponse">
+        SELECT
+        eco_stock_id,
+        stock_price_history_id,
+        stock_time,
+        stock_price,
+        created_at
+        FROM (
+        SELECT
+        ROW_NUMBER() OVER (PARTITION BY eco_stock_id ORDER BY created_at DESC) AS r,
+        eco_stock_id,
+        stock_price_history_id,
+        stock_time,
+        stock_price,
+        created_at
+        FROM stock_price_history
+        ) t
+        WHERE t.r = 1
+    </select>
 </mapper>

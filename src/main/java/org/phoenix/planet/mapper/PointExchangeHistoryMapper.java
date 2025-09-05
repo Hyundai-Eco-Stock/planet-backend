@@ -6,6 +6,10 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface PointExchangeHistoryMapper {
 
-    void insert(@Param("memberId") Long memberId, @Param("pointPrice") int point_price);
+    void insert(
+        @Param("memberId") Long memberId,
+        @Param("pointPrice") int pointPrice,
+        @Param("status") String status
+    );
 
 }

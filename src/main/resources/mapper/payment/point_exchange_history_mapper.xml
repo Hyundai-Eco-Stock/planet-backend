@@ -18,7 +18,7 @@
         ) VALUES (
         #{pointExchangeHistoryId, jdbcType=NUMERIC},
         #{pointPrice, jdbcType=NUMERIC},
-        'USE',
+        #{status, jdbcType=VARCHAR},
         #{memberId, jdbcType=VARCHAR},
         SYSDATE
         )

@@ -150,6 +150,41 @@
         WHERE role = 'USER'
     </select>
     
+    <resultMap id="PointWithHistoriesResultMap"
+        type="org.phoenix.planet.dto.member.response.MemberPointWithHistoriesResponse">
+        <id column="member_id" property="memberId"/>
+        <result column="point" property="currentPoint"/>
+        <collection property="histories"
+            ofType="org.phoenix.planet.dto.member.response.PointExchangeHistory"
+            javaType="java.util.List">
+            <id column="point_exchange_history_id" property="id"/>
+            <result column="point_price" property="pointPrice" jdbcType="NUMERIC" javaType="int"/>
+            <result column="status" property="status"/>
+            <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
+                javaType="java.time.LocalDateTime"/>
+            <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"
+                javaType="java.time.LocalDateTime"/>
+        </collection>
+    </resultMap>
+    
+    <select id="selectPointWithHistories" parameterType="long"
+        resultMap="PointWithHistoriesResultMap">
+        SELECT
+        m.member_id,
+        m.point,
+        peh.point_exchange_history_id,
+        point_price,
+        peh.status,
+        peh.created_at,
+        peh.updated_at
+        FROM member m
+        LEFT JOIN point_exchange_history peh
+        ON m.member_id = peh.member_id
+        WHERE m.member_id = #{memberId}
+        ORDER BY peh.created_at DESC
+    </select>
+    
+    
     <!-- 포인트 차감 -->
     <update id="deductPointsByMemberId">
         UPDATE member

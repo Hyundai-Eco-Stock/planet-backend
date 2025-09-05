@@ -14,6 +14,7 @@ public class SecurityWhitelist {
         "/ws/**",
         "/auth/access-token/regenerate", "/auth/login", "/auth/success",
         "/auth/password-change-mail", "/auth/password-change-token/valid", "/auth/change-password",
+        "/auth/signup/local",
         "/eco-stock/list/**", "/eco-stock/history/**",
         "/department-stores",
         "/eco-products/today", "/eco-products/*",

@@ -20,7 +20,6 @@ import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiResponse;
 import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiItem;
 import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiResponse;
 import org.phoenix.planet.mapper.AdminMapper;
-import org.phoenix.planet.mapper.MemberPhtiMapper;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -29,7 +28,6 @@ import org.springframework.stereotype.Service;
 public class AdminServiceImpl implements AdminService {
 
     private final AdminMapper adminMapper;
-    private final MemberPhtiMapper memberPhtiMapper;
 
     @Override
     public EcoStockIssuePercentageResponse fetchEcoStockIssuePercentageData() {

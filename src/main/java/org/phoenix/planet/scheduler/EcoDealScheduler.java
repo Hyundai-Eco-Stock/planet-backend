@@ -28,6 +28,7 @@ public class EcoDealScheduler {
         fcmService.sendCustomNotification(
             fcmTokens,
             "\uD83D\uDD25 에코딜 타임 세일 시작!",
-            "한정 혜택을 지금 바로 확인해 보세요 🚀");
+            "한정 혜택을 지금 바로 확인해 보세요 🚀",
+            "/eco-deal/main");
     }
 }

@@ -16,9 +16,11 @@ import org.phoenix.planet.dto.member.response.MyOrderResponse;
 import org.phoenix.planet.dto.member.response.MyRaffleResponse;
 import org.phoenix.planet.dto.member_card.MemberCardRegisterRequest;
 import org.phoenix.planet.dto.member_card.MemberCardsInfoResponse;
+import org.phoenix.planet.dto.phti.raw.PhtiResultResponse;
 import org.phoenix.planet.service.car.MemberCarService;
 import org.phoenix.planet.service.card.MemberCardService;
 import org.phoenix.planet.service.member.MemberService;
+import org.phoenix.planet.service.phti.PhtiService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,6 +43,7 @@ public class MemberController {
     private final MemberService memberService;
     private final MemberCarService memberCarService;
     private final MemberCardService memberCardService;
+    private final PhtiService phtiService;
 
     @GetMapping
     public ResponseEntity<List<MemberListResponse>> searchAllMembers() {
@@ -157,9 +160,18 @@ public class MemberController {
     public ResponseEntity<MemberPointWithHistoriesResponse> fetchPointHistories(
         @LoginMemberId long loginMemberId
     ) {
-        
+
         MemberPointWithHistoriesResponse response = memberService.fetchPointHistories(
             loginMemberId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me/phti-result")
+    public ResponseEntity<PhtiResultResponse> fetchMemberPhtiResult(
+        @LoginMemberId long loginMemberId
+    ) {
+
+        PhtiResultResponse response = phtiService.fetchMemberPhtiResult(loginMemberId);
         return ResponseEntity.ok(response);
     }
 }

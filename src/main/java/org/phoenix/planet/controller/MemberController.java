@@ -3,6 +3,7 @@ package org.phoenix.planet.controller;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.car.request.CarRegisterRequest;
 import org.phoenix.planet.dto.car.response.MemberCarResponse;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/members")
 @RequiredArgsConstructor
@@ -102,7 +104,7 @@ public class MemberController {
     ) {
 
         List<MyOrderResponse> list = memberService.getMyOrders(memberId);
-        return ResponseEntity.ok(memberService.getMyOrders(memberId));
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/me/eco-deals")
@@ -155,7 +157,7 @@ public class MemberController {
     public ResponseEntity<MemberPointWithHistoriesResponse> fetchPointHistories(
         @LoginMemberId long loginMemberId
     ) {
-
+        
         MemberPointWithHistoriesResponse response = memberService.fetchPointHistories(
             loginMemberId);
         return ResponseEntity.ok(response);

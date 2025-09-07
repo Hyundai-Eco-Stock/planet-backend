@@ -11,17 +11,14 @@ public class FcmService {
 
     public void SendEcoStockIssueNotification(List<String> fcmTokens, String body) {
 
-        FcmUtil.sendNotificationToMany(fcmTokens, "에코스톡 지급 완료! \uD83C\uDF89", body);
+        FcmUtil.sendNotificationToMany(fcmTokens, "에코스톡 지급 완료! \uD83C\uDF89", body,
+            "/eco-stock/main");
     }
 
     public void sendRaffleWinNotification(List<String> fcmTokens, String body) {
 
-        FcmUtil.sendNotificationToMany(fcmTokens, "래플 당첨! \uD83C\uDF89", body);
-    }
-
-    public void sendCustomNotification(List<String> fcmTokens, String title, String body) {
-//        log.info("[CUSTOM NOTIFICATION] Sending notification to fcm tokens]");
-        FcmUtil.sendNotificationToMany(fcmTokens, title, body);
+        FcmUtil.sendNotificationToMany(fcmTokens, "래플 당첨! \uD83C\uDF89", body,
+            "/my-page/raffle-history");
     }
 
     public void sendPhtiSurvey(List<String> fcmTokens) {
@@ -29,6 +26,13 @@ public class FcmService {
         FcmUtil.sendNotificationToMany(
             fcmTokens,
             "\uD83E\uDD14 나는 어떤 에코 유형일까?",
-            "3분만에 확인 가능한 나의 PHTI 성향 테스트!");
+            "3분만에 확인 가능한 나의 PHTI 성향 테스트!",
+            "/phti/survey");
+    }
+
+    public void sendCustomNotification(List<String> fcmTokens, String title, String body,
+        String path) {
+
+        FcmUtil.sendNotificationToMany(fcmTokens, title, body, path);
     }
 }

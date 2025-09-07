@@ -34,14 +34,16 @@ public class PhtiRaffleScheduler {
                 fcmService.sendCustomNotification(
                     memberDeviceTokenService.getTokens(memberPhti.memberId()),
                     "%s 도전자(D) 고객님께 드리는 소식".formatted(memberPhti.phti()),
-                    "새로운 래플이 오픈되었습니다! 지금 바로 도전해서 행운을 잡아보세요 \uD83C\uDF40");
+                    "새로운 래플이 오픈되었습니다! 지금 바로 도전해서 행운을 잡아보세요 \uD83C\uDF40",
+                    "/raffle");
             }
             // 안정파 (A) : Anchored (거의 참여하지 않고 안정적인 포인트 사용 선호)
             else if (memberPhti.phti().contains("A")) {
                 fcmService.sendCustomNotification(
                     memberDeviceTokenService.getTokens(memberPhti.memberId()),
                     "%s 안정파(A) 고객님께 드리는 소식".formatted(memberPhti.phti()),
-                    "안정적인 포인트 사용을 선호하시는 고객님께, 적립 포인트로 바로 누릴 수 있는 혜택을 준비했어요 ✨");
+                    "안정적인 포인트 사용을 선호하시는 고객님께, 적립 포인트로 바로 누릴 수 있는 혜택을 준비했어요 ✨",
+                    "/eco-stock/main");
             }
         });
     }

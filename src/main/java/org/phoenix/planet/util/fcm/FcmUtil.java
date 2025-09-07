@@ -30,4 +30,27 @@ public class FcmUtil {
             log.warn("Error sending multicast message: {}", e.getMessage());
         }
     }
+
+    public static void sendNotificationToMany(List<String> fcmTokens, String title, String body,
+        String path) {
+
+        try {
+            MulticastMessage message = MulticastMessage.builder()
+                .addAllTokens(fcmTokens)
+                .setNotification(Notification.builder()
+                    .setTitle(title)
+                    .setBody(body)
+                    .build())
+                .putData("path", path) // 👈 추가된 부분: 프론트에서 받을 경로
+                .build();
+
+            BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
+            log.info("Sent messages: {} success, {} failed",
+                response.getSuccessCount(),
+                response.getFailureCount());
+
+        } catch (Exception e) {
+            log.warn("Error sending multicast message: {}", e.getMessage());
+        }
+    }
 }

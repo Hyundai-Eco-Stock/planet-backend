@@ -39,7 +39,7 @@ public class PhtiController {
     }
 
     @PostMapping("/surveys")
-    public ResponseEntity<?> submitPhtiSurveyChoiceAnswer(
+    public ResponseEntity<PhtiResultResponse> submitPhtiSurveyChoiceAnswer(
         @LoginMemberId Long memberId,
         @RequestBody PhtiSurveyAnswer phtiSurveyAnswer
     ) {

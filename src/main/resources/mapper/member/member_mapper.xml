@@ -21,7 +21,7 @@
             typeHandler="org.phoenix.planet.mapper_handler.RoleTypeHandler"/>
         <result column="sex" property="sex"
             javaType="org.phoenix.planet.constant.member.Sex"
-            typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+            typeHandler="org.phoenix.planet.mapper_handler.SexTypeHandler"/>
         <result column="point" property="point"/>
         
         <result column="created_at" property="createdAt" jdbcType="DATE"

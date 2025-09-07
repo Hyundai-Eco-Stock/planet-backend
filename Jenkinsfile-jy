@@ -19,17 +19,6 @@ pipeline {
             }
         }
 
-        stage('Clean Workspace') {
-            steps {
-                deleteDir()  // 모든 파일 삭제
-            }
-        }
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Clean') {
             steps {
                 sh '''

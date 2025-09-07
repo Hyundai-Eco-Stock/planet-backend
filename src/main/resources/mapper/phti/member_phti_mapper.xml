@@ -66,5 +66,21 @@
         PRIMARY_PHTI AS phti
         FROM MEMBER_PHTI
     </select>
+    
+    <select id="selectPhtiResultByMemberId"
+        parameterType="long"
+        resultType="org.phoenix.planet.dto.phti.raw.PhtiResultResponse">
+        SELECT
+        PRIMARY_PHTI AS primaryPhti,
+        PRIMARY_PHTI_CUSTOM_DESCRIPTION AS primaryPhtiCustomDescription,
+        SECONDARY_PHTI AS secondaryPhti,
+        TERTIARY_PHTI AS tertiaryPhti,
+        ECO_CHOICE_RATIO AS ecoChoiceRatio,
+        VALUE_CHOICE_RATIO AS valueChoiceRatio,
+        RAFFLE_CHOICE_RATIO AS raffleChoiceRatio,
+        POINT_CHOICE_RATIO AS pointChoiceRatio
+        FROM MEMBER_PHTI
+        WHERE MEMBER_ID = #{memberId}
+    </select>
 
 </mapper>

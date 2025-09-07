@@ -13,4 +13,6 @@ public interface PhtiService {
     PhtiResultResponse getResult(long memberId, PhtiSurveyAnswer phtiSurveyAnswer);
 
     List<Phti> fetchAllPhtiList();
+
+    PhtiResultResponse fetchMemberPhtiResult(long memberId);
 }

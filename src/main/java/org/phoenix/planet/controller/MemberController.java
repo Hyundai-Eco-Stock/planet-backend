@@ -3,6 +3,7 @@ package org.phoenix.planet.controller;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.car.request.CarRegisterRequest;
 import org.phoenix.planet.dto.car.response.MemberCarResponse;
@@ -15,9 +16,11 @@ import org.phoenix.planet.dto.member.response.MyOrderResponse;
 import org.phoenix.planet.dto.member.response.MyRaffleResponse;
 import org.phoenix.planet.dto.member_card.MemberCardRegisterRequest;
 import org.phoenix.planet.dto.member_card.MemberCardsInfoResponse;
+import org.phoenix.planet.dto.phti.raw.PhtiResultResponse;
 import org.phoenix.planet.service.car.MemberCarService;
 import org.phoenix.planet.service.card.MemberCardService;
 import org.phoenix.planet.service.member.MemberService;
+import org.phoenix.planet.service.phti.PhtiService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/members")
 @RequiredArgsConstructor
@@ -39,6 +43,7 @@ public class MemberController {
     private final MemberService memberService;
     private final MemberCarService memberCarService;
     private final MemberCardService memberCardService;
+    private final PhtiService phtiService;
 
     @GetMapping
     public ResponseEntity<List<MemberListResponse>> searchAllMembers() {
@@ -102,7 +107,7 @@ public class MemberController {
     ) {
 
         List<MyOrderResponse> list = memberService.getMyOrders(memberId);
-        return ResponseEntity.ok(memberService.getMyOrders(memberId));
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/me/eco-deals")
@@ -158,6 +163,15 @@ public class MemberController {
 
         MemberPointWithHistoriesResponse response = memberService.fetchPointHistories(
             loginMemberId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me/phti-result")
+    public ResponseEntity<PhtiResultResponse> fetchMemberPhtiResult(
+        @LoginMemberId long loginMemberId
+    ) {
+
+        PhtiResultResponse response = phtiService.fetchMemberPhtiResult(loginMemberId);
         return ResponseEntity.ok(response);
     }
 }

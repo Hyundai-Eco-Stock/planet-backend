@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.error.ecoStock.EcoStockException;
 import org.phoenix.planet.error.order.OrderException;
@@ -124,10 +125,24 @@ public class GlobalExceptionHandler {
             .body(body);
     }
 
+    @ExceptionHandler(ClientAbortException.class)
+    public ResponseEntity<Map<String, Object>> handleClientAbortException(ClientAbortException e) {
+
+        String errorMessage = "ClientAbortExceptio 에러";
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", e.getClass().getName());
+        body.put("message", errorMessage);
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception e) {
 
-        log.error("몬지모를 에러", e);
+        log.error("뭔지 모를 에러", e);
         String errorMessage = "서버쪽 에러입니다.";
 
         Map<String, Object> body = new HashMap<>();

@@ -80,6 +80,13 @@ public class PhtiServiceImpl implements PhtiService {
         return phtiMapper.selectAll();
     }
 
+    @Override
+    public PhtiResultResponse fetchMemberPhtiResult(long memberId) {
+
+        return memberPhtiMapper.selectPhtiResultByMemberId(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("member id 에 해당하는 PHTI 결과가 없습니다."));
+    }
+
     private PhtiResultResponse parseJsonType(String aiResponse) {
 
         try {

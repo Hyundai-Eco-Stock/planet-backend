@@ -16,12 +16,8 @@
         <result column="address" property="address"/>
         <result column="detail_address" property="detailAddress"/>
         
-        <result column="role" property="role"
-            javaType="org.phoenix.planet.constant.member.Role"
-            typeHandler="org.phoenix.planet.mapper_handler.RoleTypeHandler"/>
-        <result column="sex" property="sex"
-            javaType="org.phoenix.planet.constant.member.Sex"
-            typeHandler="org.phoenix.planet.mapper_handler.SexTypeHandler"/>
+        <result column="role" property="role"/>
+        <result column="sex" property="sex"/>
         <result column="point" property="point"/>
         
         <result column="created_at" property="createdAt" jdbcType="DATE"

@@ -1,4 +1,4 @@
-package org.phoenix.planet.mapper_handler;
+package org.phoenix.planet.configuration.mybatis;
 
 import org.apache.ibatis.type.EnumTypeHandler;
 import org.apache.ibatis.type.MappedTypes;

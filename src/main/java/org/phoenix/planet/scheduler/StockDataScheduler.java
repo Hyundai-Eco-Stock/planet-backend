@@ -68,8 +68,7 @@ public class StockDataScheduler {
             VolumeDto volumeDto = StockChartUtil.convertSingleToVolume(stockData);
 
             if (!chartDataRedisRepository.existOhlcDto(stockId)
-                || !chartDataRedisRepository.existVolumeDto(stockId)
-                || chartDataRedisRepository.checkTimestamp(stockId, ohlcDto)) {
+                || !chartDataRedisRepository.existVolumeDto(stockId)) {
 
                 log.info("Redis 데이터 재초기화 필요 (stockId={})", stockId);
 

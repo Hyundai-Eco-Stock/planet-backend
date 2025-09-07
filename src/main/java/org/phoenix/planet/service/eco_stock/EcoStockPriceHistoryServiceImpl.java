@@ -34,8 +34,7 @@ public class EcoStockPriceHistoryServiceImpl implements EcoStockPriceHistoryServ
         List<VolumeDto> volumeData = chartDataRedisRepository.findAllVolumeData(ecoStockId);
 
         if (ohlcData == null || ohlcData.isEmpty()
-                || volumeData == null || volumeData.isEmpty()
-                || chartDataRedisRepository.checkTimestamp(ecoStockId, ohlcData.getLast())) {
+                || volumeData == null || volumeData.isEmpty()) {
 
             log.info("findAllPrice cache miss !!!!");
 

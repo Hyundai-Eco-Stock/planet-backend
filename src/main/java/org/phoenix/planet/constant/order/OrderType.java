@@ -1,4 +1,4 @@
-package org.phoenix.planet.constant;
+package org.phoenix.planet.constant.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,8 +8,7 @@ import lombok.Getter;
 public enum OrderType {
 
     DELIVERY("일반 배송"),
-    PICKUP("매장 픽업")
-    ;
+    PICKUP("매장 픽업");
 
     private final String value;
 

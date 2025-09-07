@@ -1,8 +1,12 @@
 package org.phoenix.planet.service.raffle;
 
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.constant.RaffleError;
+import org.phoenix.planet.constant.error.RaffleError;
 import org.phoenix.planet.dto.raffle.RaffleDetailResponse;
 import org.phoenix.planet.dto.raffle.RaffleResponse;
 import org.phoenix.planet.dto.raffle.raw.RaffleHistory;
@@ -17,11 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.security.SecureRandom;
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -35,17 +34,20 @@ public class RaffleServiceImpl implements RaffleService {
 
     @Override
     public List<RaffleResponse> findAll() {
+
         return raffleMapper.findAll();
     }
 
     @Override
     public RaffleDetailResponse findDetailById(Long raffleId) {
+
         return raffleMapper.findDetailById(raffleId);
     }
 
     @Override
     public RaffleEntryStatus checkRaffleEntry(Long memberId, Long raffleId) {
-        boolean result =  raffleHistoryMapper.checkRaffleEntry(memberId,raffleId);
+
+        boolean result = raffleHistoryMapper.checkRaffleEntry(memberId, raffleId);
         return new RaffleEntryStatus(result);
     }
 
@@ -56,10 +58,10 @@ public class RaffleServiceImpl implements RaffleService {
             log.info("래플 참여 시작 - raffleId: {}, memberId: {}", raffleId, memberId);
 
             ParticipateRaffleResponse response =
-                    ParticipateRaffleResponse.builder()
-                            .memberId(memberId)
-                            .raffleId(raffleId)
-                            .build();
+                ParticipateRaffleResponse.builder()
+                    .memberId(memberId)
+                    .raffleId(raffleId)
+                    .build();
 
             raffleMapper.callParticipateRaffleProcedure(response);
 
@@ -73,7 +75,8 @@ public class RaffleServiceImpl implements RaffleService {
             return response;
         } catch (RaffleException e) {
 
-            log.warn("래플 참여 실패 - raffleId: {}, memberId: {}, error: {}", raffleId, memberId, e.getMessage());
+            log.warn("래플 참여 실패 - raffleId: {}, memberId: {}, error: {}", raffleId, memberId,
+                e.getMessage());
 
             throw e; // 이미 정의된 예외는 재전파
 
@@ -116,7 +119,8 @@ public class RaffleServiceImpl implements RaffleService {
     public List<WinnerInfo> raffleWinningProcess(LocalDate yesterday) {
 
         //래플 당철 처리 할 데이터 조회 및 지원자 조회
-        List<RaffleHistoryWithDetail> raffleHistories = raffleHistoryService.findEndedYesterday(yesterday);
+        List<RaffleHistoryWithDetail> raffleHistories = raffleHistoryService.findEndedYesterday(
+            yesterday);
 
         if (raffleHistories.isEmpty()) {
             return Collections.emptyList();
@@ -134,8 +138,8 @@ public class RaffleServiceImpl implements RaffleService {
     private void processRaffleUpdate(List<RaffleHistoryWithDetail> raffleHistories) {
 
         List<Long> raffleIds = raffleHistories.stream()
-                .map(RaffleHistoryWithDetail::getRaffleId)
-                .toList();
+            .map(RaffleHistoryWithDetail::getRaffleId)
+            .toList();
 
         raffleMapper.bulkUpdateRaffleUpdatedAt(raffleIds);
     }
@@ -155,9 +159,9 @@ public class RaffleServiceImpl implements RaffleService {
     private List<WinnerInfo> drawRaffleWinners(List<RaffleHistoryWithDetail> raffleHistories) {
 
         return raffleHistories.stream()
-                .filter(r -> !CollectionUtils.isEmpty(r.getRaffleHistories())) // 지원자 있는 것만
-                .map(this::pickRandomWinner)
-                .toList();
+            .filter(r -> !CollectionUtils.isEmpty(r.getRaffleHistories())) // 지원자 있는 것만
+            .map(this::pickRandomWinner)
+            .toList();
     }
 
     private WinnerInfo pickRandomWinner(RaffleHistoryWithDetail raffle) {
@@ -167,9 +171,9 @@ public class RaffleServiceImpl implements RaffleService {
         RaffleHistory winner = applicants.get(secureRandom.nextInt(applicants.size()));
 
         return WinnerInfo.builder()
-                .raffleHistoryId(winner.getRaffleHistoryId())
-                .memberId(winner.getMemberId())
-                .raffleName(raffle.getRaffleName())
-                .build();
+            .raffleHistoryId(winner.getRaffleHistoryId())
+            .memberId(winner.getMemberId())
+            .raffleName(raffle.getRaffleName())
+            .build();
     }
 }

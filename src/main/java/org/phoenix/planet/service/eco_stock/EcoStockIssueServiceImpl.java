@@ -1,9 +1,10 @@
 package org.phoenix.planet.service.eco_stock;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.constant.OrderError;
+import org.phoenix.planet.constant.error.OrderError;
 import org.phoenix.planet.dto.eco_stock.raw.MemberStockInfo;
 import org.phoenix.planet.dto.eco_stock.raw.StockData;
 import org.phoenix.planet.dto.order.raw.OrderConfirmResult;
@@ -18,8 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -31,7 +30,7 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
     private final MemberStockInfoMapper memberStockInfoMapper;
     private final MemberStockInfoService memberStockInfoService;
     private final MemberDeviceTokenService memberDeviceTokenService;
-  
+
     // 스톡 종류별 ID 상수
     private static final Long ECO_PRODUCT_STOCK_ID = 2L;  // 친환경 상품 스톡
     private static final Long DONATION_STOCK_ID = 6L;     // 기부 스톡
@@ -79,8 +78,11 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public EcoStockIssueResponse issueEcoStock(OrderConfirmResult orderConfirmResult, Long memberId) {
-        log.info("구매 확정 에코스톡 발급 - orderHistoryId : {}, memberId : {}", orderConfirmResult.orderHistoryId(), memberId);
+    public EcoStockIssueResponse issueEcoStock(OrderConfirmResult orderConfirmResult,
+        Long memberId) {
+
+        log.info("구매 확정 에코스톡 발급 - orderHistoryId : {}, memberId : {}",
+            orderConfirmResult.orderHistoryId(), memberId);
 
         int totalIssuedCount = 0;
         int totalStockValue = 0;
@@ -106,31 +108,38 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
 
             // 친환경 상품 스톡 발급 (무조건 1주)
             // 현재 친환경 스톡 보유량 조회
-            MemberStockInfo ecoProductStock = memberStockInfoMapper.findPersonalStockInfoById(memberId, ECO_PRODUCT_STOCK_ID);
+            MemberStockInfo ecoProductStock = memberStockInfoMapper.findPersonalStockInfoById(
+                memberId, ECO_PRODUCT_STOCK_ID);
 
             // stock_issue에 발급 기록 저장
             ecoStockIssueMapper.insert(memberId, ECO_PRODUCT_STOCK_ID);
 
             // MEMBER_STOCK_INFO 업데이트
             if (ecoProductStock.memberStockInfoId() == null) {
-                memberStockInfoMapper.insertMemberStockInfo(memberId, ECO_PRODUCT_STOCK_ID, 1, ecoProductPrice.getStockPrice().intValue());
+                memberStockInfoMapper.insertMemberStockInfo(memberId, ECO_PRODUCT_STOCK_ID, 1,
+                    ecoProductPrice.getStockPrice().intValue());
             } else {
                 int newQuantity = ecoProductStock.currentTotalQuantity() + 1;
-                long newAmount = ecoProductStock.currentTotalAmount() + ecoProductPrice.getStockPrice();
-                memberStockInfoMapper.updateMemberStockInfo(ecoProductStock.memberStockInfoId(), newQuantity, newAmount);
+                long newAmount =
+                    ecoProductStock.currentTotalAmount() + ecoProductPrice.getStockPrice();
+                memberStockInfoMapper.updateMemberStockInfo(ecoProductStock.memberStockInfoId(),
+                    newQuantity, newAmount);
             }
 
             totalIssuedCount++;
             totalStockValue = totalStockValue + ecoProductPrice.getStockPrice().intValue();
-            log.info("친환경 상품 스톡 발급 완료 - memberId: {}, stockPrice: {}", memberId, ecoProductPrice.getStockPrice());
+            log.info("친환경 상품 스톡 발급 완료 - memberId: {}, stockPrice: {}", memberId,
+                ecoProductPrice.getStockPrice());
 
             // 기부 스톡 발급 (기부금이 있는 경우만)
-            if (orderConfirmResult.donationPrice() != null && orderConfirmResult.donationPrice() > 0) {
+            if (orderConfirmResult.donationPrice() != null
+                && orderConfirmResult.donationPrice() > 0) {
                 if (donationPrice == null) {
                     log.warn("기부 스톡 가격 정보를 찾을 수 없습니다. 기부 스톡 발급을 건너뜁니다.");
                 } else {
                     // 현재 기부 스톡 보유량 조회
-                    MemberStockInfo donationStock = memberStockInfoMapper.findPersonalStockInfoById(memberId, DONATION_STOCK_ID);
+                    MemberStockInfo donationStock = memberStockInfoMapper.findPersonalStockInfoById(
+                        memberId, DONATION_STOCK_ID);
 
                     // stock_issue에 발급 기록 저장
                     ecoStockIssueMapper.insert(memberId, DONATION_STOCK_ID);
@@ -138,28 +147,35 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
                     // MEMBER_STOCK_INFO 업데이트
                     if (donationStock.memberStockInfoId() == null) {
                         // 신규 생성
-                        memberStockInfoMapper.insertMemberStockInfo(memberId, DONATION_STOCK_ID, 1, donationPrice.getStockPrice().intValue());
+                        memberStockInfoMapper.insertMemberStockInfo(memberId, DONATION_STOCK_ID, 1,
+                            donationPrice.getStockPrice().intValue());
                     } else {
                         // 기존 업데이트
                         int newQuantity = donationStock.currentTotalQuantity() + 1;
-                        long newAmount = donationStock.currentTotalAmount() + donationPrice.getStockPrice();
-                        memberStockInfoMapper.updateMemberStockInfo(donationStock.memberStockInfoId(), newQuantity, newAmount);
+                        long newAmount =
+                            donationStock.currentTotalAmount() + donationPrice.getStockPrice();
+                        memberStockInfoMapper.updateMemberStockInfo(
+                            donationStock.memberStockInfoId(), newQuantity, newAmount);
                     }
 
                     totalIssuedCount++;
                     totalStockValue += donationPrice.getStockPrice().intValue();
                     log.info("기부 스톡 발급 완료 - memberId: {}, donationAmount: {}, stockPrice: {}",
-                        memberId, orderConfirmResult.donationPrice(), donationPrice.getStockPrice());
+                        memberId, orderConfirmResult.donationPrice(),
+                        donationPrice.getStockPrice());
                 }
             }
         } catch (Exception e) {
-            log.error("에코스톡 발급 실패 - orderHistoryId: {}, memberId: {}", orderConfirmResult.orderHistoryId(), memberId, e);
+            log.error("에코스톡 발급 실패 - orderHistoryId: {}, memberId: {}",
+                orderConfirmResult.orderHistoryId(), memberId, e);
             throw new OrderException(OrderError.ECOSTOCK_ISSUE_FAILED);
         }
 
         // 발급 후 총 보유량 조회 (친환경 + 기부 스톡 합계)
-        MemberStockInfo finalEcoStock = memberStockInfoMapper.findPersonalStockInfoById(memberId, ECO_PRODUCT_STOCK_ID);
-        MemberStockInfo finalDonationStock = memberStockInfoMapper.findPersonalStockInfoById(memberId, DONATION_STOCK_ID);
+        MemberStockInfo finalEcoStock = memberStockInfoMapper.findPersonalStockInfoById(memberId,
+            ECO_PRODUCT_STOCK_ID);
+        MemberStockInfo finalDonationStock = memberStockInfoMapper.findPersonalStockInfoById(
+            memberId, DONATION_STOCK_ID);
 
         int newTotalStockCount = 0;
         int newTotalPurchaseAmount = 0;

@@ -2,7 +2,7 @@ package org.phoenix.planet.error.auth;
 
 
 import lombok.Getter;
-import org.phoenix.planet.constant.AuthenticationError;
+import org.phoenix.planet.constant.auth.AuthenticationError;
 import org.springframework.security.core.AuthenticationException;
 
 @Getter

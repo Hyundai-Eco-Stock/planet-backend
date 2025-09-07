@@ -3,7 +3,7 @@ package org.phoenix.planet.configuration.kafka;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.phoenix.planet.constant.KafkaTopic;
+import org.phoenix.planet.constant.kafka.KafkaTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

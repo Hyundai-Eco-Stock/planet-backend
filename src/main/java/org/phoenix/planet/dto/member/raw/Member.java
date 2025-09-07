@@ -6,8 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.phoenix.planet.constant.Role;
-import org.phoenix.planet.constant.Sex;
+import org.phoenix.planet.constant.member.Role;
+import org.phoenix.planet.constant.member.Sex;
 
 @Getter
 @Builder

@@ -1,4 +1,4 @@
-package org.phoenix.planet.constant;
+package org.phoenix.planet.constant.payment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -22,6 +22,7 @@ public enum PaymentMethod {
      */
     @JsonCreator
     public static PaymentMethod fromKoreanName(String koreanName) {
+
         if (koreanName == null || koreanName.trim().isEmpty()) {
             throw new PaymentException(PaymentError.INVALID_PAYMENT_METHOD);
         }
@@ -39,6 +40,7 @@ public enum PaymentMethod {
      * 영문 코드로 enum 찾기
      */
     public static PaymentMethod fromEnglishCode(String englishCode) {
+
         if (englishCode == null || englishCode.trim().isEmpty()) {
             throw new PaymentException(PaymentError.INVALID_PAYMENT_METHOD);
         }
@@ -57,6 +59,7 @@ public enum PaymentMethod {
      */
     @JsonValue
     public String toJsonValue() {
+
         return this.englishCode;
     }
 
@@ -64,6 +67,7 @@ public enum PaymentMethod {
      * 한글명 반환 (화면 표시용)
      */
     public String getDisplayName() {
+
         return this.koreanName;
     }
 }

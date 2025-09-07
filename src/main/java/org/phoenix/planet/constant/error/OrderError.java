@@ -1,4 +1,4 @@
-package org.phoenix.planet.constant;
+package org.phoenix.planet.constant.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,8 @@ public enum OrderError {
     MIXED_ORDER_TYPE(HttpStatus.BAD_REQUEST, "픽업과 일반배송은 동시 주문할 수 없습니다. 따로 주문해주세요."),
     PICKUP_STORE_REQUIRED(HttpStatus.BAD_REQUEST, "픽업 주문 시 매장 선택은 필수입니다."),
     DELIVERY_STORE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "일반배송 주문에는 매장을 선택할 수 없습니다."),
-    DIFFERENT_PICKUP_STORES_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "서로 다른 매장의 상품은 함께 주문할 수 없습니다. 매장별로 따로 주문해주세요."),
+    DIFFERENT_PICKUP_STORES_NOT_ALLOWED(HttpStatus.BAD_REQUEST,
+        "서로 다른 매장의 상품은 함께 주문할 수 없습니다. 매장별로 따로 주문해주세요."),
 
     // 상품 관련 에러
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다."),

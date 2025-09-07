@@ -1,4 +1,4 @@
-package org.phoenix.planet.constant;
+package org.phoenix.planet.constant.kafka;
 
 import lombok.AllArgsConstructor;
 import org.phoenix.planet.event.EcoCarEnterEvent;

@@ -1,8 +1,10 @@
 package org.phoenix.planet.service.order;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.phoenix.planet.constant.OrderError;
-import org.phoenix.planet.constant.OrderType;
+import org.phoenix.planet.constant.error.OrderError;
+import org.phoenix.planet.constant.order.OrderType;
 import org.phoenix.planet.dto.order.raw.OrderValidationProduct;
 import org.phoenix.planet.dto.order.raw.OrderValidationResult;
 import org.phoenix.planet.dto.order.request.OrderProductRequest;
@@ -13,9 +15,6 @@ import org.phoenix.planet.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -25,7 +24,9 @@ public class OrderValidationServiceImpl implements OrderValidationService {
     private final DepartmentStoreProductMapper departmentStoreProductMapper;
 
     @Override
-    public OrderValidationResult validateAndCalculate(List<OrderProductRequest> products, Long departmentStoreId) {
+    public OrderValidationResult validateAndCalculate(List<OrderProductRequest> products,
+        Long departmentStoreId) {
+
         List<OrderValidationProduct> validatedItems = new ArrayList<>();
         Long totalAmount = 0L;
 
@@ -38,7 +39,8 @@ public class OrderValidationServiceImpl implements OrderValidationService {
         return new OrderValidationResult(validatedItems, totalAmount);
     }
 
-    private OrderValidationProduct validateSingleProduct(OrderProductRequest productRequest, Long departmentStoreId) {
+    private OrderValidationProduct validateSingleProduct(OrderProductRequest productRequest,
+        Long departmentStoreId) {
         // 상품 존재 여부 확인
         Product product = productMapper.findById(productRequest.productId());
 
@@ -82,17 +84,18 @@ public class OrderValidationServiceImpl implements OrderValidationService {
         Long totalPrice = unitPrice * productRequest.quantity();
 
         return new OrderValidationProduct(
-                productRequest.productId(),
-                productRequest.quantity(),
-                unitPrice,
-                totalPrice,
-                product.getName()
+            productRequest.productId(),
+            productRequest.quantity(),
+            unitPrice,
+            totalPrice,
+            product.getName()
         );
     }
 
     private void validateProductAvailableAtStore(Long productId, Long departmentStoreId) {
+
         boolean isAvailable = departmentStoreProductMapper
-                .existsByProductIdAndDepartmentStoreId(productId, departmentStoreId);
+            .existsByProductIdAndDepartmentStoreId(productId, departmentStoreId);
 
         if (!isAvailable) {
             throw new OrderException(OrderError.PRODUCT_NOT_AVAILABLE);

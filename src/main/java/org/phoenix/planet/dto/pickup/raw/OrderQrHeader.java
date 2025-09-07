@@ -1,6 +1,6 @@
 package org.phoenix.planet.dto.pickup.raw;
 
-import org.phoenix.planet.constant.OrderStatus;
+import org.phoenix.planet.constant.order.OrderStatus;
 
 public record OrderQrHeader(
     Long orderId,

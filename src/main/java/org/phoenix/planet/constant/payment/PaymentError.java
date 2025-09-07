@@ -1,4 +1,4 @@
-package org.phoenix.planet.constant;
+package org.phoenix.planet.constant.payment;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

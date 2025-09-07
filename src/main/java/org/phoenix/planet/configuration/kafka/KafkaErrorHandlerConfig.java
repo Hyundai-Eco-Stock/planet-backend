@@ -1,7 +1,7 @@
 package org.phoenix.planet.configuration.kafka;
 
 import org.apache.kafka.common.TopicPartition;
-import org.phoenix.planet.constant.KafkaTopic;
+import org.phoenix.planet.constant.kafka.KafkaTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaTemplate;

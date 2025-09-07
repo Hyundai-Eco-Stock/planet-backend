@@ -1,19 +1,18 @@
 package org.phoenix.planet.service.eco_stock;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.constant.EcoStockError;
-import org.phoenix.planet.constant.SellStockErrorCode;
+import org.phoenix.planet.constant.error.EcoStockError;
+import org.phoenix.planet.constant.error.SellStockErrorCode;
 import org.phoenix.planet.dto.eco_stock.raw.EcoStock;
 import org.phoenix.planet.dto.eco_stock.raw.EcoStockUpdatePriceRecord;
 import org.phoenix.planet.dto.eco_stock.request.SellStockRequest;
 import org.phoenix.planet.error.ecoStock.EcoStockException;
 import org.phoenix.planet.mapper.EcoStockMapper;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -27,13 +26,16 @@ public class EcoStockServiceImpl implements EcoStockService {
 
         return ecoStockMapper.selectById(ecoStockId);
     }
+
     @Override
     public List<EcoStock> findAll() {
+
         return ecoStockMapper.findAll();
     }
 
     @Override
     public void updateQuantityById(Long stockId, int updateQuantity) {
+
         ecoStockMapper.updateQuantityById(stockId, updateQuantity);
     }
 
@@ -60,9 +62,9 @@ public class EcoStockServiceImpl implements EcoStockService {
         if (successCode == null || successCode != 1) {
 
             EcoStockError error = Optional.ofNullable(successCode)
-                    .filter(code -> code < 0)
-                    .map(SellStockErrorCode::getEcoStockError)
-                    .orElse(EcoStockError.INTERNAL_SERVER_ERROR);
+                .filter(code -> code < 0)
+                .map(SellStockErrorCode::getEcoStockError)
+                .orElse(EcoStockError.INTERNAL_SERVER_ERROR);
 
             throw new EcoStockException(error);
         }

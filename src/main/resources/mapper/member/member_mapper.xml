@@ -17,10 +17,10 @@
         <result column="detail_address" property="detailAddress"/>
         
         <result column="role" property="role"
-            javaType="org.phoenix.planet.constant.Role"
+            javaType="org.phoenix.planet.constant.member.Role"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
         <result column="sex" property="sex"
-            javaType="org.phoenix.planet.constant.Sex"
+            javaType="org.phoenix.planet.constant.member.Sex"
             typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
         <result column="point" property="point"/>
         

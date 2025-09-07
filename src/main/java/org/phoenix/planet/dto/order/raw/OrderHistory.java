@@ -1,12 +1,11 @@
 package org.phoenix.planet.dto.order.raw;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.phoenix.planet.constant.OrderStatus;
-
-import java.time.LocalDateTime;
+import org.phoenix.planet.constant.order.OrderStatus;
 
 @Builder
 @Getter

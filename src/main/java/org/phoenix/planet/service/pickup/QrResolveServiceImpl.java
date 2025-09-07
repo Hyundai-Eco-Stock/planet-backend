@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.constant.OrderError;
-import org.phoenix.planet.constant.OrderStatus;
+import org.phoenix.planet.constant.error.OrderError;
+import org.phoenix.planet.constant.order.OrderStatus;
 import org.phoenix.planet.dto.order.raw.OrderConfirmResult;
 import org.phoenix.planet.dto.pickup.raw.OrderQrHeader;
 import org.phoenix.planet.dto.pickup.raw.OrderQrInfo;
@@ -60,7 +60,8 @@ public class QrResolveServiceImpl implements QrResolveService {
             throw new OrderException(OrderError.ORDER_ALREADY_COMPLETED);
         }
 
-        int updatedRows = orderHistoryMapper.updateOrderStatus(orderHistoryId, OrderStatus.COMPLETED, LocalDateTime.now());
+        int updatedRows = orderHistoryMapper.updateOrderStatus(orderHistoryId,
+            OrderStatus.COMPLETED, LocalDateTime.now());
         if (updatedRows == 0) {
             throw new OrderException(OrderError.ORDER_STATUS_UPDATE_FAILED);
         }

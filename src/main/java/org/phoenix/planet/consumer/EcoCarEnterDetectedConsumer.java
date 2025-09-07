@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.phoenix.planet.constant.KafkaTopic;
+import org.phoenix.planet.constant.kafka.KafkaTopic;
 import org.phoenix.planet.dto.car.response.MemberCarResponse;
 import org.phoenix.planet.event.EcoCarEnterEvent;
 import org.phoenix.planet.service.car.MemberCarService;
@@ -39,7 +39,7 @@ public class EcoCarEnterDetectedConsumer {
 
     @Transactional
     @KafkaListener(
-        topics = "#{T(org.phoenix.planet.constant.KafkaTopic).ECO_CAR_ENTER_DETECTED.getTopicName()}"
+        topics = "#{T(org.phoenix.planet.constant.kafka.KafkaTopic).ECO_CAR_ENTER_DETECTED.getTopicName()}"
     )
     public void onMessage(String message) throws JsonProcessingException {
 

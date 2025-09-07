@@ -2,7 +2,7 @@ package org.phoenix.planet.service.member;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.phoenix.planet.constant.Role;
+import org.phoenix.planet.constant.member.Role;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.request.KakaoSignUpRequest;
 import org.phoenix.planet.dto.member.request.LocalSignUpRequest;

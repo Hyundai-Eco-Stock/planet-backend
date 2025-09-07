@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.phoenix.planet.constant.KafkaTopic;
+import org.phoenix.planet.constant.kafka.KafkaTopic;
 import org.phoenix.planet.event.PayEvent;
 import org.phoenix.planet.service.card.MemberCardService;
 import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
@@ -26,7 +26,7 @@ public class OfflinePayDetectedConsumer {
 
     @Transactional
     @KafkaListener(
-        topics = "#{T(org.phoenix.planet.constant.KafkaTopic).OFFLINE_PAY_DETECTED.getTopicName()}"
+        topics = "#{T(org.phoenix.planet.constant.kafka.KafkaTopic).OFFLINE_PAY_DETECTED.getTopicName()}"
     )
     public void onMessage(String message) throws JsonProcessingException {
 

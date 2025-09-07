@@ -5,16 +5,6 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.constant.PaymentError;
-import org.phoenix.planet.error.payment.PaymentException;
-import org.phoenix.planet.util.file.CloudFrontFileUtil;
-import org.phoenix.planet.util.file.S3FileUtil;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,6 +13,15 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import javax.imageio.ImageIO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.constant.payment.PaymentError;
+import org.phoenix.planet.error.payment.PaymentException;
+import org.phoenix.planet.util.file.CloudFrontFileUtil;
+import org.phoenix.planet.util.file.S3FileUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -49,6 +48,7 @@ public class QrCodeServiceImpl implements QrCodeService {
      */
     @Override
     public String generatePickupQRCode(Long orderHistoryId) {
+
         try {
             log.info("픽업 QR 코드 생성 시작: orderHistoryId={}", orderHistoryId);
 
@@ -80,6 +80,7 @@ public class QrCodeServiceImpl implements QrCodeService {
      */
     @Override
     public boolean validateQRCode(String qrCodeData) {
+
         try {
             if (qrCodeData == null || qrCodeData.trim().isEmpty()) {
                 return false;
@@ -95,7 +96,8 @@ public class QrCodeServiceImpl implements QrCodeService {
             }
 
             // 해시 검증
-            String originalData = String.format("%s:%s:%s:%s", parts[0], parts[1], parts[2], parts[3]);
+            String originalData = String.format("%s:%s:%s:%s", parts[0], parts[1], parts[2],
+                parts[3]);
             String expectedHash = generateSecureHash(originalData);
 
             return expectedHash.equals(parts[5]);
@@ -110,12 +112,14 @@ public class QrCodeServiceImpl implements QrCodeService {
      * QR 코드 데이터 생성
      */
     private String generateQRData(Long orderHistoryId) {
+
         String payload = buildPayload(orderHistoryId);
         String encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes());
         return qrBaseUrl + "?d=" + encoded;
     }
 
     private String buildPayload(Long orderHistoryId) {
+
         String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String plain = String.format("v1|ORDER_ID|%d|TIME|%s", orderHistoryId, ts);
         String sig = hmacSha256Base64Url(plain, qrSecretKey);
@@ -138,8 +142,10 @@ public class QrCodeServiceImpl implements QrCodeService {
      * QR 코드 이미지 생성
      */
     private BufferedImage generateQRCodeImage(String qrData) throws WriterException {
+
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(qrData, BarcodeFormat.QR_CODE, QR_CODE_SIZE, QR_CODE_SIZE);
+        BitMatrix bitMatrix = qrCodeWriter.encode(qrData, BarcodeFormat.QR_CODE, QR_CODE_SIZE,
+            QR_CODE_SIZE);
         return MatrixToImageWriter.toBufferedImage(bitMatrix);
     }
 
@@ -147,6 +153,7 @@ public class QrCodeServiceImpl implements QrCodeService {
      * 이미지를 바이트 배열로 변환
      */
     private byte[] imageToBytes(BufferedImage image) throws IOException {
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, QR_CODE_FORMAT, baos);
         return baos.toByteArray();
@@ -156,9 +163,12 @@ public class QrCodeServiceImpl implements QrCodeService {
      * 기존 S3FileUtil을 사용해서 QR 코드 업로드
      */
     private String uploadQRCodeToS3(byte[] imageBytes, Long orderHistoryId) {
+
         try {
             String qrPath = "qr-codes/" + orderHistoryId + "/";
-            String filename = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + "_qr.png";
+            String filename =
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                    + "_qr.png";
             String fullFilePath = qrPath + filename;
 
             // S3FileUtil의 uploadBytes 메서드가 있다면 사용
@@ -176,6 +186,7 @@ public class QrCodeServiceImpl implements QrCodeService {
      * 보안 해시 생성 (QR 코드 위변조 방지)
      */
     private String generateSecureHash(String data) {
+
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             String saltedData = data + qrSecretKey;

@@ -1,4 +1,4 @@
-package org.phoenix.planet.constant;
+package org.phoenix.planet.constant.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

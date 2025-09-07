@@ -3,7 +3,7 @@ package org.phoenix.planet.configuration.kafka;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.constant.KafkaTopic;
+import org.phoenix.planet.constant.kafka.KafkaTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

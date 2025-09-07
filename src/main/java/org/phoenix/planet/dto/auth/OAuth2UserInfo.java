@@ -2,8 +2,8 @@ package org.phoenix.planet.dto.auth;
 
 import java.util.Map;
 import lombok.Builder;
-import org.phoenix.planet.constant.AuthenticationError;
-import org.phoenix.planet.constant.Role;
+import org.phoenix.planet.constant.auth.AuthenticationError;
+import org.phoenix.planet.constant.member.Role;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.error.auth.AuthException;
 

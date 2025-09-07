@@ -1,7 +1,7 @@
 package org.phoenix.planet.error.auth;
 
 import lombok.Getter;
-import org.phoenix.planet.constant.AuthenticationError;
+import org.phoenix.planet.constant.auth.AuthenticationError;
 
 @Getter
 public class AuthException extends RuntimeException {

@@ -1,4 +1,4 @@
-package org.phoenix.planet.constant;
+package org.phoenix.planet.constant.payment;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,8 +13,7 @@ public enum PaymentStatus {
     CANCELED("결제 취소"),
     PARTIAL_CANCELED("부분 취소"),
     ABORTED("결제 실패"),
-    EXPIRED("결제 만료")
-    ;
+    EXPIRED("결제 만료");
 
     private final String value;
 

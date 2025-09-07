@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.phoenix.planet.constant.Sex;
+import org.phoenix.planet.constant.member.Sex;
 import org.phoenix.planet.dto.member.raw.Member;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
 import org.phoenix.planet.dto.member.response.MemberPointWithHistoriesResponse;

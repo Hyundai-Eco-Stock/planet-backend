@@ -1,4 +1,4 @@
-package org.phoenix.planet.constant;
+package org.phoenix.planet.constant.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,8 +13,7 @@ public enum OrderStatus {
     COMPLETED("픽업 완료"),
     ALL_CANCELLED("전체 취소"),
     PARTIAL_CANCELLED("부분 취소"),
-    DONE("구매 확정")
-    ;
+    DONE("구매 확정");
 
     private final String value;
 

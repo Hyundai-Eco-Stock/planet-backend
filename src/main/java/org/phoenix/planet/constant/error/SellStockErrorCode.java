@@ -1,4 +1,4 @@
-package org.phoenix.planet.constant;
+package org.phoenix.planet.constant.error;
 
 public enum SellStockErrorCode {
     STOCK_PRICE_HISTORY_NOT_FOUND(-1, EcoStockError.STOCK_PRICE_HISTORY_NOT_FOUND),
@@ -10,11 +10,13 @@ public enum SellStockErrorCode {
     private final EcoStockError ecoStockError;
 
     SellStockErrorCode(int errorCode, EcoStockError ecoStockError) {
+
         this.errorCode = errorCode;
         this.ecoStockError = ecoStockError;
     }
 
     public static EcoStockError getEcoStockError(int errorCode) {
+
         for (SellStockErrorCode sellErrorCode : values()) {
             if (sellErrorCode.errorCode == errorCode) {
                 return sellErrorCode.ecoStockError;

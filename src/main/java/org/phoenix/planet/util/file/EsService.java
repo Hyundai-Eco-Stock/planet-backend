@@ -37,6 +37,7 @@ public class EsService {
     @Value("${spring.elasticsearch.password}")
     private String password;
 
+    // 유사 상품 추천
     private static final String searchSimilarIdsQuery = """
             {
               "_source": ["productId","productName","brandName","categoryName","categoryId","imageUrl"],
@@ -68,6 +69,7 @@ public class EsService {
             }
             """;
 
+    // 검색 오타 보정
     private static final String searchMltMatchAllQuery = """
             {
               "size": %d,
@@ -78,13 +80,35 @@ public class EsService {
                   "must": { "match_all": {} },
                   "should": [
                     { "term": { "productName.keyword": { "value": %s, "boost": 8 } } },
-                    { "match_phrase": { "productName": { "query": %s, "boost": 5 } } },
-                    { "match": { "productName": { "query": %s, "operator": "AND", "minimum_should_match": "100%%", "boost": 3 } } },
-                    { "multi_match": { "query": %s, "fields": ["productName^2","brandName"], "fuzziness": "AUTO", "boost": 1 } },
-                    { "match_phrase_prefix": { "productName": { "query": %s, "max_expansions": 50, "boost": 1 } } }
-                  ]
+                    { "match_phrase": { "productName": { "query": %s, "slop": 1, "boost": 5 } } },
+                    { "match": { "productName": { "query": %s, "operator": "OR", "minimum_should_match": "60%%", "fuzziness": "AUTO", "fuzzy_transpositions": true, "prefix_length": 0, "max_expansions": 50, "lenient": true } } },
+                    { "multi_match": { "query": %s, "type": "best_fields", "fields": ["productName^3","brandName^1.5","categoryName"], "operator": "OR", "minimum_should_match": "70%%", "fuzziness": "AUTO", "fuzzy_transpositions": true, "prefix_length": 1, "max_expansions": 50, "lenient": true, "auto_generate_synonyms_phrase_query": true } },
+                    { "match_phrase_prefix": { "productName": { "query": %s, "max_expansions": 50, "boost": 1 } } },
+                    { "fuzzy": { "productName": { "value": %s, "fuzziness": 2, "max_expansions": 100, "prefix_length": 0, "transpositions": true, "boost": 4 } } },
+                    { "match_bool_prefix": { "productName": { "query": %s, "boost": 2 } } },
+                    { "more_like_this": { "fields": ["productName","brandName"], "like": [ %s ], "min_term_freq": 1, "min_doc_freq": 1, "max_query_terms": 50 } }
+                  ],
+                  "minimum_should_match": 1
                 }
               },
+              "rescore": [
+                {
+                  "window_size": 200,
+                  "query": {
+                    "rescore_query": {
+                      "more_like_this": {
+                        "fields": ["productName","brandName"],
+                        "like": [ %s ],
+                        "min_term_freq": 1,
+                        "min_doc_freq": 1,
+                        "max_query_terms": 50
+                      }
+                    },
+                    "query_weight": 0.2,
+                    "rescore_query_weight": 2.0
+                  }
+                }
+              ],
               "sort": ["_score"]
             }
             """;
@@ -145,11 +169,15 @@ public class EsService {
         String body = String.format(searchMltMatchAllQuery,
                 k,
                 catTerm,
-                safeJson(likeText),
-                safeJson(likeText),
-                safeJson(likeText),
-                safeJson(likeText),
-                safeJson(likeText)
+                safeJson(likeText),  // term exact boost
+                safeJson(likeText),  // match_phrase
+                safeJson(likeText),  // match (fuzzy)
+                safeJson(likeText),  // multi_match (fuzzy)
+                safeJson(likeText),  // match_phrase_prefix
+                safeJson(likeText),  // fuzzy query
+                safeJson(likeText),  // match_bool_prefix
+                safeJson(likeText),  // MLT (should)
+                safeJson(likeText)   // MLT (rescore)
         );
 
         try {

@@ -26,7 +26,9 @@ public class EsService {
     @Value("${spring.elasticsearch.uris}")
     private String baseUrl;
 
-    private String index = "planet_product_v3";
+    // 인덱스 분리: knn(유사상품) / 검색(오타보정)
+    private String knnIndex = "planet_product_v4";
+    private String searchIndex = "planet_product_csv_3_pn_001";
 
     @Value("${es.default-size:20}")
     private int defaultSize;
@@ -42,30 +44,19 @@ public class EsService {
             {
               "_source": ["productId","productName","brandName","categoryName","categoryId","imageUrl"],
               "size": %d,
+              "knn": {
+                "field": "productVector",
+                "query_vector": %s,
+                "k": %d,
+                "num_candidates": 400,
+                "filter": { "term": { "categoryId": %s } }
+              },
               "query": {
                 "bool": {
-                  "filter": [ { "term": { "categoryId": %s } } ],
                   "must_not": [ { "term": { "productId": %s } } ]
                 }
               },
-              "rescore": [
-                {
-                  "window_size": 200,
-                  "query": {
-                    "rescore_query": {
-                      "more_like_this": {
-                        "fields": ["productName"],
-                        "like": [ { "_index": %s, "_id": %s } ],
-                        "min_term_freq": 1,
-                        "min_doc_freq": 1,
-                        "max_query_terms": 50
-                      }
-                    },
-                    "query_weight": 0.2,
-                    "rescore_query_weight": 2.0
-                  }
-                }
-              ]
+              "sort": ["_score"]
             }
             """;
 
@@ -117,24 +108,81 @@ public class EsService {
     public List<String> searchSimilarIds(String anchorName, String anchorCategoryId,
             String anchorId, Integer size) {
         int k = (size == null || size <= 0) ? defaultSize : size;
+        String idx = this.knnIndex;
 
-        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_csv_3_pn_001"
-                : this.index;
+        if (k < 7) {
+            k = 7; // 최소 7개 보장
+        }
 
-        String query = String.format(searchSimilarIdsQuery,
-                k,
-                safeJson(anchorCategoryId),
-                safeJson(anchorId),
-                safeJson(idx),
-                safeJson(anchorId)
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String auth = java.util.Base64.getEncoder()
+                .encodeToString((username + ":" + password).getBytes());
+        headers.set("Authorization", "Basic " + auth);
+
+        // 1) 앵커 문서에서 productVector 가져오기 (ES 8.11.x: query_vector_builder.indexed 미지원)
+        JsonNode vecArr = null;
+
+        // 1) 우선 ES 문서 _id로 직접 조회 (성공 시 바로 사용)
+        try {
+            String getUrl =
+                    baseUrl + "/" + idx + "/_doc/" + anchorId + "?_source_includes=productVector";
+            ResponseEntity<String> getResp = restTemplate.exchange(
+                    getUrl,
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    String.class
+            );
+            String getBody = getResp.getBody();
+            JsonNode getNode =
+                    (getBody == null || getBody.isBlank()) ? null : objectMapper.readTree(getBody);
+            vecArr = (getNode == null) ? null : getNode.at("/_source/productVector");
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound nf) {
+            // 2) _id로는 못 찾은 경우: productId로 1건 검색 후 productVector 추출
+            try {
+                String searchBody = String.format(
+                        "{ \"_source\": [\"productVector\",\"productId\"], \"size\": 1, " +
+                                "  \"query\": { \"bool\": { \"filter\": [ { \"term\": { \"productId\": %s } } ] } } }",
+                        safeJson(anchorId)
+                );
+                HttpEntity<String> sreq = new HttpEntity<>(searchBody, headers);
+                ResponseEntity<String> sres = restTemplate.exchange(
+                        baseUrl + "/" + idx + "/_search",
+                        HttpMethod.POST,
+                        sreq,
+                        String.class
+                );
+                String sBody = sres.getBody();
+                JsonNode sNode =
+                        (sBody == null || sBody.isBlank()) ? null : objectMapper.readTree(sBody);
+                JsonNode hits = (sNode == null) ? null : sNode.at("/hits/hits");
+                if (hits != null && hits.isArray() && hits.size() > 0) {
+                    vecArr = hits.get(0).at("/_source/productVector");
+                }
+            } catch (Exception ignored) {
+                // 무시하고 아래 공통 처리
+            }
+        } catch (Exception ex) {
+            // 기타 예외는 유사 추천을 빈 결과로 처리
+            return Collections.emptyList();
+        }
+
+        if (vecArr == null || !vecArr.isArray() || vecArr.size() == 0) {
+            return Collections.emptyList();
+        }
+        // JSON 배열 문자열(따옴표 없이 그대로)로 사용
+        String queryVectorJson = vecArr.toString();
+
+        String query = String.format(
+                searchSimilarIdsQuery,
+                k,                       // size
+                queryVectorJson,         // knn.query_vector (raw JSON array)
+                k,                       // knn.k
+                safeJson(anchorCategoryId), // knn.filter.categoryId
+                safeJson(anchorId)       // must_not productId
         );
 
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            String auth = java.util.Base64.getEncoder()
-                    .encodeToString((username + ":" + password).getBytes());
-            headers.set("Authorization", "Basic " + auth);
             HttpEntity<String> req = new HttpEntity<>(query, headers);
             ResponseEntity<String> response = restTemplate.exchange(
                     baseUrl + "/" + idx + "/_search",
@@ -157,8 +205,7 @@ public class EsService {
     /* 검색 */
     public List<String> searchMltMatchAll(String likeText, String categoryId, Integer size) {
         int k = (size == null || size <= 0) ? 10 : size;
-        String idx = (this.index == null || this.index.isBlank()) ? "planet_product_csv_3_pn_001"
-                : this.index;
+        String idx = this.searchIndex;
 
         // 카테고리 필터 (카테고리 필터가 있는 경우 추가할 쿼리)
         String catTerm = "";

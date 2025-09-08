@@ -48,7 +48,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             member = memberOpt.get();
             if (member.getProfileUrl() != null && !member.getProfileUrl().startsWith("http")) {
                 String profileUrl = cloudFrontFileUtil.generateUrl(member.getProfileUrl());
-                member.updateProfile(profileUrl);
+                member.setProfileUrl(profileUrl);
             }
         } else {
             log.info("멤버 없음");

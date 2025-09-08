@@ -122,12 +122,14 @@ public class AuthController {
             }
         }
 
-        return ResponseEntity.ok(LoginResponse.builder()
-            .accessToken(accessToken)
-            .email(principalDetails.member().getEmail())
-            .name(principalDetails.member().getName())
-            .profileUrl(profileUrl)
-            .build());
+        return ResponseEntity.ok(
+            LoginResponse.builder()
+                .accessToken(accessToken)
+                .email(principalDetails.member().getEmail())
+                .name(principalDetails.member().getName())
+                .profileUrl(profileUrl)
+                .role(principalDetails.member().getRole())
+                .build());
     }
 
     /**

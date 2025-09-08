@@ -34,7 +34,9 @@ public interface MemberMapper {
         @Param("sex") Sex sex,
         @Param("birth") String birth,
         @Param("address") String address,
-        @Param("detailAddress") String detailAddress);
+        @Param("detailAddress") String detailAddress,
+        @Param("zipCode") String zipCode
+    );
 
     int deductPointsByMemberId(@Param("memberId") Long memberId, @Param("points") int points);
 

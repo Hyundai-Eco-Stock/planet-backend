@@ -1,7 +1,9 @@
 package org.phoenix.planet.util.ecoStock;
 
+import java.util.stream.Collectors;
 import org.phoenix.planet.dto.eco_stock.raw.OhlcDto;
 import org.phoenix.planet.dto.eco_stock.raw.StockData;
+import org.phoenix.planet.dto.eco_stock.raw.StockMinutePriceHistory;
 import org.phoenix.planet.dto.eco_stock.raw.VolumeDto;
 
 import java.time.LocalDateTime;
@@ -92,7 +94,8 @@ public class StockChartUtil {
 
             String color = determineVolumeColor(total, stockData.getBuyCount(), stockData.getSellCount());
 
-            result.add(new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color));
+            result.add(new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color,
+                stockData.getBuyCount(), stockData.getSellCount()));
         }
         return result;
     }
@@ -130,7 +133,7 @@ public class StockChartUtil {
 
         String color = determineVolumeColor(total, stockData.getBuyCount(), stockData.getSellCount());
 
-        return new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color);
+        return new VolumeDto(stockData.getStockPriceHistoryId(), timestamp, total, color,stockData.getBuyCount(), stockData.getSellCount());
     }
 
 
@@ -153,7 +156,7 @@ public class StockChartUtil {
     /**
      * OHLC DTO 생성
      */
-    private static OhlcDto createOhlcDto(long prevStockPrice, StockData current) {
+    private static OhlcDto createOhlcDto(double prevStockPrice, StockData current) {
         long timestamp = current.getStockTime()
                 .atZone(KOREA_ZONE)
                 .toEpochSecond() + KST_OFFSET;
@@ -172,7 +175,7 @@ public class StockChartUtil {
     /**
      * 볼륨 색상 결정
      */
-    private static String determineVolumeColor(int total, int buyCount, int sellCount) {
+    public static String determineVolumeColor(int total, int buyCount, int sellCount) {
 
         if (total == 0) {
             return "EMPTY";
@@ -181,5 +184,39 @@ public class StockChartUtil {
             return "SAME";
         }
         return buyCount > sellCount ? "BUY" : "SELL";
+    }
+
+    public static long convertLocalDateTimeToEpoch(LocalDateTime localDateTime) {
+
+        return localDateTime
+                .atZone(KOREA_ZONE)
+                .toEpochSecond() + KST_OFFSET;
+    }
+
+    public static List<OhlcDto> convertMinuteToOhlc(List<StockMinutePriceHistory> originalData) {
+        return originalData.stream()
+                .map(item -> new OhlcDto(
+                        item.getStockMinutePriceHistoryId(),
+                        item.getStockTimeEpoch(),
+                        item.getOpen(),
+                        item.getHigh(),
+                        item.getLow(),
+                        item.getClose(),
+                        false // 분봉 데이터니까 항상 isEmpty = false
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public static List<VolumeDto> convertMinuteToVolume(List<StockMinutePriceHistory> originalData) {
+        return originalData.stream()
+                .map(item -> new VolumeDto(
+                        item.getStockMinutePriceHistoryId(),
+                        item.getStockTimeEpoch(),
+                        item.getValue(),
+                        item.getColor(),
+                        item.getSellCount(),
+                        item.getBuyCount()
+                ))
+                .collect(Collectors.toList());
     }
 }

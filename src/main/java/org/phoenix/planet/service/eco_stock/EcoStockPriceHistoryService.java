@@ -1,11 +1,8 @@
 package org.phoenix.planet.service.eco_stock;
 
-import org.phoenix.planet.dto.eco_stock.raw.EcoStockUpdatePriceRecord;
-import org.phoenix.planet.dto.eco_stock.raw.StockCalculationResult;
-import org.phoenix.planet.dto.eco_stock.raw.StockData;
+import java.util.List;
+import org.phoenix.planet.dto.eco_stock.raw.RedisStockPriceHistory;
 import org.phoenix.planet.dto.eco_stock.response.ChartDataResponse;
-
-import java.time.LocalDateTime;
 
 public interface EcoStockPriceHistoryService {
 
@@ -13,7 +10,7 @@ public interface EcoStockPriceHistoryService {
 
     ChartDataResponse updateRedisData(Long ecoStockId);
 
-    StockCalculationResult calculatePriceHistory(EcoStockUpdatePriceRecord record, LocalDateTime time);
+    void save(Long stockId, double newPrice);
 
-    int saveIfNotExists(StockData stockData);
+    void saveBatch(List<RedisStockPriceHistory> historyList);
 }

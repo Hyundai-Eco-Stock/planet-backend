@@ -101,20 +101,6 @@ public class ChartDataRedisRepository {
         log.info("Inserted {} new Volume records into Redis (ecoStockId={})", inserted, ecoStockId);
     }
 
-    // --- 단일 데이터 저장 (실시간용) ---
-    public void pushSingleOhlcData(Long ecoStockId, OhlcDto ohlc) {
-        List<String> keys = List.of(ohlcZKey(ecoStockId), ohlcHKey(ecoStockId));
-        List<String> args = toOhlcRedisArgs(ohlc);
-
-        chartRedisTemplate.execute(OHLC_UPSERT_SCRIPT, keys, args.toArray());
-    }
-
-    public void pushSingleVolumeData(Long ecoStockId, VolumeDto volume) {
-        List<String> keys = List.of(volumeZKey(ecoStockId), volumeHKey(ecoStockId));
-        List<String> args = toVolumeRedisArgs(volume);
-
-        chartRedisTemplate.execute(VOLUME_UPSERT_SCRIPT, keys, args.toArray());
-    }
 
     // --- 최근 데이터 조회 ---
     public OhlcDto findLastSingleToOhlc(Long ecoStockId) {
@@ -180,40 +166,10 @@ public class ChartDataRedisRepository {
                 chartRedisTemplate.hasKey(volumeHKey(ecoStockId));
     }
 
-    // --- 타임스탬프 체크 메서드 ---
-
-    /**
-     * 현재 OHLC 데이터의 타임스탬프가 Redis에 저장된 최신 데이터와 1분 이상 차이나는지 체크
-     *
-     * @param currentOhlc 현재 OHLC 데이터
-     * @return true: 1분 이상 차이남 (재초기화 필요), false: 정상적인 1분 간격
-     */
-    public boolean checkTimestamp(Long ecoStockId, OhlcDto currentOhlc) {
-        OhlcDto lastOhlc = findLastSingleToOhlc(ecoStockId);
-
-        if (lastOhlc == null) {
-            log.info("이전 OHLC 데이터 없음, 재초기화 필요 (ecoStockId={})", ecoStockId);
-            return true;
-        }
-
-        long currentTimestamp = currentOhlc.time();
-        long lastTimestamp = lastOhlc.time();
-        long timeDifference = currentTimestamp - lastTimestamp;
-
-        // 🔥 초 단위로 수정!
-        long oneMinute = 60L;        // 60초 = 1분
-        long allowedError = 10L;     // 10초 허용 오차
-
-        // 시간 차이가 1분±10초 범위를 벗어나면 재초기화 필요
-        boolean isNormalInterval = (timeDifference == 0) ||
-                (Math.abs(timeDifference - oneMinute) <= allowedError);
-
-        return !isNormalInterval; // 정상이 아니면 재초기화
-    }
 
     // --- 내부 Helper 메서드들 ---
     private String ohlcZKey(Long ecoStockId) {
-        return OHLC_KEY_PREFIX + ecoStockId + ":timestamps";
+        return "chart:ohlc:" + ecoStockId + ":timestamps";
     }
 
     private String ohlcHKey(Long ecoStockId) {
@@ -221,7 +177,7 @@ public class ChartDataRedisRepository {
     }
 
     private String volumeZKey(Long ecoStockId) {
-        return VOLUME_KEY_PREFIX + ecoStockId + ":timestamps";
+        return "chart:volume:" + ecoStockId + ":timestamps";
     }
 
     private String volumeHKey(Long ecoStockId) {

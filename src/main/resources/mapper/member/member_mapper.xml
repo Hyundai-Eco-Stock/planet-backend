@@ -15,15 +15,9 @@
         <result column="birth" property="birth"/>
         <result column="address" property="address"/>
         <result column="detail_address" property="detailAddress"/>
-        
-        <result column="role" property="role"
-            javaType="org.phoenix.planet.constant.Role"
-            typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
-        <result column="sex" property="sex"
-            javaType="org.phoenix.planet.constant.Sex"
-            typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="role" property="role"/>
+        <result column="sex" property="sex"/>
         <result column="point" property="point"/>
-        
         <result column="created_at" property="createdAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
         <result column="updated_at" property="updatedAt" jdbcType="DATE"
@@ -234,7 +228,7 @@
         join ORDER_PRODUCT OP on H.ORDER_HISTORY_ID = OP.ORDER_HISTORY_ID
         join PRODUCT P on OP.PRODUCT_ID = P.PRODUCT_ID
         join PAYMENT_HISTORY PH on H.ORDER_HISTORY_ID = PH.ORDER_HISTORY_ID
-        where H.MEMBER_ID = #{memberId}
+        where H.MEMBER_ID = #{memberId} AND P.ECO_DEAL_STATUS IS NULL
         order by H.ORDER_HISTORY_ID desc, OP.ORDER_PRODUCT_ID desc
     </select>
     

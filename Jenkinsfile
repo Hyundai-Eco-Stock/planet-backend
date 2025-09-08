@@ -189,7 +189,6 @@ EOF
         }
       }
     }
-
     stage('Wait for Idle Stack Health') {
       steps {
         withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
@@ -197,37 +196,39 @@ EOF
             IDLE_TG=$(cat ${WORKSPACE}/idle_tg.txt)
             echo "[INFO] Waiting for health check on: $IDLE_TG"
 
-            UNHEALTHY_COUNT=0
-
-            for i in $(seq 1 30); do   # 최대 5분 대기 (30회 × 10초)
+            for i in $(seq 1 30); do
               RAW_HEALTH=$(aws elbv2 describe-target-health \
                 --target-group-arn "$IDLE_TG" \
                 --query "TargetHealthDescriptions[*].TargetHealth.State" \
                 --output text)
 
-              echo "[DEBUG] Attempt $i: $RAW_HEALTH"
+              echo "[DEBUG] Attempt $i: States = [$RAW_HEALTH]"
 
-              if echo "$RAW_HEALTH" | grep -q "healthy"; then
-                echo "[INFO] ✅ Target became healthy"
+              # 모든 타겟이 healthy인지 확인
+              ALL_HEALTHY=true
+              for state in $RAW_HEALTH; do
+                if [ "$state" != "healthy" ]; then
+                  ALL_HEALTHY=false
+                  break
+                fi
+              done
+
+              if [ "$ALL_HEALTHY" = "true" ] && [ -n "$RAW_HEALTH" ]; then
+                echo "[INFO] ✅ All targets are healthy"
                 exit 0
               fi
 
+              # unhealthy가 있으면 상세 정보 출력
               if echo "$RAW_HEALTH" | grep -q "unhealthy"; then
-                UNHEALTHY_COUNT=$((UNHEALTHY_COUNT+1))
-                echo "[WARN] Target is unhealthy ($UNHEALTHY_COUNT times)"
-                # 최소 12번(=2분) 동안은 계속 대기
-                if [ $UNHEALTHY_COUNT -ge 12 ]; then
-                  echo "[ERROR] ❌ Target stayed unhealthy for over 2 minutes"
-                  aws elbv2 describe-target-health --target-group-arn "$IDLE_TG"
-                  exit 1
-                fi
+                echo "[WARN] ❌ Found unhealthy targets"
+                aws elbv2 describe-target-health --target-group-arn "$IDLE_TG"
               fi
 
-              echo "[INFO] Waiting 10s before next check..."
+              echo "[INFO] Current states: $RAW_HEALTH - waiting 10s..."
               sleep 10
             done
 
-            echo "[ERROR] ❌ Target did not become healthy within 5 minutes"
+            echo "[ERROR] ❌ Targets did not become healthy within 5 minutes"
             aws elbv2 describe-target-health --target-group-arn "$IDLE_TG"
             exit 1
           '''

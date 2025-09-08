@@ -28,7 +28,7 @@ public class EsService {
 
     // 인덱스 분리: knn(유사상품) / 검색(오타보정)
     private String knnIndex = "planet_product_v4";
-    private String searchIndex = "planet_product_csv_3_pn_001";
+    private String searchIndex = "planet_product_v3";
 
     @Value("${es.default-size:20}")
     private int defaultSize;

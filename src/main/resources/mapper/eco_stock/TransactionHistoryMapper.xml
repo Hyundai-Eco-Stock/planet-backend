@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.TransactionHistoryMapper">
+    
+    <insert id="save">
+        INSERT INTO TRANSACTION_HISTORY (
+            TRANSACTION_HISTORY_ID,
+            SELL_PRICE,
+            SELL_COUNT,
+            MEMBER_STOCK_INFO_ID,
+            STOCK_PRICE_HISTORY_ID,
+            CREATED_AT
+        ) VALUES (
+            SEQ_TRANSACTION_HISTORY.NEXTVAL,
+            #{sellPrice},
+            #{sellCount},
+            #{memberStockInfoId},
+            #{historyId},
+            #{transactionTime}
+        )
+    </insert>
+
+</mapper>

@@ -3,9 +3,12 @@ package org.phoenix.planet.service.eco_stock;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.constant.EcoStockError;
 import org.phoenix.planet.dto.eco_stock.raw.MemberStockInfo;
+import org.phoenix.planet.dto.eco_stock.request.SellStockRequest;
 import org.phoenix.planet.dto.eco_stock_info.response.EcoStockPriceResponse;
 import org.phoenix.planet.dto.eco_stock_info.response.MemberStockInfoWithDetail;
+import org.phoenix.planet.error.ecoStock.EcoStockException;
 import org.phoenix.planet.mapper.MemberStockInfoMapper;
 import org.springframework.stereotype.Service;
 
@@ -39,5 +42,11 @@ public class MemberStockInfoServiceImpl implements MemberStockInfoService {
 
     public List<EcoStockPriceResponse> getAllEcosStockPrice() {
         return memberStockInfoMapper.findAllEcoStockPrice();
+    }
+
+    @Override
+    public MemberStockInfo validateUserStock(Long memberId, SellStockRequest request) {
+        return memberStockInfoMapper.validateUserStock(memberId,request.getEcoStockId(),request.getSellCount())
+                .orElseThrow(()-> new EcoStockException(EcoStockError.INSUFFICIENT_STOCK));
     }
 }

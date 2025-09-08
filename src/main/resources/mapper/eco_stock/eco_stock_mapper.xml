@@ -68,17 +68,31 @@
             AND rh.created_at >= #{targetTime}
             GROUP BY r.ECO_STOCK_ID
         ),
-        latest_prices AS (
+        ohlc_prices AS (
             SELECT
                 eco_stock_id,
-                stock_price
+                open_price,
+                high_price,
+                low_price,
+                close_price
             FROM (
                 SELECT
                     eco_stock_id,
-                    stock_price,
-                    ROW_NUMBER() OVER (PARTITION BY eco_stock_id ORDER BY stock_time DESC) AS rn
+                    FIRST_VALUE(stock_price) OVER (
+                        PARTITION BY eco_stock_id
+                        ORDER BY stock_time ASC
+                        ROWS UNBOUNDED PRECEDING
+                    ) as open_price,
+                    MAX(stock_price) OVER (PARTITION BY eco_stock_id) as high_price,
+                    MIN(stock_price) OVER (PARTITION BY eco_stock_id) as low_price,
+                    LAST_VALUE(stock_price) OVER (
+                        PARTITION BY eco_stock_id
+                        ORDER BY stock_time ASC
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+                    ) as close_price,
+                    ROW_NUMBER() OVER (PARTITION BY eco_stock_id ORDER BY stock_time DESC) as rn
                 FROM stock_price_history
-                WHERE #{targetTime} >= stock_time
+                WHERE stock_time >= #{startTime} AND #{endTime}> stock_time
             ) ranked
             WHERE rn = 1
         )
@@ -87,24 +101,71 @@
             bi.stock_issue_count AS stockIssueCount,
             COALESCE(tc.transaction_count, 0) AS transactionHistoryCount,
             COALESCE(rc.raffle_count, 0) AS raffleHistoryCount,
-            COALESCE(lp.stock_price, bi.init_price) AS beforePrice,
+            op.close_price AS beforePrice,
+            op.open_price AS open,
+            op.high_price AS high,
+            op.low_price AS low,
+            op.close_price AS close,
             bi.quantity,
             bi.init_price AS initPrice
         FROM basic_info bi
         LEFT JOIN transaction_counts tc ON bi.eco_stock_id = tc.eco_stock_id
         LEFT JOIN raffle_counts rc ON bi.eco_stock_id = rc.ECO_STOCK_ID
-        LEFT JOIN latest_prices lp ON bi.eco_stock_id = lp.eco_stock_id
+        LEFT JOIN ohlc_prices op ON bi.eco_stock_id = op.eco_stock_id
         ORDER BY bi.eco_stock_id
     </select>
 
+    
     <update id="callSellStockProcedure" statementType="CALLABLE">
         {call SELL_STOCK_TRANSACTION(
         #{memberId, mode=IN, jdbcType=NUMERIC},
         #{request.ecoStockId, mode=IN, jdbcType=NUMERIC},
         #{request.sellCount, mode=IN, jdbcType=NUMERIC},
-        #{request.sellPrice, mode=IN, jdbcType=NUMERIC},
+        #{request.sellPrice, mode=IN, jdbcType=DOUBLE},
         #{request.pSuccess, mode=OUT, jdbcType=NUMERIC, javaType=Integer},
-        #{request.pMessage, mode=OUT, jdbcType=VARCHAR}
+        #{request.pMessage, mode=OUT, jdbcType=VARCHAR, javaType=String},
+        #{request.newPrice, mode=OUT, jdbcType=DOUBLE, javaType=Double},
+        #{request.transactionTime, mode=OUT, jdbcType=TIMESTAMP, javaType=java.time.LocalDateTime}
         )}
     </update>
+    
+    <select id="callSellStockUserTransaction"
+            statementType="CALLABLE"
+            resultType="org.phoenix.planet.dto.eco_stock.raw.PointResult">
+        {call SELL_STOCK_USER_TRANSACTION(
+            #{loginMemberId, mode=IN, jdbcType=NUMERIC},
+            #{memberStockInfo.ecoStockId, mode=IN, jdbcType=NUMERIC},
+            #{sellQuantity, mode=IN, jdbcType=NUMERIC},
+            #{result.executedPrice, mode=IN, jdbcType=DOUBLE},
+            #{result.historyId, mode=IN, jdbcType=NUMERIC},
+            #{pointResult.success, mode=OUT, jdbcType=NUMERIC, javaType=Integer},
+            #{pointResult.message, mode=OUT, jdbcType=VARCHAR, javaType=String},
+            #{pointResult.transactionTime, mode=OUT, jdbcType=TIMESTAMP, javaType=java.time.LocalDateTime},
+            #{pointResult.currentTotalQuantity, mode=OUT, jdbcType=NUMERIC, javaType=Integer},
+            #{pointResult.currentTotalAmount, mode=OUT, jdbcType=NUMERIC, javaType=DOUBLE},
+            #{pointResult.memberPoint, mode=OUT, jdbcType=NUMERIC, javaType=DOUBLE}
+        )}
+    </select>
+    
+    <select id="findAllWithLastPrice"
+            resultType="org.phoenix.planet.dto.eco_stock.raw.EcoStockWithLastPrice">
+        SELECT
+            es.ECO_STOCK_ID as id,
+            es.NAME as name,
+            es.QUANTITY as quantity,
+            es.IMAGE_URL as imageUrl,
+            es.INIT_PRICE as initPrice,
+            COALESCE(sph.STOCK_PRICE, es.INIT_PRICE) as lastPrice,
+            sph.STOCK_PRICE_HISTORY_ID as stockPriceHistoryId
+        FROM ECO_STOCK es
+        LEFT JOIN (
+            SELECT
+                ECO_STOCK_ID,
+                STOCK_PRICE,
+                STOCK_PRICE_HISTORY_ID,
+                ROW_NUMBER() OVER (PARTITION BY ECO_STOCK_ID ORDER BY STOCK_TIME DESC) as rn
+            FROM STOCK_PRICE_HISTORY
+        ) sph ON es.ECO_STOCK_ID = sph.ECO_STOCK_ID AND sph.rn = 1
+        ORDER BY es.ECO_STOCK_ID
+    </select>
 </mapper>

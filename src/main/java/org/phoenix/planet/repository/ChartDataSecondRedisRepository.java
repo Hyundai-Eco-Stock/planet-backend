@@ -117,10 +117,27 @@ public class ChartDataSecondRedisRepository {
         
             new_ohlc_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
                 0, epoch_time, open, high, low, price)
-        else
-            new_ohlc_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
-                0, epoch_time, price, price, price, price)
-        end
+            else
+                -- 🟢 최신 데이터 찾기 (ZSET에서 직전 분 timestamp 가져오기)
+                local ohlc_z_key = "chart:ohlc:" .. stock_id .. ":timestamps"
+                local ohlc_h_key = "chart:ohlc:" .. stock_id .. ":data"
+            
+                local last_ts = redis.call('ZREVRANGE', ohlc_z_key, 0, 0)[1]
+                local open_price = price
+            
+                if last_ts then
+                    local prev_json = redis.call('HGET', ohlc_h_key, last_ts)
+                    if prev_json then
+                        local prev_close = tonumber(prev_json:match('"close":([%d%.]+)'))
+                        if prev_close then open_price = prev_close end
+                    end
+                end
+            
+                new_ohlc_json = string.format(
+                    '{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
+                    0, epoch_time, open_price, price, price, price
+                )
+            end
         
         -- Volume 계산
         local new_volume_json

@@ -8,4 +8,5 @@ WORKDIR /app
 COPY build/libs/app.jar app.jar
 
 # 애플리케이션 실행
-ENTRYPOINT ["java", "-Xms512m", "-Xmx768m", "-jar", "/app/app.jar"]
+# 권장 설정 - 램 활용도 높임
+ENTRYPOINT ["java", "-Xms1g", "-Xmx1.5g", "-XX:MaxMetaspaceSize=256m", "-jar", "/app/app.jar"]

@@ -3135,3 +3135,5 @@ INSERT INTO PRODUCT_IMAGE (PRODUCT_IMAGE_ID, PRODUCT_ID, IMAGE_URL, SORT_ORDER, 
                            CREATED_AT, UPDATED_AT)
 VALUES (764, 182, 'https://image.thehyundai.com/CO/EDITOR/20250808/151122410/4nv0x.jpg', 5, null,
         TIMESTAMP '2025-09-02 15:23:30', null);
+
+commit;

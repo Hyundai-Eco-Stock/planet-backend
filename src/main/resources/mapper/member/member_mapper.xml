@@ -39,6 +39,7 @@
         provider,
         address,
         detail_address,
+        zip_code,
         role,
         sex,
         updated_at
@@ -51,6 +52,7 @@
         #{provider, jdbcType=VARCHAR},
         #{address, jdbcType=VARCHAR},
         #{detailAddress, jdbcType=VARCHAR},
+        #{zipCode, jdbcType=VARCHAR},
         #{role},
         #{sex, jdbcType=VARCHAR},
         SYSDATE

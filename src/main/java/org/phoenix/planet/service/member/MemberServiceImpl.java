@@ -103,6 +103,7 @@ public class MemberServiceImpl implements MemberService {
             .birth(request.birth())
             .address(request.address())
             .detailAddress(request.detailAddress())
+            .zipCode(request.zipCode())
             .role(Role.USER)
             .build();
 

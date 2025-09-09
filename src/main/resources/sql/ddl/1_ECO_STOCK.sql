@@ -12,27 +12,27 @@ CREATE TABLE eco_stock
 );
 CREATE SEQUENCE seq_eco_stock START WITH 7 INCREMENT BY 1 NOCACHE NOCYCLE;
 
-INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, updated_at)
+INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, init_price)
 VALUES (1, '제로컵(Zero Cup)', 100, 'https://storage.googleapis.com/planet_public_image/487.jpg',
         SYSDATE,
-        NULL);
+        100);
 
-INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, updated_at)
+INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, init_price)
 VALUES (2, '애상(Eco 상품)', 200,
         'https://storage.googleapis.com/planet_public_image/green_leaf_recycle_sign.jpg', SYSDATE,
-        NULL);
+        200);
 
-INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, updated_at)
-VALUES (3, '이브이(EV)', 100, null, SYSDATE, NULL);
+INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, init_price)
+VALUES (3, '이브이(EV)', 100, null, SYSDATE, 50);
 
-INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, updated_at)
-VALUES (4, '제로백(Bag)', 100, null, SYSDATE, NULL);
+INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, init_price)
+VALUES (4, '제로백(Bag)', 100, null, SYSDATE, 10);
 
-INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, updated_at)
-VALUES (5, '봉사활동', 1000, null, SYSDATE, NULL);
+INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, init_price)
+VALUES (5, '봉사활동', 1000, null, SYSDATE, 70);
 
-INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, updated_at)
-VALUES (6, '기부온(Give On)', 100, null, SYSDATE, NULL);
+INSERT INTO eco_stock (eco_stock_id, name, quantity, image_url, created_at, init_price)
+VALUES (6, '기부온(Give On)', 100, null, SYSDATE, 500);
 
 COMMIT;
 

@@ -11,6 +11,7 @@ CREATE TABLE member
     sex            VARCHAR2(100),
     address        VARCHAR2(100),
     detail_address VARCHAR2(100),
+    zip_code       VARCHAR2(100),
     role           VARCHAR2(50),
     point          NUMBER DEFAULT 0       NOT NULL,
     created_at     DATE   DEFAULT SYSDATE NOT NULL,

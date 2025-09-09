@@ -15,6 +15,7 @@
         <result column="birth" property="birth"/>
         <result column="address" property="address"/>
         <result column="detail_address" property="detailAddress"/>
+        <result column="zip_code" property="zipCode"/>
         <result column="role" property="role"/>
         <result column="sex" property="sex"/>
         <result column="point" property="point"/>
@@ -38,6 +39,7 @@
         provider,
         address,
         detail_address,
+        zip_code,
         role,
         sex,
         updated_at
@@ -50,6 +52,7 @@
         #{provider, jdbcType=VARCHAR},
         #{address, jdbcType=VARCHAR},
         #{detailAddress, jdbcType=VARCHAR},
+        #{zipCode, jdbcType=VARCHAR},
         #{role},
         #{sex, jdbcType=VARCHAR},
         SYSDATE
@@ -71,6 +74,7 @@
         birth = TO_DATE(#{birth}, 'YYYY-MM-DD'),
         address = #{address},
         detail_address = #{detailAddress},
+        zip_code = #{zipCode},
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
@@ -107,6 +111,7 @@
         TO_CHAR(birth, 'YYYY-MM-DD') AS birth,
         address,
         detail_address,
+        zip_code,
         role,
         sex,
         point,

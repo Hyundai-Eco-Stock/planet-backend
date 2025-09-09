@@ -175,7 +175,7 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
     public void processIssue(Long memberId,Long stockId) {
         // 현재 기부 스톡 보유량 조회
         MemberStockInfo stockInfo = memberStockInfoMapper.findPersonalStockInfoById(memberId, stockId);
-        log.info("{}",stockInfo) ;
+        log.trace("{}",stockInfo); ;
         // stock_issue에 발급 기록 저장
         ecoStockIssueMapper.insert(memberId, stockId);
 

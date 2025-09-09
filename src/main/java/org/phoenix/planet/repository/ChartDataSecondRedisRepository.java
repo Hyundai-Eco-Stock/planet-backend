@@ -332,7 +332,6 @@ public class ChartDataSecondRedisRepository {
 
         BigDecimal executedPrice = new BigDecimal(results.get(1).toString());
         BigDecimal newMarketPrice = new BigDecimal(results.get(2).toString());
-        log.info(executedPrice.toPlainString());
 
         Integer newQuantity = ((Long) results.get(3)).intValue();
 

@@ -903,3 +903,5 @@ INSERT INTO PRODUCT (PRODUCT_ID, CATEGORY_ID, BRAND_ID, NAME, PRICE, IMAGE_URL, 
 VALUES (94, 2, 8, '립 베일 2.5g', 93000,
         'https://image.thehyundai.com/static/9/3/2/66/A0/40A0662392_0_300.jpg', 99999, null, null,
         TIMESTAMP '2025-09-02 15:23:26', null);
+
+commit;

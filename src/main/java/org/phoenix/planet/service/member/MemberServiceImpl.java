@@ -54,6 +54,7 @@ public class MemberServiceImpl implements MemberService {
                     : null)
             .address(member.getAddress())
             .detailAddress(member.getDetailAddress())
+            .zipCode(member.getZipCode())
             .build();
     }
 
@@ -102,6 +103,7 @@ public class MemberServiceImpl implements MemberService {
             .birth(request.birth())
             .address(request.address())
             .detailAddress(request.detailAddress())
+            .zipCode(request.zipCode())
             .role(Role.USER)
             .build();
 
@@ -145,7 +147,8 @@ public class MemberServiceImpl implements MemberService {
             request.sex(),
             request.birth(),
             request.address(),
-            request.detailAddress()
+            request.detailAddress(),
+            request.zipCode()
         );
 
         return SignUpResponse.builder()

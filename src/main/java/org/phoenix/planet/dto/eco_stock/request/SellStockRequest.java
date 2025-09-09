@@ -1,9 +1,11 @@
 package org.phoenix.planet.dto.eco_stock.request;
 
 import java.time.LocalDateTime;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class SellStockRequest {
     // IN 파라미터
     private Long ecoStockId;

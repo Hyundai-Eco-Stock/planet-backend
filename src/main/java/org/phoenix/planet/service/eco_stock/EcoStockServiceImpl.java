@@ -66,6 +66,8 @@ public class EcoStockServiceImpl implements EcoStockService {
         PointResult pointResult = processUserTransactionAndPoint(memberId, request,
             result, memberStockInfo);
 
+        log.info("Sell result:{}", pointResult);
+
         // 반환값 빌드
         SellResponse sellResponse = SellResponse.builder()
             .executedPrice(result.getExecutedPrice())
@@ -101,6 +103,7 @@ public class EcoStockServiceImpl implements EcoStockService {
 
         PointResult pointResult = new PointResult();
 
+        log.info("request {} ",request);
         ecoStockMapper.callSellStockUserTransaction(loginMemberId, result, request.getSellCount(),
             memberStockInfo, pointResult);
 

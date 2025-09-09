@@ -13,7 +13,7 @@ import lombok.Setter;
 public class PointExchangeHistory {
 
     long id;
-    int pointPrice;
+    Double pointPrice;
     String status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

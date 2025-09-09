@@ -6,7 +6,7 @@ public record MemberStockInfo(
         Long memberId,
         Long ecoStockId,
         Integer currentTotalQuantity,
-        Long currentTotalAmount,
-        Integer point
+        Double currentTotalAmount,
+        Double point
 ) {
 }

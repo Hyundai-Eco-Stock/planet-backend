@@ -13,7 +13,7 @@ public enum RaffleError {
     DUPLICATE_PARTICIPATION(HttpStatus.BAD_REQUEST, "이미 참여한 래플입니다."),
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "보유 수량이 부족하거나 해당 상품을 보유하고 있지 않습니다."),
     RAFFLE_SYSTEM_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "래플 참여 중 시스템 오류가 발생했습니다."),
-    ;
+    PROCEDURE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"래플 프로시저 에러입니다" );
     private final HttpStatus httpStatus;
     private final String value;
 }

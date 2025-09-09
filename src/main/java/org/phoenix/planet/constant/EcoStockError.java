@@ -41,6 +41,9 @@ public enum EcoStockError {
     PRICE_MISMATCH(HttpStatus.BAD_REQUEST, "요청 판매가가 현재 시세와 일치하지 않습니다."),
     MEMBER_STOCK_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자가 보유한 주식 정보가 없습니다."),
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "보유 주식이 판매 요청 수량보다 적습니다."),
+    STOCK_REDIS_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "레디스 도중에 오류가 발생했습니다"),
+
+
     ;
 
     private final HttpStatus httpStatus;

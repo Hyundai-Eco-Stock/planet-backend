@@ -157,7 +157,7 @@
             ofType="org.phoenix.planet.dto.member.response.PointExchangeHistory"
             javaType="java.util.List">
             <id column="point_exchange_history_id" property="id"/>
-            <result column="point_price" property="pointPrice" jdbcType="NUMERIC" javaType="int"/>
+            <result column="point_price" property="pointPrice" jdbcType="NUMERIC" javaType="double"/>
             <result column="status" property="status"/>
             <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
                 javaType="java.time.LocalDateTime"/>

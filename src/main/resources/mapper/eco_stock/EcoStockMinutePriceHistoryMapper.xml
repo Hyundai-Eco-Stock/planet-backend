@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.phoenix.planet.mapper.EcoStockMinutePriceHistoryMapper">
+    <insert id="insert" parameterType="org.phoenix.planet.dto.eco_stock.raw.StockMinutePriceHistory">
+        <selectKey keyProperty="stockMinutePriceHistoryId" resultType="long" order="BEFORE">
+            SELECT SEQ_STOCK_MINUTE_PRICE_HISTORY.NEXTVAL FROM dual
+        </selectKey>
+        
+        INSERT INTO STOCK_MINUTE_PRICE_HISTORY (
+            STOCK_MINUTE_PRICE_HISTORY_ID,
+            ECO_STOCK_ID,
+            STOCK_TIME_MINUTE,
+            STOCK_TIME_EPOCH,
+            OPEN,
+            HIGH,
+            LOW,
+            CLOSE,
+            VALUE,
+            SELL_COUNT,
+            BUY_COUNT,
+            COLOR,
+            CREATED_AT
+        ) VALUES (
+            #{stockMinutePriceHistoryId},
+            #{ecoStockId},
+            #{stockTimeMinute},
+            #{stockTimeEpoch},
+            #{open},
+            #{high},
+            #{low},
+            #{close},
+            #{value},
+            #{sellCount},
+            #{buyCount},
+            #{color},
+            SYSDATE
+        )
+    </insert>
+    <select id="findAllPriceHistory"
+            resultType="org.phoenix.planet.dto.eco_stock.raw.StockMinutePriceHistory"
+            parameterType="long">
+        SELECT
+            STOCK_MINUTE_PRICE_HISTORY_ID   AS stockMinutePriceHistoryId,
+            ECO_STOCK_ID                    AS ecoStockId,
+            STOCK_TIME_MINUTE               AS stockTimeMinute,
+            STOCK_TIME_EPOCH                AS stockTimeEpoch,
+            OPEN                            AS open,
+            HIGH                            AS high,
+            LOW                             AS low,
+            CLOSE                           AS close,
+            VALUE                           AS value,
+            SELL_COUNT                      AS sellCount,
+            BUY_COUNT                       AS buyCount,
+            COLOR                           AS color
+        FROM STOCK_MINUTE_PRICE_HISTORY
+        WHERE ECO_STOCK_ID = #{ecoStockId}
+        ORDER BY STOCK_TIME_EPOCH ASC
+    </select>
+
+
+
+</mapper>

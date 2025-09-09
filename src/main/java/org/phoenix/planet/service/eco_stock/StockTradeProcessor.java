@@ -19,6 +19,7 @@ public class StockTradeProcessor {
     private final StockDataPublish stockDataPublish;
 
     public UnifiedUpdateResult executeSellTradeAndBroadcast(Long ecoStockId, Integer tradCount) {
+
         LocalDateTime now = LocalDateTime.now();
 
         UnifiedUpdateResult result = chartDataSecondRedisRepository.processTradeWithChart(ecoStockId, tradCount, now);
@@ -34,7 +35,7 @@ public class StockTradeProcessor {
         return result;
     }
 
-    public void executeIssueTradeAndBroadcast(Long ecoStockId, Integer tradCount) {
+    public UnifiedUpdateResult executeIssueTradeAndBroadcast(Long ecoStockId, Integer tradCount) {
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -47,5 +48,6 @@ public class StockTradeProcessor {
             .build();
 
         stockDataPublish.pushData(chartData);
+        return result;
     }
 }

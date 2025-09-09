@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.OrderError;
 import org.phoenix.planet.dto.eco_stock.raw.MemberStockInfo;
 import org.phoenix.planet.dto.eco_stock.raw.StockData;
+import org.phoenix.planet.dto.eco_stock.response.UnifiedUpdateResult;
 import org.phoenix.planet.dto.order.raw.OrderConfirmResult;
 import org.phoenix.planet.dto.order.response.EcoStockIssueResponse;
 import org.phoenix.planet.error.order.OrderException;
@@ -169,7 +170,29 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
 
     }
 
-    private void process(Long memberId,Long stockId,StockData stockPrice) {
+    @Override
+    @Transactional
+    public void processIssue(Long memberId,Long stockId) {
+        // 현재 기부 스톡 보유량 조회
+        MemberStockInfo stockInfo = memberStockInfoMapper.findPersonalStockInfoById(memberId, stockId);
+        log.info("{}",stockInfo) ;
+        // stock_issue에 발급 기록 저장
+        ecoStockIssueMapper.insert(memberId, stockId);
+
+        //todo redis 저장 로직
+        UnifiedUpdateResult result = stockTradeProcessor.executeIssueTradeAndBroadcast(stockId,1);
+
+        // MEMBER_STOCK_INFO 업데이트
+        if (stockInfo ==null || stockInfo.memberStockInfoId() == null) {
+            memberStockInfoMapper.insertMemberStockInfo(memberId, stockId, 1, result.getExecutedPrice());
+        } else {
+            int newQuantity = stockInfo.currentTotalQuantity() + 1;
+            Double newAmount = stockInfo.currentTotalAmount() +  result.getExecutedPrice();
+            memberStockInfoMapper.updateMemberStockInfo(stockInfo.memberStockInfoId(), newQuantity, newAmount);
+        }
+    }
+
+    public void process(Long memberId,Long stockId,StockData stockPrice) {
         // 현재 기부 스톡 보유량 조회
         MemberStockInfo stockInfo = memberStockInfoMapper.findPersonalStockInfoById(memberId, stockId);
         // stock_issue에 발급 기록 저장

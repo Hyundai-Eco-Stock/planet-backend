@@ -35,4 +35,6 @@ public interface EcoStockMapper {
     );
 
     List<EcoStockWithLastPrice> findAllWithLastPrice();
+
+    EcoStockWithLastPrice findAllWithLastPriceByStockId(@Param("stockId") Long stockId);
 }

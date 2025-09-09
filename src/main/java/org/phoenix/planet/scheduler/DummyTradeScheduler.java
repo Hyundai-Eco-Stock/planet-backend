@@ -1,6 +1,8 @@
 package org.phoenix.planet.scheduler;
 
 import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,22 +53,23 @@ public class DummyTradeScheduler {
         // 이번 분(60초) 안에 랜덤 초에 분산
         for (int i = 0; i < trades; i++) {
             int offsetSec = rnd.nextInt(60); // 0~59
-            java.time.Instant when = java.time.Instant.now().plusSeconds(offsetSec);
+            Instant when = Instant.now().plusSeconds(offsetSec);
 
             taskScheduler.schedule(() -> {
-                java.time.LocalDateTime t = java.time.LocalDateTime.now();
+                LocalDateTime t = LocalDateTime.now();
                 doOneTrade(t);
             }, when);
         }
         log.info("🧪 Orchestrated {} trades this minute (Poisson λ={}): scattered randomly", trades, String.format("%.3f", lambda));
     }
 
-    private void doOneTrade(java.time.LocalDateTime now) {
+    private void doOneTrade(LocalDateTime now) {
         int qty = MIN_QTY + rnd.nextInt(MAX_QTY - MIN_QTY + 1);
         boolean sell = rnd.nextDouble() < SELL_RATIO;
         int tradeQuantity = sell ? qty : -qty;
         int reply = Math.abs(tradeQuantity);
 
+        int successCount =0;
         for (int i = 0; i < reply; i++) {
             Long stockId = STOCK_IDS.get(rnd.nextInt(STOCK_IDS.size()));
             Long memberId =  memberList.get(rnd.nextInt(memberList.size()));
@@ -86,13 +89,16 @@ public class DummyTradeScheduler {
                     ecoStockIssueService.processIssue(memberId,stockId);
                 }
 
-                log.info("🧪 {} {}ea stockId={}",
+                log.trace("🧪 {} {}ea stockId={}",
                     sell ? "SELL" : "BUY", qty, stockId);
+                successCount++;
             } catch (Exception e) {
                 log.warn("🧪 DummyTrade fail: stockId={}, q={}, err={}", stockId, tradeQuantity, e.getMessage());
                 ecoStockIssueService.processIssue(memberId,stockId);
             }
         }
+
+        log.info("reply: {} successCount: {}",reply,successCount);
     }
 
     // 포아송 샘플러

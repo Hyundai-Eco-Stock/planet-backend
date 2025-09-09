@@ -25,6 +25,6 @@ public class StockDataPublish {
 
         webSocketRedisTemplate.convertAndSend(CHANNEL, jsonData);
 
-        log.info("{}", chartSingleDataResponse);
+        log.trace("{}", chartSingleDataResponse);
     }
 }

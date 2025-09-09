@@ -13,7 +13,7 @@ import lombok.Setter;
 public class MemberPointWithHistoriesResponse {
 
     private long memberId;
-    private int currentPoint;
+    private Double currentPoint;
     private List<PointExchangeHistory> histories;
 
 }

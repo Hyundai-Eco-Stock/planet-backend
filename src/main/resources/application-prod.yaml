@@ -25,7 +25,7 @@ jwt:
   # 300000 = 1000 * 60 * 5 = 5 minutes
   # 3600000 = 1000 * 60 * 60 = 1 hour
   # 2592000000 = 1000 * 60 * 60 * 24 * 30 = 30 days
-  access-token-expire-millis: 60000
+  access-token-expire-millis: 300000
   refresh-token-expire-millis: 2592000000
 
 kafka:

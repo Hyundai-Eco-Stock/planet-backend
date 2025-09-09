@@ -18,7 +18,7 @@ public class StockData {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime stockTime;
 
-    private Long stockPrice;
+    private Double stockPrice;
     private Integer sellCount;
     private Integer buyCount;
 }

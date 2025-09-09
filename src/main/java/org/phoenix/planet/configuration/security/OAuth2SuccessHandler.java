@@ -60,29 +60,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             profileUrl = URLEncoder.encode(profileUrl, StandardCharsets.UTF_8);
         }
 
-        String redirectUrl;
-//        log.info("pwdHash: {}", principalDetails.member().getPwdHash());
-        if (principalDetails.member().getPwdHash() == null) {
-            redirectUrl = UriComponentsBuilder
-                .fromUriString(frontendOrigin)
-                .path("/signup/oauth")
-                .queryParam("accessToken", accessToken)
-                .queryParam("email", encodedEmail)
-                .queryParam("name", encodedName)
-                .queryParam("profileUrl", profileUrl)
-                .build(true)
-                .toUriString();
-        } else {
-            redirectUrl = UriComponentsBuilder
-                .fromUriString(frontendOrigin)
-                .path("/login/success")
-                .queryParam("accessToken", accessToken)
-                .queryParam("email", encodedEmail)
-                .queryParam("name", encodedName)
-                .queryParam("profileUrl", profileUrl)
-                .build(true)
-                .toUriString();
-        }
+        boolean signUpStatus = principalDetails.member().getPwdHash() != null; // 회원가입 여부
+        String redirectUrl = UriComponentsBuilder
+            .fromUriString(frontendOrigin)
+            .path("/login/success")
+            .queryParam("accessToken", accessToken)
+            .queryParam("email", encodedEmail)
+            .queryParam("name", encodedName)
+            .queryParam("profileUrl", profileUrl)
+            .queryParam("role", principalDetails.member().getRole())
+            .queryParam("signUpStatus", signUpStatus)
+            .build(true)
+            .toUriString();
         CookieUtil.addRefreshTokenCookie(response, refreshToken, cookieProps);
         response.sendRedirect(redirectUrl);
 

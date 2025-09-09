@@ -10,6 +10,10 @@ public record EcoStockUpdatePriceRecord(
         Integer raffleHistoryCount,
         Long beforePrice,
         Integer quantity,
-        Long initPrice
+        Long initPrice,
+        Double open,
+        Double high,
+        Double low,
+        Double close
 ) {
 }

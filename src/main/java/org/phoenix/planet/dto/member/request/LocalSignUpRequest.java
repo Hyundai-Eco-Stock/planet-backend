@@ -21,7 +21,8 @@ public record LocalSignUpRequest(
     )
     @NotBlank String birth,
     @NotBlank String address,
-    @NotBlank String detailAddress
+    @NotBlank String detailAddress,
+    @Pattern(regexp = "\\d{5}") @NotBlank String zipCode
 ) {
 
 }

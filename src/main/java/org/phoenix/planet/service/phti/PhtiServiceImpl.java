@@ -84,7 +84,7 @@ public class PhtiServiceImpl implements PhtiService {
     public PhtiResultResponse fetchMemberPhtiResult(long memberId) {
 
         return memberPhtiMapper.selectPhtiResultByMemberId(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("member id 에 해당하는 PHTI 결과가 없습니다."));
+            .orElse(null);
     }
 
     private PhtiResultResponse parseJsonType(String aiResponse) {

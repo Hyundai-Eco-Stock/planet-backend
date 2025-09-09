@@ -150,22 +150,56 @@
     <select id="findAllWithLastPrice"
             resultType="org.phoenix.planet.dto.eco_stock.raw.EcoStockWithLastPrice">
         SELECT
-            es.ECO_STOCK_ID as id,
-            es.NAME as name,
-            es.QUANTITY as quantity,
-            es.IMAGE_URL as imageUrl,
-            es.INIT_PRICE as initPrice,
-            COALESCE(sph.STOCK_PRICE, es.INIT_PRICE) as lastPrice,
-            sph.STOCK_PRICE_HISTORY_ID as stockPriceHistoryId
+            es.ECO_STOCK_ID AS id,
+            es.NAME         AS name,
+            es.QUANTITY     AS quantity,
+            es.IMAGE_URL    AS imageUrl,
+            es.INIT_PRICE   AS initPrice,
+            COALESCE(sph.STOCK_PRICE, es.INIT_PRICE) AS lastPrice,
+            sph.STOCK_PRICE_HISTORY_ID AS stockPriceHistoryId,
+            sph.STOCK_TIME             AS stockTime
         FROM ECO_STOCK es
         LEFT JOIN (
             SELECT
                 ECO_STOCK_ID,
                 STOCK_PRICE,
                 STOCK_PRICE_HISTORY_ID,
-                ROW_NUMBER() OVER (PARTITION BY ECO_STOCK_ID ORDER BY STOCK_TIME DESC) as rn
+                STOCK_TIME,
+                ROW_NUMBER() OVER (PARTITION BY ECO_STOCK_ID ORDER BY STOCK_TIME DESC) AS rn
             FROM STOCK_PRICE_HISTORY
-        ) sph ON es.ECO_STOCK_ID = sph.ECO_STOCK_ID AND sph.rn = 1
+        ) sph
+          ON es.ECO_STOCK_ID = sph.ECO_STOCK_ID
+         AND sph.rn = 1
         ORDER BY es.ECO_STOCK_ID
+
+    </select>
+    
+    <select id="findAllWithLastPriceByStockId"
+            resultType="org.phoenix.planet.dto.eco_stock.raw.EcoStockWithLastPrice">
+        SELECT
+            es.ECO_STOCK_ID AS id,
+            es.NAME         AS name,
+            es.QUANTITY     AS quantity,
+            es.IMAGE_URL    AS imageUrl,
+            es.INIT_PRICE   AS initPrice,
+            COALESCE(sph.STOCK_PRICE, es.INIT_PRICE) AS lastPrice,
+            sph.STOCK_PRICE_HISTORY_ID AS stockPriceHistoryId,
+            sph.STOCK_TIME             AS stockTime
+        FROM ECO_STOCK es
+        LEFT JOIN (
+            SELECT
+                ECO_STOCK_ID,
+                STOCK_PRICE,
+                STOCK_PRICE_HISTORY_ID,
+                STOCK_TIME,
+                ROW_NUMBER() OVER (
+                    PARTITION BY ECO_STOCK_ID
+                    ORDER BY STOCK_TIME DESC
+                ) AS rn
+            FROM STOCK_PRICE_HISTORY
+        ) sph
+          ON sph.ECO_STOCK_ID = es.ECO_STOCK_ID
+         AND sph.rn = 1
+        WHERE es.ECO_STOCK_ID = #{stockId}
     </select>
 </mapper>

@@ -1,5 +1,6 @@
 package org.phoenix.planet.dto.eco_stock.raw;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,5 +19,6 @@ public class EcoStockWithLastPrice {
     private Double initPrice;
     private Double lastPrice;
     private Long stockPriceHistoryId;
+    private LocalDateTime stockTime;
 }
 

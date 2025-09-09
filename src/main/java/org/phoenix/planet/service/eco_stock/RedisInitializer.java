@@ -32,7 +32,7 @@ public class RedisInitializer implements ApplicationRunner {
             for (EcoStockWithLastPrice ecoStock : ecoStocks) {
 
                 chartDataSecondRedisRepository.initializeStockPrice(ecoStock.getId(),
-                    ecoStock.getLastPrice(), ecoStock.getQuantity());
+                    ecoStock.getLastPrice(), ecoStock.getQuantity(),ecoStock.getStockTime());
             }
 
         } catch (Exception e) {

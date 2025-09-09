@@ -1,5 +1,6 @@
 package org.phoenix.planet.repository;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -8,13 +9,18 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.EcoStockError;
+import org.phoenix.planet.dto.eco_stock.raw.EcoStockWithLastPrice;
 import org.phoenix.planet.dto.eco_stock.raw.OhlcDto;
 import org.phoenix.planet.dto.eco_stock.raw.VolumeDto;
 import org.phoenix.planet.dto.eco_stock.response.ChartSingleDataResponse;
 import org.phoenix.planet.dto.eco_stock.response.UnifiedUpdateResult;
+import org.phoenix.planet.dto.eco_stock_info.response.EcoStockPriceResponse;
 import org.phoenix.planet.error.ecoStock.EcoStockException;
+import org.phoenix.planet.mapper.EcoStockMapper;
 import org.phoenix.planet.util.ecoStock.StockChartUtil;
 import org.phoenix.planet.util.websocket.StockDataJsonUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -177,7 +183,15 @@ public class ChartDataSecondRedisRepository {
         redis.call('EXPIRE', ohlc_key, ttl_seconds)
         redis.call('EXPIRE', volume_key, ttl_seconds)
         
-        return {1, price, new_price, new_quantity, new_ohlc_json, new_volume_json, 0, real_epoch_time}
+        return { 1,
+                 string.format("%.2f", price),
+                 string.format("%.2f", new_price),
+                 new_quantity,
+                 new_ohlc_json,
+                 new_volume_json,
+                 0,
+                 real_epoch_time
+                 }
         """;
 
     private static final String GET_AND_PUSH_CHART_DATA_SCRIPT = """
@@ -215,12 +229,15 @@ public class ChartDataSecondRedisRepository {
         return {ohlc_json, volume_json}
         
         """;
+    private final EcoStockMapper ecoStockMapper;
 
 
     public ChartDataSecondRedisRepository(
-        @Qualifier("webSocketRedisTemplate") StringRedisTemplate chartRedisTemplate) {
+        @Qualifier("webSocketRedisTemplate") StringRedisTemplate chartRedisTemplate,
+        EcoStockMapper ecoStockMapper) {
 
         this.chartRedisTemplate = chartRedisTemplate;
+        this.ecoStockMapper = ecoStockMapper;
     }
 
     public OhlcDto SecondOhlcDtoData(Long stockId, LocalDateTime now) {
@@ -252,6 +269,8 @@ public class ChartDataSecondRedisRepository {
     public UnifiedUpdateResult processTradeWithChart(Long stockId, Integer tradeQuantity,
         LocalDateTime time) {
 
+        ensureStockPriceInitialized(stockId, time); // ✅ 없으면 만든다
+
         long epochTime = StockChartUtil.convertLocalDateTimeToEpoch(time);
 
         long truncatedEpochTime = epochTime - (epochTime % 60); // 분 단위로 truncate
@@ -280,6 +299,22 @@ public class ChartDataSecondRedisRepository {
         }
     }
 
+    private void ensureStockPriceInitialized(Long stockId, LocalDateTime now) {
+        String key = "stock:price:" + stockId;
+
+        List<Object> vals = chartRedisTemplate.opsForHash()
+                .multiGet(key, Arrays.asList("price", "quantity"));
+
+        boolean missing = (vals == null || vals.size() < 2 || vals.get(0) == null || vals.get(1) == null);
+
+        if (!missing) return;
+
+        EcoStockWithLastPrice ecoStockWithLastPrice = ecoStockMapper.findAllWithLastPriceByStockId(stockId);
+
+        initializeStockPrice(stockId, ecoStockWithLastPrice.getLastPrice(),
+            ecoStockWithLastPrice.getQuantity(), ecoStockWithLastPrice.getStockTime());
+    }
+
     private List<String> getKeys(Long stockId, LocalDateTime time) {
 
         String stockPriceKey = STOCK_PRICE_KEY + stockId;
@@ -295,9 +330,9 @@ public class ChartDataSecondRedisRepository {
 
     private UnifiedUpdateResult parseResults(List<Object> results, int tradeQuantity) {
 
-        Double executedPrice = Double.valueOf(results.get(1).toString());
-
-        Double newMarketPrice = Double.valueOf(results.get(2).toString());
+        BigDecimal executedPrice = new BigDecimal(results.get(1).toString());
+        BigDecimal newMarketPrice = new BigDecimal(results.get(2).toString());
+        log.info(executedPrice.toPlainString());
 
         Integer newQuantity = ((Long) results.get(3)).intValue();
 
@@ -321,8 +356,8 @@ public class ChartDataSecondRedisRepository {
         VolumeDto volumeDto = StockDataJsonUtil.deserializeVolume(volumeJson);
 
         return UnifiedUpdateResult.builder()
-            .executedPrice(executedPrice)
-            .newMarketPrice(newMarketPrice)
+            .executedPrice(executedPrice.doubleValue())
+            .newMarketPrice(newMarketPrice.doubleValue())
             .newQuantity(newQuantity)
             .ohlcDto(ohlcDto)
             .volumeDto(volumeDto)
@@ -333,7 +368,7 @@ public class ChartDataSecondRedisRepository {
 
 
     // 초기 주식 가격 설정
-    public void initializeStockPrice(Long stockId, Double initialPrice, Long initialQuantity) {
+    public void initializeStockPrice(Long stockId, Double initialPrice, Long initialQuantity,LocalDateTime stockTime) {
 
         String key = STOCK_PRICE_KEY + stockId;
         log.info("initialize stock price " + initialPrice + " " + initialQuantity);
@@ -342,6 +377,7 @@ public class ChartDataSecondRedisRepository {
             "quantity", initialQuantity.toString(),
             "last_updated", String.valueOf(System.currentTimeMillis())
         );
+
         chartRedisTemplate.opsForHash().putAll(key, stockData);
     }
 
@@ -409,6 +445,54 @@ public class ChartDataSecondRedisRepository {
         chartRedisTemplate.delete(priceHistoryKey);
     }
 
+    // 가장 단순 / 직관 버전: KEYS + entries 반복
+    public List<EcoStockPriceResponse> getAllCurrentStockPricesBruteForce() {
+        // 1) 모든 키 찾기
+        Set<String> keys = chartRedisTemplate.keys("stock:price:*");
+        if (keys == null || keys.isEmpty()) return List.of();
+
+        ZoneId zone = ZoneId.systemDefault();
+
+        // 2) 각 키의 해시를 읽어 DTO로 매핑
+        return keys.stream()
+                .sorted() // 정렬 원하면 유지, 필요 없으면 제거
+                .map(key -> {
+                    Map<Object, Object> map = chartRedisTemplate.opsForHash().entries(key);
+                    if (map == null || map.isEmpty()) return null;
+
+                    String priceStr   = (String) map.get("price");
+                    String qtyStr     = (String) map.get("quantity");
+                    String updatedStr = (String) map.get("last_updated");
+
+                    Double price = priceStr != null ? Double.valueOf(priceStr) : 0.0;
+                    Long quantity = qtyStr != null ? Long.valueOf(qtyStr) : 0L;
+
+                    LocalDateTime stockTime = null;
+                    if (updatedStr != null) {
+                        long ms = Long.parseLong(updatedStr);
+                        stockTime = Instant.ofEpochMilli(ms).atZone(zone).toLocalDateTime();
+                    }
+
+                    // 키에서 ID가 필요하면 파싱, 필요 없으면 null로 두거나 필드 제거
+                    Long ecoStockId = parseIdFromKey(key); // "stock:price:123" -> 123
+
+                    return EcoStockPriceResponse.builder()
+                            .ecoStockId(ecoStockId)
+                            .stockPrice(price)
+                            .stockTime(stockTime)
+                            // .quantity(quantity)   // DTO에 있으면 추가
+                            .build();
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private static Long parseIdFromKey(String key) {
+        int idx = key.lastIndexOf(':');
+        if (idx < 0 || idx == key.length() - 1) return null;
+        try { return Long.valueOf(key.substring(idx + 1)); }
+        catch (NumberFormatException e) { return null; }
+    }
 
     // --- 내부 Helper 메서드들 ---
     private String ohlcZKey(Long ecoStockId) {
@@ -430,4 +514,5 @@ public class ChartDataSecondRedisRepository {
 
         return CACHING_VOLUME_KEY_PREFIX + ecoStockId + ":data";
     }
+
 }

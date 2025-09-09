@@ -148,6 +148,6 @@
         from MEMBER_STOCK_INFO
         where ECO_STOCK_ID = #{ecoStockId}
           and MEMBER_ID = #{memberId}
-          and CURRENT_TOTAL_QUANTITY > #{sellCount}
+          and CURRENT_TOTAL_QUANTITY >=  #{sellCount}
     </select>
 </mapper>

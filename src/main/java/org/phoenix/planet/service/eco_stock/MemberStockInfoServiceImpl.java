@@ -10,6 +10,7 @@ import org.phoenix.planet.dto.eco_stock_info.response.EcoStockPriceResponse;
 import org.phoenix.planet.dto.eco_stock_info.response.MemberStockInfoWithDetail;
 import org.phoenix.planet.error.ecoStock.EcoStockException;
 import org.phoenix.planet.mapper.MemberStockInfoMapper;
+import org.phoenix.planet.repository.ChartDataSecondRedisRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class MemberStockInfoServiceImpl implements MemberStockInfoService {
 
     private final MemberStockInfoMapper memberStockInfoMapper;
+    private final ChartDataSecondRedisRepository chartDataSecondRedisRepository;
 
     @Override
     public MemberStockInfo findPersonalStockInfoById(Long memberId, Long ecoStockId) {
@@ -41,7 +43,10 @@ public class MemberStockInfoServiceImpl implements MemberStockInfoService {
     }
 
     public List<EcoStockPriceResponse> getAllEcosStockPrice() {
-        return memberStockInfoMapper.findAllEcoStockPrice();
+
+        List<EcoStockPriceResponse> ecoStockPriceResponses= chartDataSecondRedisRepository.getAllCurrentStockPricesBruteForce();
+        log.info("{}",ecoStockPriceResponses);
+        return ecoStockPriceResponses;
     }
 
     @Override

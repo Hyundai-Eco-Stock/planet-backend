@@ -10,6 +10,8 @@ import org.phoenix.planet.dto.admin.order_product.CategoryItem;
 import org.phoenix.planet.dto.admin.order_product.DayItem;
 import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiItem;
 import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiItem;
+import org.phoenix.planet.dto.admin.response.CategorySalesResponse;
+import org.phoenix.planet.dto.admin.response.OrderCountResponse;
 
 @Mapper
 public interface AdminMapper {
@@ -29,4 +31,8 @@ public interface AdminMapper {
     List<DonationAmountsByDayItem> selectDonationAmountsByDay();
 
     List<DonatorPercentageItem> selectDonatorPercentage();
+
+    List<OrderCountResponse> select7DaysOrderCount();
+
+    List<CategorySalesResponse> selectCategorySales();
 }

@@ -39,6 +39,7 @@ public class EsService {
     @Value("${spring.elasticsearch.password}")
     private String password;
 
+
     // 유사 상품 추천
     private static final String searchSimilarIdsQuery = """
             {
@@ -110,6 +111,7 @@ public class EsService {
         int k = (size == null || size <= 0) ? defaultSize : size;
         String idx = this.knnIndex;
 
+        
         if (k < 7) {
             k = 7; // 최소 7개 보장
         }

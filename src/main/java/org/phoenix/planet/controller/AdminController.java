@@ -1,7 +1,9 @@
 package org.phoenix.planet.controller;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.admin.donation.DonationAmountsByDayResponse;
 import org.phoenix.planet.dto.admin.donation.DonatorPercentageResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMemberResponse;
@@ -11,8 +13,11 @@ import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByDayResp
 import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiResponse;
 import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiResponse;
 import org.phoenix.planet.service.admin.AdminService;
+import org.phoenix.planet.service.fcm.FcmService;
+import org.phoenix.planet.service.fcm.MemberDeviceTokenService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     private final AdminService adminService;
+    private final FcmService fcmService;
+    private final MemberDeviceTokenService memberDeviceTokenService;
 
     /**
      * 에코스톡 발급 비율 데이터 + 총 발급량 + 에코스톡 종류 수 +
@@ -120,4 +127,25 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/notification/test")
+    public ResponseEntity<Void> testNotification(
+            @LoginMemberId long loginMemberId
+    ) {
+
+        List<String> tokens = memberDeviceTokenService.getTokens(loginMemberId);
+        fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.");
+        return ResponseEntity.ok().build();
+    }
+
+    /* 7일간 주문량 */
+    @GetMapping("/7days-order-count")
+    public ResponseEntity<?> orderCountFor7Days() {
+        return ResponseEntity.ok(adminService.fetch7DaysOrderCount());
+    }
+
+    /* 카테고리별 판매량 */
+    @GetMapping("/category-sales")
+    public ResponseEntity<?> categorySales() {
+        return ResponseEntity.ok(adminService.fetchCategorySales());
+    }
 }

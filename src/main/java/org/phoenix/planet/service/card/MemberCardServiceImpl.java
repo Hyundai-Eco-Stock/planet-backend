@@ -17,10 +17,9 @@ public class MemberCardServiceImpl implements MemberCardService {
     private final MemberCardMapper memberCardMapper;
 
     @Override
-    public Long searchByCardCompanyIdAndCardNumber(Long cardCompanyId, String cardNumber) {
+    public Long searchByCardCompanyIdAndCardNumber(String cardNumber) {
 
-        return memberCardMapper.selectMemberIdByCardCompanyIdAndCardNumber(cardCompanyId,
-            cardNumber);
+        return memberCardMapper.selectMemberIdByCardCompanyIdAndCardNumber(cardNumber);
     }
 
     @Override

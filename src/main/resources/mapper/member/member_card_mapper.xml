@@ -31,10 +31,9 @@
     <select id="selectMemberIdByCardCompanyIdAndCardNumber"
         parameterType="map"
         resultType="java.lang.Long">
-        SELECT mc.member_id
-        FROM member_card mc
-        WHERE mc.card_company_id = #{cardCompanyId}
-        AND mc.card_number = #{cardNumber}
+        SELECT member_id
+        FROM member_card
+        WHERE card_number = #{cardNumber}
     </select>
     
     <!-- 특정 회원이 등록한 모든 카드 조회 -->

@@ -36,9 +36,7 @@ public class OfflinePayDetectedConsumer {
         log.info("Successfully deserialized event: {}", event);
 
         // 카드 정보로 memberId 조회
-        Long memberId = memberCardService.searchByCardCompanyIdAndCardNumber(
-            event.cardCompanyId(),
-            event.cardNumber());
+        Long memberId = memberCardService.searchByCardCompanyIdAndCardNumber(event.cardNumber());
 
         if (memberId != null) { // 등록된 카드이면
             Long ecoStockId = null;

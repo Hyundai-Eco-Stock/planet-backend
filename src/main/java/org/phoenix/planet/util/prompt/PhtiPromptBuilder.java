@@ -96,7 +96,7 @@ public class PhtiPromptBuilder {
             sb.append("안정파 (A) : Anchored\n\n");
 
             sb.append("4. 포인트 사용 습관 (POINT)\n");
-            sb.append("포인트 저축러 (S) : Saver\n");
+            sb.append("저축러 (S) : Saver\n");
             sb.append("즉시러 (I) : Immediate\n\n");
 
             phtiList.forEach(phti ->

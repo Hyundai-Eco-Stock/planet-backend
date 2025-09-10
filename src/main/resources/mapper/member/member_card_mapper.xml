@@ -12,12 +12,10 @@
         INSERT INTO member_card (
         member_card_id,
         member_id,
-        card_company_id,
         card_number
         ) VALUES (
         #{memberCardId},
         #{memberId},
-        #{cardCompanyId},
         #{cardNumber}
         )
     </insert>
@@ -44,14 +42,10 @@
         parameterType="long"
         resultType="org.phoenix.planet.dto.member_card.MemberCardInfoItem">
         SELECT
-        mc.member_card_id AS memberCardId,
-        mc.card_company_id AS memberCardCompanyId,
-        cc.name AS memberCardCompanyName,
-        mc.card_number AS cardNumber
-        FROM member_card mc
-        JOIN card_company cc
-        ON mc.card_company_id = cc.card_company_id
-        WHERE mc.member_id = #{memberId}
-        ORDER BY mc.created_at DESC
+        member_card_id AS memberCardId,
+        card_number AS cardNumber
+        FROM member_card
+        WHERE member_id = #{memberId}
+        ORDER BY created_at DESC
     </select>
 </mapper>

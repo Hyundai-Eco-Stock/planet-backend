@@ -27,7 +27,7 @@ public class MemberCardServiceImpl implements MemberCardService {
     public MemberCardsInfoResponse getInfoByMemberId(long memberId) {
 
         List<MemberCardInfoItem> items = memberCardMapper.findByMemberId(memberId);
-        
+
         return MemberCardsInfoResponse.builder()
             .memberCardInfoList(items)
             .build();
@@ -38,7 +38,6 @@ public class MemberCardServiceImpl implements MemberCardService {
 
         memberCardMapper.insertCardInfo(
             memberId,
-            request.cardCompanyId(),
             request.cardNumber());
     }
 

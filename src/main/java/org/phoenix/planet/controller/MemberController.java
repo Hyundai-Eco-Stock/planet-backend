@@ -14,6 +14,7 @@ import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
 import org.phoenix.planet.dto.member.response.MyOrderResponse;
 import org.phoenix.planet.dto.member.response.MyRaffleResponse;
+import org.phoenix.planet.dto.member.response.ProfileUpdateResponse;
 import org.phoenix.planet.dto.member_card.MemberCardRegisterRequest;
 import org.phoenix.planet.dto.member_card.MemberCardsInfoResponse;
 import org.phoenix.planet.dto.phti.raw.PhtiResultResponse;
@@ -65,14 +66,17 @@ public class MemberController {
         value = "/me",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateProfile(
+    public ResponseEntity<ProfileUpdateResponse> updateProfile(
         @LoginMemberId long loginMemberId,
         @RequestPart("updateProfile") @Valid ProfileUpdateRequest profileUpdateRequest,
         @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile
     ) {
 
-        memberService.updateMemberInfo(loginMemberId, profileUpdateRequest, profileImageFile);
-        return ResponseEntity.ok().build();
+        ProfileUpdateResponse response = memberService.updateMemberInfo(
+            loginMemberId,
+            profileUpdateRequest,
+            profileImageFile);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/me/cars")

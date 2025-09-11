@@ -84,8 +84,11 @@ public class ChartDataSecondRedisRepository {
             
             -- 가격 계산 (공급량 변화에 따른 기본값을 2배로 강화)
             local supply_change_ratio = quantity / new_quantity
+            
             local price_multiplier = 1 + ((supply_change_ratio - 1) * 3)
+            
             local base_new_price = price * price_multiplier
+            
             local new_price = base_new_price
             
             -- 주식 가격 원자적 업데이트
@@ -114,44 +117,27 @@ public class ChartDataSecondRedisRepository {
                 local open = tonumber(old_ohlc_json:match('"open":([%d%.]+)'))
                 local high = tonumber(old_ohlc_json:match('"high":([%d%.]+)'))
                 local low = tonumber(old_ohlc_json:match('"low":([%d%.]+)'))
-        
-                
-                high = math.max(high, price) -- 체결가 반영
-                low = (low == 0) and price or math.min(low, price)
-                
+            
+                high = math.max(high, new_price) -- 체결가 반영
+                low = (low == 0) and new_price or math.min(low, new_price)
+            
                 new_ohlc_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
-                    0, epoch_time, open, high, low, price)
+                    0, epoch_time, open, high, low, new_price)
             else
-                -- 1시간 내에서 가장 최근의 OHLC 데이터를 찾아서 close 값을 open으로 사용
-                local current_minute = tonumber(minute_field:sub(1,2))
-                local current_hour = tonumber(minute_field:sub(4,5))
+                -- 🟢 최신 데이터 찾기 (ZSET에서 직전 분 timestamp 가져오기)
+                local ohlc_z_key = "chart:ohlc:" .. stock_id .. ":timestamps"
+                local ohlc_h_key = "chart:ohlc:" .. stock_id .. ":data"
             
-                local open_price = price -- 기본값: 현재 체결가
-                local found_close = false
-            
-                -- 최대 60분 전까지 역순으로 검색
-                for i = 1, 60 do
-                    local check_minute = current_minute - i
-                    local check_hour = current_hour
-            
-                    -- 분이 음수가 되면 이전 시간으로
-                    if check_minute < 0 then
-                        check_minute = check_minute + 60
-                        check_hour = check_hour - 1
-                        if check_hour < 0 then
-                            check_hour = 23
-                        end
-                    end
-            
-                    local check_minute_field = string.format("%02d:%02d", check_hour, check_minute)
-                    local check_ohlc_json = redis.call('HGET', ohlc_key, check_minute_field)
-            
-                    if check_ohlc_json then
-                        local check_close = tonumber(check_ohlc_json:match('"close":([%d%.]+)'))
-                        if check_close then\s
-                            open_price = check_close
-                            found_close = true
-                            break -- 찾았으면 루프 종료
+                local last_ts_result = redis.call('ZREVRANGE', ohlc_z_key, 0, 0)
+                local open_price = new_price
+                
+                if last_ts_result and #last_ts_result > 0 then  -- ✅ 올바른 변수명
+                    local last_ts = last_ts_result[1]
+                    local prev_json = redis.call('HGET', ohlc_h_key, last_ts)
+                    if prev_json then
+                        local prev_close = tonumber(prev_json:match('"close":([%d%.]+)'))
+                        if prev_close then\s
+                            open_price = prev_close\s
                         end
                     end
                 end
@@ -168,19 +154,19 @@ public class ChartDataSecondRedisRepository {
                 local old_value = tonumber(old_volume_json:match('"value":(%d+)'))
                 local old_buy_count = tonumber(old_volume_json:match('"buyCount":(%d+)'))
                 local old_sell_count = tonumber(old_volume_json:match('"sellCount":(%d+)'))
-                
+            
                 local new_value = old_value + abs_quantity
                 local new_buy_count = old_buy_count
                 local new_sell_count = old_sell_count
-                
+            
                 if is_sell then
                     new_sell_count = old_sell_count + abs_quantity
                 else
                     new_buy_count = old_buy_count + abs_quantity
                 end
-                
+            
                 local color = (new_sell_count > new_buy_count) and "SELL" or "BUY"
-                
+            
                 new_volume_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"value":%d,"color":"%s","buyCount":%d,"sellCount":%d}',
                     0, epoch_time, new_value, color, new_buy_count, new_sell_count)
             else

@@ -37,6 +37,7 @@
         profile_url,
         pwd_hash,
         provider,
+        birth,
         address,
         detail_address,
         zip_code,
@@ -50,6 +51,7 @@
         #{profileUrl, jdbcType=VARCHAR},
         #{pwdHash, jdbcType=VARCHAR},
         #{provider, jdbcType=VARCHAR},
+        #{birth, jdbcType=VARCHAR},
         #{address, jdbcType=VARCHAR},
         #{detailAddress, jdbcType=VARCHAR},
         #{zipCode, jdbcType=VARCHAR},
@@ -157,7 +159,8 @@
             ofType="org.phoenix.planet.dto.member.response.PointExchangeHistory"
             javaType="java.util.List">
             <id column="point_exchange_history_id" property="id"/>
-            <result column="point_price" property="pointPrice" jdbcType="NUMERIC" javaType="double"/>
+            <result column="point_price" property="pointPrice" jdbcType="NUMERIC"
+                javaType="double"/>
             <result column="status" property="status"/>
             <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
                 javaType="java.time.LocalDateTime"/>

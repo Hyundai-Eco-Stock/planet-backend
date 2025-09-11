@@ -12,7 +12,7 @@ public class SecurityWhitelist {
         "/swagger-ui/**", "/v3/api-docs/**",
         "/health",
         "/ws/**",
-        "/auth/access-token/regenerate", "/auth/login", "/auth/success",
+        "/auth/access-token/regenerate", "/auth/login", "/auth/logout", "/auth/success",
         "/auth/password-change-mail", "/auth/password-change-token/valid", "/auth/change-password",
         "/auth/signup/local",
         "/eco-stock/list/**", "/eco-stock/history/**",

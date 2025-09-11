@@ -11,6 +11,7 @@ import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
 import org.phoenix.planet.dto.member.response.MyOrderResponse;
 import org.phoenix.planet.dto.member.response.MyRaffleResponse;
+import org.phoenix.planet.dto.member.response.ProfileUpdateResponse;
 import org.phoenix.planet.dto.member.response.SignUpResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +32,8 @@ public interface MemberService {
 
     MemberProfileResponse searchProfile(long loginMemberId);
 
-    void updateMemberInfo(long loginMemberId, @Valid ProfileUpdateRequest profileUpdateRequest,
+    ProfileUpdateResponse updateMemberInfo(long loginMemberId,
+        @Valid ProfileUpdateRequest profileUpdateRequest,
         MultipartFile profileImageFile);
 
     List<MyOrderResponse> getMyOrders(Long memberId);

@@ -68,7 +68,13 @@ public class S3FileUtil {
     private String upload(MultipartFile file, String path) {
 
         try {
-            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+//            String originalFilename = file.getOriginalFilename();
+//            if (originalFilename == null) {
+//                throw new IllegalArgumentException("파일 이름이 비어 있습니다.");
+//            }
+//
+//            String changedFilename = originalFilename.replace(" ", "_");
+            String filename = UUID.randomUUID().toString();
             String fullFilePath = path + filename;
 
             s3Client.putObject(
@@ -136,15 +142,17 @@ public class S3FileUtil {
      * QR 코드 바이트 배열을 S3에 업로드
      */
     public String uploadBytes(String filePath, byte[] imageBytes, String contentType) {
+
         try {
             // ByteArrayInputStream으로 변환하여 업로드
             try (ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes)) {
                 PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                        .bucket(BUCKET_NAME)
-                        .key(filePath)
-                        .build();
+                    .bucket(BUCKET_NAME)
+                    .key(filePath)
+                    .build();
 
-                s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, imageBytes.length));
+                s3Client.putObject(putObjectRequest,
+                    RequestBody.fromInputStream(inputStream, imageBytes.length));
             }
 
             return filePath;

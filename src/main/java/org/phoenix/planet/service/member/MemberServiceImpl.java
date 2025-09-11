@@ -13,6 +13,7 @@ import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
 import org.phoenix.planet.dto.member.response.MyOrderResponse;
 import org.phoenix.planet.dto.member.response.MyRaffleResponse;
+import org.phoenix.planet.dto.member.response.ProfileUpdateResponse;
 import org.phoenix.planet.dto.member.response.SignUpResponse;
 import org.phoenix.planet.mapper.MemberMapper;
 import org.phoenix.planet.util.file.CloudFrontFileUtil;
@@ -58,9 +59,17 @@ public class MemberServiceImpl implements MemberService {
             .build();
     }
 
+    /**
+     * 프로필 이미지 수정 시 url 응답
+     *
+     * @param loginMemberId
+     * @param request
+     * @param profileImageFile
+     * @return ProfileUpdateResponse
+     */
     @Override
     @Transactional
-    public void updateMemberInfo(
+    public ProfileUpdateResponse updateMemberInfo(
         long loginMemberId,
         ProfileUpdateRequest request,
         MultipartFile profileImageFile) {
@@ -80,10 +89,16 @@ public class MemberServiceImpl implements MemberService {
             request.detailAddress());
 
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
-            String profileFilePath = s3FileUtil.uploadMemberProfile(profileImageFile,
+            String profileFilePath = s3FileUtil.uploadMemberProfile(
+                profileImageFile,
                 loginMemberId);
             memberMapper.updateProfileUrl(loginMemberId, profileFilePath);
+            return ProfileUpdateResponse.builder()
+                .profileImgUrl(cloudFrontFileUtil.generateUrl(profileFilePath))
+                .build();
         }
+        return ProfileUpdateResponse.builder().build();
+
     }
 
     @Override

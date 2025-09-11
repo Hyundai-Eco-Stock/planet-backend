@@ -14,5 +14,5 @@ public interface EcoStockPriceHistoryMapper {
 
     void save(@Param("stockId") Long stockId,@Param("newPrice") double newPrice);
 
-    void insertBatch(List<RedisStockPriceHistory> historyList);
+    int insertBatch(List<RedisStockPriceHistory> historyList);
 }

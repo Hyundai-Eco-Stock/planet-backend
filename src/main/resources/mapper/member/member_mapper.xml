@@ -51,7 +51,7 @@
         #{profileUrl, jdbcType=VARCHAR},
         #{pwdHash, jdbcType=VARCHAR},
         #{provider, jdbcType=VARCHAR},
-        #{birth, jdbcType=VARCHAR},
+        TO_DATE(#{birth}, 'YYYY-MM-DD'),
         #{address, jdbcType=VARCHAR},
         #{detailAddress, jdbcType=VARCHAR},
         #{zipCode, jdbcType=VARCHAR},

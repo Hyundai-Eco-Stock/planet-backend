@@ -4,13 +4,47 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="org.phoenix.planet.mapper.MemberCardMapper">
+    <!-- 카드 등록 -->
+    <insert id="insertCardInfo" parameterType="map">
+        <selectKey keyProperty="memberCardId" resultType="long" order="BEFORE">
+            SELECT SEQ_MEMBER_CARD.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO member_card (
+        member_card_id,
+        member_id,
+        card_number
+        ) VALUES (
+        #{memberCardId},
+        #{memberId},
+        #{cardNumber}
+        )
+    </insert>
     
+    <!-- 회원이 가진 카드 삭제 -->
+    <delete id="deleteByMemberIdAndMemberCardId" parameterType="map">
+        DELETE FROM member_card
+        WHERE member_id = #{memberId}
+        AND member_card_id = #{memberCardId}
+    </delete>
+    
+    <!-- 카드사ID + 카드번호로 memberId 조회 -->
     <select id="selectMemberIdByCardCompanyIdAndCardNumber"
         parameterType="map"
         resultType="java.lang.Long">
-        SELECT mc.member_id
-        FROM member_card mc
-        WHERE mc.card_company_id = #{cardCompanyId}
-        AND mc.card_number = #{cardNumber}
+        SELECT member_id
+        FROM member_card
+        WHERE card_number = #{cardNumber}
+    </select>
+    
+    <!-- 특정 회원이 등록한 모든 카드 조회 -->
+    <select id="findByMemberId"
+        parameterType="long"
+        resultType="org.phoenix.planet.dto.member_card.MemberCardInfoItem">
+        SELECT
+        member_card_id AS memberCardId,
+        card_number AS cardNumber
+        FROM member_card
+        WHERE member_id = #{memberId}
+        ORDER BY created_at DESC
     </select>
 </mapper>

@@ -4,5 +4,8 @@ public record VolumeDto(
         long stockPriceHistoryId,
         long time,
         int value,
-        String color) {
+        String color,
+        int buyCount,
+        int sellCount
+        ) {
 }

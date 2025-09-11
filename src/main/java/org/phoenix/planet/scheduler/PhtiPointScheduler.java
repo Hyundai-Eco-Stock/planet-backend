@@ -20,8 +20,8 @@ public class PhtiPointScheduler {
     private final MemberDeviceTokenService memberDeviceTokenService;
     private final MemberPhtiMapper memberPhtiMapper;
 
-    @Scheduled(cron = "0 10 * * * *") // 개발 시
-//    @Scheduled(cron = "0 0 10 * * *") // 운영 시
+    //    @Scheduled(cron = "0 10 * * * *") // 개발 시
+    @Scheduled(cron = "0 0 10 * * *") // 운영 시
     @DistributedScheduled(lockKey = "planet:prod:phti:point:notification")
     public void runTask() {
 
@@ -34,14 +34,16 @@ public class PhtiPointScheduler {
                 fcmService.sendCustomNotification(
                     memberDeviceTokenService.getTokens(memberPhti.memberId()),
                     "%s 저축러(S) 고객님께 드리는 소식".formatted(memberPhti.phti()),
-                    "고객님의 꾸준한 저축 덕분에 포인트가 알차게 쌓이고 있어요. 곧 큰 혜택으로 바꿔드릴게요 \uD83D\uDCB0");
+                    "고객님의 꾸준한 저축 덕분에 포인트가 알차게 쌓이고 있어요. 곧 큰 혜택으로 바꿔드릴게요 \uD83D\uDCB0",
+                    "/my-page/my-assets");
             }
             // 즉시러 (I) : Immediate (포인트 생기면 바로바로 교환)
             else if (memberPhti.phti().contains("I")) {
                 fcmService.sendCustomNotification(
                     memberDeviceTokenService.getTokens(memberPhti.memberId()),
                     "%s 즉시러(I) 고객님께 드리는 소식".formatted(memberPhti.phti()),
-                    "새로운 포인트 교환 상품이 업데이트되었습니다! 지금 바로 교환하고 즉시 혜택을 누리세요 ⚡");
+                    "새로운 포인트 교환 상품이 업데이트되었습니다! 지금 바로 교환하고 즉시 혜택을 누리세요 ⚡",
+                    "/my-page/my-assets");
             }
         });
     }

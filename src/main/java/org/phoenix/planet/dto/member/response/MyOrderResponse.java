@@ -29,4 +29,5 @@ public class MyOrderResponse {
     private String paymentStatus;
     private int salePercent;
     private int finalProductPrice;
+    private int refundDonationPrice;
 }

@@ -10,8 +10,7 @@
         SELECT
         e.name AS name,
         COUNT(si.stock_issue_id) AS count,
-        ROUND(COUNT(si.stock_issue_id) * 100.0 / SUM(COUNT(si.stock_issue_id)) OVER(), 1) AS value,
-        '#3B82F6' AS color -- TODO: 프론트에서 색상 매핑 가능
+        ROUND(COUNT(si.stock_issue_id) * 100.0 / SUM(COUNT(si.stock_issue_id)) OVER(), 1) AS value
         FROM stock_issue si
         JOIN eco_stock e ON si.eco_stock_id = e.eco_stock_id
         WHERE si.status = 'ISSUED'

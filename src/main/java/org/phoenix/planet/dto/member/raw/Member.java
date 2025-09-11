@@ -18,6 +18,7 @@ public class Member {
     private long id;
     private String email;
     private String name;
+    @Setter
     private String profileUrl;
     @Setter
     private String pwdHash;
@@ -25,16 +26,10 @@ public class Member {
     private String birth;
     private String address;
     private String detailAddress;
+    private String zipCode;
     private Role role;
     private Sex sex;
     private Long point;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    public void updateProfile(String profileUrl) {
-
-        this.profileUrl = profileUrl;
-    }
-
-
 }

@@ -20,8 +20,8 @@ public class PhtiValueScheduler {
     private final MemberDeviceTokenService memberDeviceTokenService;
     private final MemberPhtiMapper memberPhtiMapper;
 
-    @Scheduled(cron = "0 30 * * * *") // 개발 시
-//    @Scheduled(cron = "0 0 12 * * *") // 운영 시
+    //    @Scheduled(cron = "0 30 * * * *") // 개발 시
+    @Scheduled(cron = "0 0 12 * * *") // 운영 시
     @DistributedScheduled(lockKey = "planet:prod:phti:value:notification")
     public void runTask() {
 
@@ -34,7 +34,8 @@ public class PhtiValueScheduler {
                 fcmService.sendCustomNotification(
                     memberDeviceTokenService.getTokens(memberPhti.memberId()),
                     "%s 기부자(G) 고객님께 드리는 소식".formatted(memberPhti.phti()),
-                    "최근 결제 때 멋진 기부를 해주셨네요 \uD83D\uDE4F 또 한 번의 따뜻한 나눔을 이어가실까요??");
+                    "최근 결제 때 멋진 기부를 해주셨네요 \uD83D\uDE4F 또 한 번의 따뜻한 나눔을 이어가실까요??",
+                    "/shopping/main");
 //                fcmService.sendCustomNotification(
 //                    memberDeviceTokenService.getTokens(memberPhti.memberId()),
 //                    "%s 기부자(G) 고객님께 드리는 소식".formatted(memberPhti.phti()),
@@ -46,7 +47,8 @@ public class PhtiValueScheduler {
                 fcmService.sendCustomNotification(
                     memberDeviceTokenService.getTokens(memberPhti.memberId()),
                     "%s 실속파(P) 고객님께 드리는 소식".formatted(memberPhti.phti()),
-                    "오늘 6시 에코딜 상품 구매 시 추가 에코스톡이 지급됩니다! 절약과 혜택을 동시에 누려보세요 \uD83C\uDF81");
+                    "오늘 6시 에코딜 상품 구매 시 추가 에코스톡이 지급됩니다! 절약과 혜택을 동시에 누려보세요 \uD83C\uDF81",
+                    "/eco-deal/main");
             }
         });
     }

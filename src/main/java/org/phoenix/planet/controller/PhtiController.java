@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.annotation.LoginMemberId;
+import org.phoenix.planet.dto.phti.raw.Phti;
 import org.phoenix.planet.dto.phti.raw.PhtiResultResponse;
 import org.phoenix.planet.dto.phti.request.PhtiSurveyAnswer;
 import org.phoenix.planet.dto.phti.response.PhtiQuestionWithChoicesResponse;
@@ -23,6 +24,13 @@ public class PhtiController {
 
     private final PhtiService phtiService;
 
+    @GetMapping
+    public ResponseEntity<List<Phti>> fetchAllPhtiList() {
+
+        List<Phti> phtiList = phtiService.fetchAllPhtiList();
+        return ResponseEntity.ok(phtiList);
+    }
+
     @GetMapping("/questions-with-choices")
     public ResponseEntity<List<PhtiQuestionWithChoicesResponse>> fetchPhtiQuestionsWithChoices() {
 
@@ -31,7 +39,7 @@ public class PhtiController {
     }
 
     @PostMapping("/surveys")
-    public ResponseEntity<?> submitPhtiSurveyChoiceAnswer(
+    public ResponseEntity<PhtiResultResponse> submitPhtiSurveyChoiceAnswer(
         @LoginMemberId Long memberId,
         @RequestBody PhtiSurveyAnswer phtiSurveyAnswer
     ) {

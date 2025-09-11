@@ -42,5 +42,15 @@
             #{id}
         </foreach>
     </update>
+    
+    <select id="checkRaffleEntry" resultType="java.lang.Boolean">
+        select
+            case
+                when count(*) > 0 then 1
+                else 0
+            end
+        from raffle_history
+        where member_id = #{memberId} and raffle_id = #{raffleId}
+    </select>
 </mapper>
 

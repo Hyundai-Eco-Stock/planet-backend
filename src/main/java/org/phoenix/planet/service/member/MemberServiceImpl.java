@@ -2,14 +2,18 @@ package org.phoenix.planet.service.member;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.member.raw.Member;
+import org.phoenix.planet.dto.member.request.KakaoSignUpRequest;
+import org.phoenix.planet.dto.member.request.LocalSignUpRequest;
 import org.phoenix.planet.dto.member.request.ProfileUpdateRequest;
-import org.phoenix.planet.dto.member.request.SignUpRequest;
 import org.phoenix.planet.dto.member.response.MemberListResponse;
+import org.phoenix.planet.dto.member.response.MemberPointWithHistoriesResponse;
 import org.phoenix.planet.dto.member.response.MemberProfileResponse;
 import org.phoenix.planet.dto.member.response.MyEcoDealResponse;
 import org.phoenix.planet.dto.member.response.MyOrderResponse;
 import org.phoenix.planet.dto.member.response.MyRaffleResponse;
+import org.phoenix.planet.dto.member.response.ProfileUpdateResponse;
 import org.phoenix.planet.dto.member.response.SignUpResponse;
 import org.phoenix.planet.mapper.MemberMapper;
 import org.phoenix.planet.util.file.CloudFrontFileUtil;
@@ -51,12 +55,21 @@ public class MemberServiceImpl implements MemberService {
                     : null)
             .address(member.getAddress())
             .detailAddress(member.getDetailAddress())
+            .zipCode(member.getZipCode())
             .build();
     }
 
+    /**
+     * 프로필 이미지 수정 시 url 응답
+     *
+     * @param loginMemberId
+     * @param request
+     * @param profileImageFile
+     * @return ProfileUpdateResponse
+     */
     @Override
     @Transactional
-    public void updateMemberInfo(
+    public ProfileUpdateResponse updateMemberInfo(
         long loginMemberId,
         ProfileUpdateRequest request,
         MultipartFile profileImageFile) {
@@ -76,17 +89,60 @@ public class MemberServiceImpl implements MemberService {
             request.detailAddress());
 
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
-            String profileFilePath = s3FileUtil.uploadMemberProfile(profileImageFile,
+            String profileFilePath = s3FileUtil.uploadMemberProfile(
+                profileImageFile,
                 loginMemberId);
             memberMapper.updateProfileUrl(loginMemberId, profileFilePath);
+            return ProfileUpdateResponse.builder()
+                .profileImgUrl(cloudFrontFileUtil.generateUrl(profileFilePath))
+                .build();
         }
+        return ProfileUpdateResponse.builder().build();
+
+    }
+
+    @Override
+    @Transactional
+    public SignUpResponse signUp(
+        LocalSignUpRequest request,
+        MultipartFile profileImage) {
+
+        // 패스워드 해시화
+        String pwdHash = passwordEncoder.encode(request.password());
+
+        Member member = Member.builder()
+            .pwdHash(pwdHash)
+            .email(request.email())
+            .name(request.name())
+            .sex(request.sex())
+            .birth(request.birth())
+            .address(request.address())
+            .detailAddress(request.detailAddress())
+            .zipCode(request.zipCode())
+            .role(Role.USER)
+            .build();
+
+        // 새로운 멤버 정보 넣기
+        memberMapper.insert(member);
+
+        // 프로필 저장
+        String savedFilePath = null;
+        if (profileImage != null && !profileImage.isEmpty()) {
+            savedFilePath = s3FileUtil.uploadMemberProfile(profileImage, member.getId());
+            memberMapper.updateProfileUrl(member.getId(), savedFilePath);
+        }
+
+        return SignUpResponse.builder()
+            .profileUrl(
+                (savedFilePath != null) ? cloudFrontFileUtil.generateUrl(savedFilePath) : null)
+            .build();
     }
 
     @Override
     @Transactional
     public SignUpResponse signUp(
         long loginMemberId,
-        SignUpRequest request,
+        KakaoSignUpRequest request,
         MultipartFile profileImage) {
 
         // 패스워드 해시화
@@ -106,7 +162,8 @@ public class MemberServiceImpl implements MemberService {
             request.sex(),
             request.birth(),
             request.address(),
-            request.detailAddress()
+            request.detailAddress(),
+            request.zipCode()
         );
 
         return SignUpResponse.builder()
@@ -151,5 +208,11 @@ public class MemberServiceImpl implements MemberService {
     public List<MyRaffleResponse> getMyRaffles(Long memberId) {
 
         return memberMapper.getMyRaffles(memberId);
+    }
+
+    @Override
+    public MemberPointWithHistoriesResponse fetchPointHistories(long memberId) {
+
+        return memberMapper.selectPointWithHistories(memberId);
     }
 }

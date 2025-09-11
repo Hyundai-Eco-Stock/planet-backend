@@ -128,12 +128,10 @@ public class AdminController {
     }
 
     @PostMapping("/notification/test")
-    public ResponseEntity<Void> testNotification(
-            @LoginMemberId long loginMemberId
-    ) {
+    public ResponseEntity<Void> testNotification() {
 
-        List<String> tokens = memberDeviceTokenService.getTokens(loginMemberId);
-        fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.");
+        List<String> tokens = memberDeviceTokenService.findAll();
+        fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.", "/login");
         return ResponseEntity.ok().build();
     }
 
@@ -148,4 +146,5 @@ public class AdminController {
     public ResponseEntity<?> categorySales() {
         return ResponseEntity.ok(adminService.fetchCategorySales());
     }
+
 }

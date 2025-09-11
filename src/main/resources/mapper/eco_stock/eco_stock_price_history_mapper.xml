@@ -4,39 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="org.phoenix.planet.mapper.EcoStockPriceHistoryMapper">
-
-    <select id="findAllPriceHistory"
-            resultType="org.phoenix.planet.dto.eco_stock.raw.StockData">
-        SELECT
-        sph.stock_price_history_id AS stock_price_history_id,
-        sph.eco_stock_id AS ecoStockId,
-        sph.stock_time AS stockTime,
-        sph.stock_price AS stockPrice,
-        sph.sell_count AS sellCount,
-        sph.buy_count AS buyCount
-        FROM stock_price_history sph
-        WHERE sph.eco_stock_id = #{ecoStockId}
-        ORDER BY sph.stock_time ASC
-    </select>
-
-    <insert id="saveIfNotExists" parameterType="org.phoenix.planet.dto.eco_stock.raw.StockData">
-        <selectKey keyProperty="stockPriceHistoryId" resultType="long" order="BEFORE">
-            SELECT SEQ_STOCK_PRICE_HISTORY.NEXTVAL FROM dual
-        </selectKey>
-
-        MERGE INTO stock_price_history target
-        USING (
-        SELECT #{ecoStockId} AS eco_stock_id,
-        CAST(#{stockTime} AS DATE) AS stock_time
-        FROM dual ) src
-        ON ( target.eco_stock_id = src.eco_stock_id AND target.stock_time = src.stock_time )
-        WHEN NOT MATCHED THEN
-        INSERT ( stock_price_history_id, eco_stock_id, stock_time,
-        stock_price, sell_count, buy_count )
-        VALUES ( #{stockPriceHistoryId}, #{ecoStockId}, #{stockTime},
-        #{stockPrice}, #{sellCount}, #{buyCount} )
-    </insert>
-
+    
     <select id="findAllLatestPrice" resultType="org.phoenix.planet.dto.eco_stock.raw.StockData">
         SELECT * FROM (
         SELECT
@@ -51,4 +19,54 @@
         ) WHERE rn = 1
     </select>
 
+    <insert id="save">
+        INSERT INTO STOCK_PRICE_HISTORY (
+            STOCK_PRICE_HISTORY_ID,
+            STOCK_TIME,
+            STOCK_PRICE,
+            ECO_STOCK_ID,
+            CREATED_AT,
+            SELL_COUNT,
+            BUY_COUNT
+        ) VALUES (
+            SEQ_STOCK_PRICE_HISTORY.NEXTVAL,
+            SYSDATE,
+            #{newPrice},
+            #{stockId},
+            SYSDATE,
+            0,
+            0
+        )
+    </insert>
+    
+    <insert id="insertBatch" parameterType="java.util.List">
+        INSERT INTO STOCK_PRICE_HISTORY (
+            STOCK_PRICE_HISTORY_ID,
+            ECO_STOCK_ID,
+            STOCK_TIME,
+            STOCK_PRICE,
+            SELL_COUNT,
+            BUY_COUNT,
+            CREATED_AT
+        )
+        SELECT
+            SEQ_STOCK_PRICE_HISTORY.NEXTVAL,
+            ECO_STOCK_ID,
+            STOCK_TIME,
+            STOCK_PRICE,
+            SELL_COUNT,
+            BUY_COUNT,
+            SYSDATE
+        FROM (
+            <foreach collection="list" item="item" separator=" UNION ALL ">
+                SELECT
+                    #{item.ecoStockId} as ECO_STOCK_ID,
+                    #{item.time, jdbcType=TIMESTAMP} as STOCK_TIME,
+                    #{item.price} as STOCK_PRICE,
+                    #{item.sellCount, jdbcType=INTEGER} as SELL_COUNT,
+                    #{item.buyCount, jdbcType=INTEGER} as BUY_COUNT
+                FROM DUAL
+            </foreach>
+        )
+    </insert>
 </mapper>

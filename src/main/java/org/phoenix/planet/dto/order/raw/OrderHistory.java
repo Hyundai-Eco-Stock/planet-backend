@@ -40,4 +40,7 @@ public class OrderHistory {
 
     private LocalDateTime updatedAt;
 
+    @Builder.Default
+    private Long refundDonationPrice = 0L;
+
 }

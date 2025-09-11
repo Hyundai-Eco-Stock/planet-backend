@@ -5,8 +5,8 @@ public record MemberStockInfoWithDetail(
         Long memberId,
         Long ecoStockId,
         Integer currentTotalQuantity,
-        Long currentTotalAmount,
-        Integer point,
+        Double currentTotalAmount,
+        Double point,
         String ecoStockName
 ) {
 }

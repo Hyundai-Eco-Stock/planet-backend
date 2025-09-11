@@ -136,4 +136,18 @@
         ) t
         WHERE t.r = 1
     </select>
+    
+    <select id="validateUserStock" resultType="org.phoenix.planet.dto.eco_stock.raw.MemberStockInfo">
+        select
+        MEMBER_STOCK_INFO_ID,
+        MEMBER_ID,
+        ECO_STOCK_ID,
+        CURRENT_TOTAL_QUANTITY,
+        CURRENT_TOTAL_AMOUNT,
+        0 as point
+        from MEMBER_STOCK_INFO
+        where ECO_STOCK_ID = #{ecoStockId}
+          and MEMBER_ID = #{memberId}
+          and CURRENT_TOTAL_QUANTITY >=  #{sellCount}
+    </select>
 </mapper>

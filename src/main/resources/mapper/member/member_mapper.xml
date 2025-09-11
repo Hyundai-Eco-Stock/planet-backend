@@ -4,7 +4,7 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="org.phoenix.planet.mapper.MemberMapper">
-
+    
     <resultMap id="MemberResultMap" type="org.phoenix.planet.dto.member.raw.Member">
         <id column="member_id" property="id"/>
         <result column="email" property="email"/>
@@ -15,26 +15,21 @@
         <result column="birth" property="birth"/>
         <result column="address" property="address"/>
         <result column="detail_address" property="detailAddress"/>
-
-        <result column="role" property="role"
-            javaType="org.phoenix.planet.constant.Role"
-            typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
-        <result column="sex" property="sex"
-            javaType="org.phoenix.planet.constant.Sex"
-            typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="zip_code" property="zipCode"/>
+        <result column="role" property="role"/>
+        <result column="sex" property="sex"/>
         <result column="point" property="point"/>
-
         <result column="created_at" property="createdAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
         <result column="updated_at" property="updatedAt" jdbcType="DATE"
             javaType="java.time.LocalDateTime"/>
     </resultMap>
-
+    
     <insert id="insert" parameterType="org.phoenix.planet.dto.member.raw.Member">
         <selectKey keyProperty="id" resultType="long" order="BEFORE">
             SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
         </selectKey>
-
+        
         INSERT INTO MEMBER (
         member_id,
         email,
@@ -42,8 +37,10 @@
         profile_url,
         pwd_hash,
         provider,
+        birth,
         address,
         detail_address,
+        zip_code,
         role,
         sex,
         updated_at
@@ -54,21 +51,23 @@
         #{profileUrl, jdbcType=VARCHAR},
         #{pwdHash, jdbcType=VARCHAR},
         #{provider, jdbcType=VARCHAR},
+        #{birth, jdbcType=VARCHAR},
         #{address, jdbcType=VARCHAR},
         #{detailAddress, jdbcType=VARCHAR},
+        #{zipCode, jdbcType=VARCHAR},
         #{role},
         #{sex, jdbcType=VARCHAR},
         SYSDATE
         )
     </insert>
-
+    
     <update id="updateProfileUrl" parameterType="map">
         UPDATE MEMBER
         SET profile_url = #{profileUrl},
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
-
+    
     <update id="update" parameterType="map">
         UPDATE MEMBER
         SET
@@ -77,10 +76,11 @@
         birth = TO_DATE(#{birth}, 'YYYY-MM-DD'),
         address = #{address},
         detail_address = #{detailAddress},
+        zip_code = #{zipCode},
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
-
+    
     <update id="updatePassword" parameterType="map">
         UPDATE MEMBER
         SET
@@ -88,7 +88,7 @@
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
-
+    
     <update id="updateProfile">
         UPDATE MEMBER
         SET
@@ -101,7 +101,7 @@
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
-
+    
     <select id="findById" parameterType="long" resultMap="MemberResultMap">
         SELECT
         member_id,
@@ -113,6 +113,7 @@
         TO_CHAR(birth, 'YYYY-MM-DD') AS birth,
         address,
         detail_address,
+        zip_code,
         role,
         sex,
         point,
@@ -121,7 +122,7 @@
         FROM MEMBER
         WHERE member_id = #{memberId}
     </select>
-
+    
     <select id="findByEmail" parameterType="string" resultMap="MemberResultMap">
         SELECT
         member_id,
@@ -139,7 +140,7 @@
         FROM MEMBER
         WHERE email = #{email}
     </select>
-
+    
     <select id="findAll" resultType="org.phoenix.planet.dto.member.response.MemberListResponse">
         SELECT
         member_id,
@@ -149,7 +150,43 @@
         FROM MEMBER
         WHERE role = 'USER'
     </select>
-
+    
+    <resultMap id="PointWithHistoriesResultMap"
+        type="org.phoenix.planet.dto.member.response.MemberPointWithHistoriesResponse">
+        <id column="member_id" property="memberId"/>
+        <result column="point" property="currentPoint"/>
+        <collection property="histories"
+            ofType="org.phoenix.planet.dto.member.response.PointExchangeHistory"
+            javaType="java.util.List">
+            <id column="point_exchange_history_id" property="id"/>
+            <result column="point_price" property="pointPrice" jdbcType="NUMERIC"
+                javaType="double"/>
+            <result column="status" property="status"/>
+            <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"
+                javaType="java.time.LocalDateTime"/>
+            <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"
+                javaType="java.time.LocalDateTime"/>
+        </collection>
+    </resultMap>
+    
+    <select id="selectPointWithHistories" parameterType="long"
+        resultMap="PointWithHistoriesResultMap">
+        SELECT
+        m.member_id,
+        m.point,
+        peh.point_exchange_history_id,
+        point_price,
+        peh.status,
+        peh.created_at,
+        peh.updated_at
+        FROM member m
+        LEFT JOIN point_exchange_history peh
+        ON m.member_id = peh.member_id
+        WHERE m.member_id = #{memberId}
+        ORDER BY peh.created_at DESC
+    </select>
+    
+    
     <!-- 포인트 차감 -->
     <update id="deductPointsByMemberId">
         UPDATE member
@@ -158,7 +195,7 @@
         WHERE member_id = #{memberId}
         AND point >= #{points}
     </update>
-
+    
     <!-- 포인트 복구 -->
     <update id="restorePointsByMemberId">
         UPDATE member
@@ -166,8 +203,8 @@
         updated_at = SYSDATE
         WHERE member_id = #{memberId}
     </update>
-
-
+    
+    
     <!--  마이페이지 - 구매내역 -->
     <select id="findMyOrders" parameterType="long"
         resultType="org.phoenix.planet.dto.member.response.MyOrderResponse">
@@ -182,6 +219,7 @@
         H.ECO_DEAL_QR_URL,
         H.MEMBER_ID,
         H.CREATED_AT,
+        H.REFUND_DONATION_PRICE,
         OP.ORDER_PRODUCT_ID,
         OP.PRICE,
         OP.QUANTITY,
@@ -201,8 +239,8 @@
         where H.MEMBER_ID = #{memberId} AND P.ECO_DEAL_STATUS IS NULL
         order by H.ORDER_HISTORY_ID desc, OP.ORDER_PRODUCT_ID desc
     </select>
-
-
+    
+    
     <!-- 마이페이지 - 에약한 에코딜 상품 -->
     <select id="reservedEcoDeal" parameterType="long"
         resultType="org.phoenix.planet.dto.member.response.MyEcoDealResponse">
@@ -231,7 +269,7 @@
         where MEMBER_ID = #{member_id} and P.ECO_DEAL_STATUS = 'Y'
         order by OH.ORDER_HISTORY_ID desc, OP.ORDER_PRODUCT_ID desc
     </select>
-
+    
     <select id="getMyRaffles" parameterType="long"
         resultType="org.phoenix.planet.dto.member.response.MyRaffleResponse">
         select
@@ -247,5 +285,17 @@
         join PRODUCT P on R.PRODUCT_ID = P.PRODUCT_ID
         where MEMBER_ID = #{memberId}
         order by RAFFLE_ID desc
+    </select>
+    <select id="selectUnsurveyPhtiMemberList" resultType="java.lang.Long">
+        SELECT
+        member_id AS memberId
+        FROM
+        MEMBER
+        WHERE member_id NOT IN (
+        SELECT
+        member_id AS memberId
+        FROM
+        MEMBER_PHTI
+        )
     </select>
 </mapper>

@@ -122,33 +122,40 @@ public class ChartDataSecondRedisRepository {
                 new_ohlc_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
                     0, epoch_time, open, high, low, price)
             else
-                -- 직전 분의 OHLC 데이터에서 close 값을 가져와서 open으로 사용
+                -- 1시간 내에서 가장 최근의 OHLC 데이터를 찾아서 close 값을 open으로 사용
                 local current_minute = tonumber(minute_field:sub(1,2))
                 local current_hour = tonumber(minute_field:sub(4,5))
-                local prev_minute = current_minute - 1
-                local prev_hour = current_hour
-                
-                -- 시간이 0분이면 전 시간의 59분을 확인
-                if prev_minute < 0 then
-                    prev_minute = 59
-                    prev_hour = prev_hour - 1
-                    if prev_hour < 0 then
-                        prev_hour = 23
-                    end
-                end
-                
-                local prev_minute_field = string.format("%02d:%02d", prev_hour, prev_minute)
-                local prev_ohlc_json = redis.call('HGET', ohlc_key, prev_minute_field)
-                
+            
                 local open_price = price -- 기본값: 현재 체결가
-                
-                if prev_ohlc_json then
-                    local prev_close = tonumber(prev_ohlc_json:match('"close":([%d%.]+)'))
-                    if prev_close then 
-                        open_price = prev_close 
+                local found_close = false
+            
+                -- 최대 60분 전까지 역순으로 검색
+                for i = 1, 60 do
+                    local check_minute = current_minute - i
+                    local check_hour = current_hour
+            
+                    -- 분이 음수가 되면 이전 시간으로
+                    if check_minute < 0 then
+                        check_minute = check_minute + 60
+                        check_hour = check_hour - 1
+                        if check_hour < 0 then
+                            check_hour = 23
+                        end
+                    end
+            
+                    local check_minute_field = string.format("%02d:%02d", check_hour, check_minute)
+                    local check_ohlc_json = redis.call('HGET', ohlc_key, check_minute_field)
+            
+                    if check_ohlc_json then
+                        local check_close = tonumber(check_ohlc_json:match('"close":([%d%.]+)'))
+                        if check_close then\s
+                            open_price = check_close
+                            found_close = true
+                            break -- 찾았으면 루프 종료
+                        end
                     end
                 end
-                
+            
                 new_ohlc_json = string.format(
                     '{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
                     0, epoch_time, open_price, price, price, price

@@ -41,158 +41,168 @@ public class ChartDataSecondRedisRepository {
     private static final String CACHING_VOLUME_KEY_PREFIX = "chart:volume:";
 
     private static final String UNIFIED_UPDATE_SCRIPT = """
-        local stock_price_key = KEYS[1]     -- stock:price:123
-        local ohlc_key = KEYS[2]            -- chart:second:ohlc:123:2025-09-08
-        local volume_key = KEYS[3]          -- chart:second:volume:123:2025-09-08
-        local minute_field = KEYS[4]        -- "14:30"
-        
-        local trade_quantity = tonumber(ARGV[1])  -- 양수: 매도, 음수: 매수
-        local ttl_seconds = tonumber(ARGV[2])
-        local real_epoch_time = tonumber(ARGV[3])  -- Java에서 전달받은 시간
-        local epoch_time = tonumber(ARGV[4])       -- Java에서 전달받은 분 단위 시간
-        
-        -- 매도/매수 구분
-        local is_sell = trade_quantity > 0
-        local abs_quantity = math.abs(trade_quantity)
-        
-        -- 1. 주식 가격 업데이트
-        local current_price = redis.call('HGET', stock_price_key, 'price')
-        local current_quantity = redis.call('HGET', stock_price_key, 'quantity')
-        
-        if not current_price or not current_quantity then
-            return {-1, 'STOCK_NOT_FOUND'}
-        end
-        
-        local price = tonumber(current_price)
-        local quantity = tonumber(current_quantity)
-        
-        -- 매도시에만 수량 부족 체크
-        if is_sell and quantity < abs_quantity then
-            return {-2, 'INSUFFICIENT_QUANTITY'}
-        end
-        
-        -- 수량 계산
-        local new_quantity
-        if is_sell then
-            new_quantity = quantity - abs_quantity  -- 소각
-            if new_quantity <= 0 then
-                return {-3, 'CANNOT_BURN_ALL_STOCKS'}
+            local stock_price_key = KEYS[1]     -- stock:price:123
+            local ohlc_key = KEYS[2]            -- chart:second:ohlc:123:2025-09-08
+            local volume_key = KEYS[3]          -- chart:second:volume:123:2025-09-08
+            local minute_field = KEYS[4]        -- "14:30"
+            
+            local trade_quantity = tonumber(ARGV[1])  -- 양수: 매도, 음수: 매수
+            local ttl_seconds = tonumber(ARGV[2])
+            local real_epoch_time = tonumber(ARGV[3])  -- Java에서 전달받은 시간
+            local epoch_time = tonumber(ARGV[4])       -- Java에서 전달받은 분 단위 시간
+            
+            -- 매도/매수 구분
+            local is_sell = trade_quantity > 0
+            local abs_quantity = math.abs(trade_quantity)
+            
+            -- 1. 주식 가격 업데이트
+            local current_price = redis.call('HGET', stock_price_key, 'price')
+            local current_quantity = redis.call('HGET', stock_price_key, 'quantity')
+            
+            if not current_price or not current_quantity then
+                return {-1, 'STOCK_NOT_FOUND'}
             end
-        else
-            new_quantity = quantity + abs_quantity  -- 발행
-        end
-        
-        -- 가격 계산 (공급량 변화에 따른 기본값을 2배로 강화)
-        local supply_change_ratio = quantity / new_quantity
-        
-        local price_multiplier = 1 + ((supply_change_ratio - 1) * 3)
-        
-        local base_new_price = price * price_multiplier
-        
-        local new_price = base_new_price
-        
-        -- 주식 가격 원자적 업데이트
-        redis.call('HSET', stock_price_key, 'price', new_price)
-        redis.call('HSET', stock_price_key, 'quantity', new_quantity)
-        redis.call('HSET', stock_price_key, 'last_updated', real_epoch_time)
-        
-        -- 가격 히스토리 저장 (DB 동기화용)
-        local stock_id = string.sub(KEYS[1], 13)  -- "stock:price:123"에서 "123" 추출
-        local price_history_key = "price_history:" .. stock_id
-        local trade_type = is_sell and "SELL" or "BUY"
-        local history_data = string.format('{"stock_price_history_id":%d,"time":%d,"price":%f,"old_price":%f,"quantity":%d,"trade_quantity":%d,"trade_type":"%s"}',
-            0, real_epoch_time, new_price, price, new_quantity, abs_quantity, trade_type)
-        
-        redis.call('LPUSH', price_history_key, history_data)
-        redis.call('LTRIM', price_history_key, 0, 999)
-        redis.call('EXPIRE', price_history_key, ttl_seconds)
-        
-        -- 2. 차트 데이터 업데이트 (체결가는 이전 가격)
-        local old_ohlc_json = redis.call('HGET', ohlc_key, minute_field)
-        local old_volume_json = redis.call('HGET', volume_key, minute_field)
-        
-        -- OHLC 계산 (체결가 = price, 새 시장가 = new_price)
-        local new_ohlc_json
-        if old_ohlc_json then
-            local open = tonumber(old_ohlc_json:match('"open":([%d%.]+)'))
-            local high = tonumber(old_ohlc_json:match('"high":([%d%.]+)'))
-            local low = tonumber(old_ohlc_json:match('"low":([%d%.]+)'))
-        
-            high = math.max(high, price) -- 체결가 반영
-            low = (low == 0) and price or math.min(low, price)
-        
-            new_ohlc_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
-                0, epoch_time, open, high, low, price)
+            
+            local price = tonumber(current_price)
+            local quantity = tonumber(current_quantity)
+            
+            -- 매도시에만 수량 부족 체크
+            if is_sell and quantity < abs_quantity then
+                return {-2, 'INSUFFICIENT_QUANTITY'}
+            end
+            
+            -- 수량 계산
+            local new_quantity
+            if is_sell then
+                new_quantity = quantity - abs_quantity  -- 소각
+                if new_quantity <= 0 then
+                    return {-3, 'CANNOT_BURN_ALL_STOCKS'}
+                end
             else
-                -- 🟢 최신 데이터 찾기 (ZSET에서 직전 분 timestamp 가져오기)
-                local ohlc_z_key = "chart:ohlc:" .. stock_id .. ":timestamps"
-                local ohlc_h_key = "chart:ohlc:" .. stock_id .. ":data"
+                new_quantity = quantity + abs_quantity  -- 발행
+            end
             
-                local last_ts = redis.call('ZREVRANGE', ohlc_z_key, 0, 0)[1]
-                local open_price = price
+            -- 가격 계산 (공급량 변화에 따른 기본값을 2배로 강화)
+            local supply_change_ratio = quantity / new_quantity
+            local price_multiplier = 1 + ((supply_change_ratio - 1) * 3)
+            local base_new_price = price * price_multiplier
+            local new_price = base_new_price
             
-                if last_ts then
-                    local prev_json = redis.call('HGET', ohlc_h_key, last_ts)
-                    if prev_json then
-                        local prev_close = tonumber(prev_json:match('"close":([%d%.]+)'))
-                        if prev_close then open_price = prev_close end
+            -- 주식 가격 원자적 업데이트
+            redis.call('HSET', stock_price_key, 'price', new_price)
+            redis.call('HSET', stock_price_key, 'quantity', new_quantity)
+            redis.call('HSET', stock_price_key, 'last_updated', real_epoch_time)
+            
+            -- 가격 히스토리 저장 (DB 동기화용)
+            local stock_id = string.sub(KEYS[1], 13)  -- "stock:price:123"에서 "123" 추출
+            local price_history_key = "price_history:" .. stock_id
+            local trade_type = is_sell and "SELL" or "BUY"
+            local history_data = string.format('{"stock_price_history_id":%d,"time":%d,"price":%f,"old_price":%f,"quantity":%d,"trade_quantity":%d,"trade_type":"%s"}',
+                0, real_epoch_time, new_price, price, new_quantity, abs_quantity, trade_type)
+            
+            redis.call('LPUSH', price_history_key, history_data)
+            redis.call('LTRIM', price_history_key, 0, 999)
+            redis.call('EXPIRE', price_history_key, ttl_seconds)
+            
+            -- 2. 차트 데이터 업데이트 (체결가는 이전 가격)
+            local old_ohlc_json = redis.call('HGET', ohlc_key, minute_field)
+            local old_volume_json = redis.call('HGET', volume_key, minute_field)
+            
+            -- OHLC 계산 (체결가 = price, 새 시장가 = new_price)
+            local new_ohlc_json
+            if old_ohlc_json then
+                local open = tonumber(old_ohlc_json:match('"open":([%d%.]+)'))
+                local high = tonumber(old_ohlc_json:match('"high":([%d%.]+)'))
+                local low = tonumber(old_ohlc_json:match('"low":([%d%.]+)'))
+        
+                
+                high = math.max(high, price) -- 체결가 반영
+                low = (low == 0) and price or math.min(low, price)
+                
+                new_ohlc_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
+                    0, epoch_time, open, high, low, price)
+            else
+                -- 직전 분의 OHLC 데이터에서 close 값을 가져와서 open으로 사용
+                local current_minute = tonumber(minute_field:sub(1,2))
+                local current_hour = tonumber(minute_field:sub(4,5))
+                local prev_minute = current_minute - 1
+                local prev_hour = current_hour
+                
+                -- 시간이 0분이면 전 시간의 59분을 확인
+                if prev_minute < 0 then
+                    prev_minute = 59
+                    prev_hour = prev_hour - 1
+                    if prev_hour < 0 then
+                        prev_hour = 23
                     end
                 end
-            
+                
+                local prev_minute_field = string.format("%02d:%02d", prev_hour, prev_minute)
+                local prev_ohlc_json = redis.call('HGET', ohlc_key, prev_minute_field)
+                
+                local open_price = price -- 기본값: 현재 체결가
+                
+                if prev_ohlc_json then
+                    local prev_close = tonumber(prev_ohlc_json:match('"close":([%d%.]+)'))
+                    if prev_close then 
+                        open_price = prev_close 
+                    end
+                end
+                
                 new_ohlc_json = string.format(
                     '{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
                     0, epoch_time, open_price, price, price, price
                 )
             end
-        
-        -- Volume 계산
-        local new_volume_json
-        if old_volume_json then
-            local old_value = tonumber(old_volume_json:match('"value":(%d+)'))
-            local old_buy_count = tonumber(old_volume_json:match('"buyCount":(%d+)'))
-            local old_sell_count = tonumber(old_volume_json:match('"sellCount":(%d+)'))
-        
-            local new_value = old_value + abs_quantity
-            local new_buy_count = old_buy_count
-            local new_sell_count = old_sell_count
-        
-            if is_sell then
-                new_sell_count = old_sell_count + abs_quantity
+            
+            -- Volume 계산
+            local new_volume_json
+            if old_volume_json then
+                local old_value = tonumber(old_volume_json:match('"value":(%d+)'))
+                local old_buy_count = tonumber(old_volume_json:match('"buyCount":(%d+)'))
+                local old_sell_count = tonumber(old_volume_json:match('"sellCount":(%d+)'))
+                
+                local new_value = old_value + abs_quantity
+                local new_buy_count = old_buy_count
+                local new_sell_count = old_sell_count
+                
+                if is_sell then
+                    new_sell_count = old_sell_count + abs_quantity
+                else
+                    new_buy_count = old_buy_count + abs_quantity
+                end
+                
+                local color = (new_sell_count > new_buy_count) and "SELL" or "BUY"
+                
+                new_volume_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"value":%d,"color":"%s","buyCount":%d,"sellCount":%d}',
+                    0, epoch_time, new_value, color, new_buy_count, new_sell_count)
             else
-                new_buy_count = old_buy_count + abs_quantity
+                -- 첫 거래
+                if is_sell then
+                    new_volume_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"value":%d,"color":"SELL","buyCount":0,"sellCount":%d}',
+                        0, epoch_time, abs_quantity, abs_quantity)
+                else
+                    new_volume_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"value":%d,"color":"BUY","buyCount":%d,"sellCount":0}',
+                        0, epoch_time, abs_quantity, abs_quantity)
+                end
             end
-        
-            local color = (new_sell_count > new_buy_count) and "SELL" or "BUY"
-        
-            new_volume_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"value":%d,"color":"%s","buyCount":%d,"sellCount":%d}',
-                0, epoch_time, new_value, color, new_buy_count, new_sell_count)
-        else
-            -- 첫 거래
-            if is_sell then
-                new_volume_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"value":%d,"color":"SELL","buyCount":0,"sellCount":%d}',
-                    0, epoch_time, abs_quantity, abs_quantity)
-            else
-                new_volume_json = string.format('{"stockPriceHistoryId":%d,"time":%d,"value":%d,"color":"BUY","buyCount":%d,"sellCount":0}',
-                    0, epoch_time, abs_quantity, abs_quantity)
-            end
-        end
-        
-        -- 차트 데이터 저장
-        redis.call('HSET', ohlc_key, minute_field, new_ohlc_json)
-        redis.call('HSET', volume_key, minute_field, new_volume_json)
-        redis.call('EXPIRE', ohlc_key, ttl_seconds)
-        redis.call('EXPIRE', volume_key, ttl_seconds)
-        
-        return { 1,
-                 string.format("%.2f", price),
-                 string.format("%.2f", new_price),
-                 new_quantity,
-                 new_ohlc_json,
-                 new_volume_json,
-                 0,
-                 real_epoch_time
-                 }
-        """;
+            
+            -- 차트 데이터 저장
+            redis.call('HSET', ohlc_key, minute_field, new_ohlc_json)
+            redis.call('HSET', volume_key, minute_field, new_volume_json)
+            redis.call('EXPIRE', ohlc_key, ttl_seconds)
+            redis.call('EXPIRE', volume_key, ttl_seconds)
+            
+            return { 1,
+                     string.format("%.2f", price),
+                     string.format("%.2f", new_price),
+                     new_quantity,
+                     new_ohlc_json,
+                     new_volume_json,
+                     0,
+                     real_epoch_time
+                     }
+            """;
 
     private static final String GET_AND_PUSH_CHART_DATA_SCRIPT = """
         local ohlc_key_read = KEYS[1]      -- 초 단위 OHLC 읽기용

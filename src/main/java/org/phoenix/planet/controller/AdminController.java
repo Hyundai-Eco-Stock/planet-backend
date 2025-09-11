@@ -3,7 +3,6 @@ package org.phoenix.planet.controller;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.admin.donation.DonationAmountsByDayResponse;
 import org.phoenix.planet.dto.admin.donation.DonatorPercentageResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMemberResponse;
@@ -128,11 +127,9 @@ public class AdminController {
     }
 
     @PostMapping("/notification/test")
-    public ResponseEntity<Void> testNotification(
-        @LoginMemberId long loginMemberId
-    ) {
+    public ResponseEntity<Void> testNotification() {
 
-        List<String> tokens = memberDeviceTokenService.getTokens(loginMemberId);
+        List<String> tokens = memberDeviceTokenService.findAll();
         fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.", "/login");
         return ResponseEntity.ok().build();
     }

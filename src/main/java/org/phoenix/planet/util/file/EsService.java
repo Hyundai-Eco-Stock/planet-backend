@@ -50,11 +50,19 @@ public class EsService {
                 "query_vector": %s,
                 "k": %d,
                 "num_candidates": 400,
-                "filter": { "term": { "categoryId": %s } }
+                "filter": {
+                  "bool": {
+                    "filter": [ { "term": { "categoryId": %s } } ],
+                    "must_not": [
+                      { "term": { "productId": %s } },
+                      { "ids": { "values": [ %s ] } }
+                    ]
+                  }
+                }
               },
               "query": {
                 "bool": {
-                  "must_not": [ { "term": { "productId": %s } } ]
+                  "must_not": [ { "term": { "productId": %s } }, { "ids": { "values": [ %s ] } } ]
                 }
               },
               "sort": ["_score"]
@@ -111,7 +119,6 @@ public class EsService {
         int k = (size == null || size <= 0) ? defaultSize : size;
         String idx = this.knnIndex;
 
-        
         if (k < 7) {
             k = 7; // 최소 7개 보장
         }
@@ -180,8 +187,11 @@ public class EsService {
                 k,                       // size
                 queryVectorJson,         // knn.query_vector (raw JSON array)
                 k,                       // knn.k
-                safeJson(anchorCategoryId), // knn.filter.categoryId
-                safeJson(anchorId)       // must_not productId
+                safeJson(anchorCategoryId), // category filter
+                safeJson(anchorId),      // must_not term (productId) inside knn.filter
+                safeJson(anchorId),      // ids exclusion inside knn.filter
+                safeJson(anchorId),      // outer query must_not term (productId)
+                safeJson(anchorId)       // outer query ids exclusion
         );
 
         try {

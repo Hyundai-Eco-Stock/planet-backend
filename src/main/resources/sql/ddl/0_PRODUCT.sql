@@ -105,6 +105,7 @@ CREATE TABLE product
     quantity        NUMBER DEFAULT 99999   NOT NULL, -- 재고 수량
     eco_deal_status VARCHAR2(100),
     sale_percent    NUMBER,
+    DESCRIPTION     VARCHAR2(2000),
     created_at      DATE   DEFAULT SYSDATE NOT NULL,
     updated_at      DATE,
     CONSTRAINT PK_PRODUCT PRIMARY KEY (product_id),

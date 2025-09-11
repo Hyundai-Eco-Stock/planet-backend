@@ -1,5 +1,6 @@
 package org.phoenix.planet.service.admin;
 
+import java.util.List;
 import org.phoenix.planet.dto.admin.donation.DonationAmountsByDayResponse;
 import org.phoenix.planet.dto.admin.donation.DonatorPercentageResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMemberResponse;
@@ -8,6 +9,8 @@ import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByCategor
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByDayResponse;
 import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiResponse;
 import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiResponse;
+import org.phoenix.planet.dto.admin.response.CategorySalesResponse;
+import org.phoenix.planet.dto.admin.response.OrderCountResponse;
 
 public interface AdminService {
 
@@ -26,4 +29,8 @@ public interface AdminService {
     DonationAmountsByDayResponse fetchDonationAmountsByDay();
 
     DonatorPercentageResponse fetchDonatorPercentage();
+
+    List<OrderCountResponse> fetch7DaysOrderCount();
+
+    List<CategorySalesResponse> fetchCategorySales();
 }

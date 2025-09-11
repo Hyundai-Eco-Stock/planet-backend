@@ -1,27 +1,29 @@
 -- ------------------------- 주문/결제 -------------------------
 CREATE TABLE order_history
 (
-    order_history_id    NUMBER               NOT NULL,
-    order_number        VARCHAR2(500)        NOT NULL, -- 주문 번호 (random)
-    order_status        VARCHAR2(255)        NOT NULL,
-    origin_price        NUMBER(10)           NOT NULL, -- 총 가격
-    used_point          NUMBER(10),                    -- 사용 포인트
-    donation_price      NUMBER(10),                    -- 기부 금액
-    final_pay_price     NUMBER(10)           NOT NULL, -- 결제할 금액: (총 가격) - (사용 포인트) + (기부 금액)
-    eco_deal_qr_url     VARCHAR2(500),
-    member_id           NUMBER               NOT NULL,
-    department_store_id NUMBER,
+    order_history_id      NUMBER               NOT NULL,
+    order_number          VARCHAR2(500)        NOT NULL, -- 주문 번호 (random)
+    order_status          VARCHAR2(255)        NOT NULL,
+    origin_price          NUMBER(10)           NOT NULL, -- 총 가격
+    used_point            NUMBER(10),                    -- 사용 포인트
+    donation_price        NUMBER(10),                    -- 기부 금액
+    final_pay_price       NUMBER(10)           NOT NULL, -- 결제할 금액: (총 가격) - (사용 포인트) + (기부 금액)
+    eco_deal_qr_url       VARCHAR2(500),
+    member_id             NUMBER               NOT NULL,
+    department_store_id   NUMBER,
     refund_donation_price NUMBER,
-    created_at          DATE DEFAULT SYSDATE NOT NULL,
-    updated_at          DATE,
+    created_at            DATE DEFAULT SYSDATE NOT NULL,
+    updated_at            DATE,
     CONSTRAINT PK_ORDER_HISTORY PRIMARY KEY (order_history_id),
-    CONSTRAINT ck_order_status CHECK (order_status IN('PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'ALL_CANCELLED', 'PARTIAL_CANCELLED', 'DONE')),
+    CONSTRAINT ck_order_status CHECK (order_status IN
+                                      ('PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'ALL_CANCELLED',
+                                       'PARTIAL_CANCELLED', 'DONE')),
     CONSTRAINT fk_order_member FOREIGN KEY (member_id)
         REFERENCES member (member_id),
     CONSTRAINT fk_order_department_store FOREIGN KEY (department_store_id)
         REFERENCES department_store (department_store_id)
 );
-DROP SEQUENCE seq_order_history;
+-- DROP SEQUENCE seq_order_history;
 CREATE SEQUENCE seq_order_history START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 
@@ -44,7 +46,7 @@ CREATE TABLE order_product
     CONSTRAINT fk_order_product_product FOREIGN KEY (product_id)
         REFERENCES product (product_id)
 );
-DROP SEQUENCE seq_order_product;
+-- DROP SEQUENCE seq_order_product;
 CREATE SEQUENCE seq_order_product START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 
@@ -66,11 +68,14 @@ CREATE TABLE payment_history
     failure_code     VARCHAR2(100),
     failure_message  VARCHAR2(500),
     CONSTRAINT PK_PAYMENT_HISTORY PRIMARY KEY (payment_id),
-    CONSTRAINT ck_payment_history_method CHECK (payment_method IN ('CARD', 'EASY_PAY', 'MOBILE_PHONE', 'TRANSFER')),
-    CONSTRAINT ck_payment_history_status CHECK (payment_status IN ('READY', 'IN_PROGRESS', 'DONE', 'CANCELED', 'PARTIAL_CANCELED', 'ABORTED', 'EXPIRED')),
+    CONSTRAINT ck_payment_history_method CHECK (payment_method IN
+                                                ('CARD', 'EASY_PAY', 'MOBILE_PHONE', 'TRANSFER')),
+    CONSTRAINT ck_payment_history_status CHECK (payment_status IN
+                                                ('READY', 'IN_PROGRESS', 'DONE', 'CANCELED',
+                                                 'PARTIAL_CANCELED', 'ABORTED', 'EXPIRED')),
     CONSTRAINT fk_payment_history_order FOREIGN KEY (order_history_id)
         REFERENCES order_history (order_history_id)
 );
-DROP SEQUENCE seq_payment_history;
+-- DROP SEQUENCE seq_payment_history;
 CREATE SEQUENCE seq_payment_history START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 

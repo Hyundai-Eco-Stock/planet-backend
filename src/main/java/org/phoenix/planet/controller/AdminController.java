@@ -3,6 +3,7 @@ package org.phoenix.planet.controller;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.admin.donation.DonationAmountsByDayResponse;
 import org.phoenix.planet.dto.admin.donation.DonatorPercentageResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMemberResponse;
@@ -133,4 +134,17 @@ public class AdminController {
         fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.", "/login");
         return ResponseEntity.ok().build();
     }
+
+    /* 7일간 주문량 */
+    @GetMapping("/7days-order-count")
+    public ResponseEntity<?> orderCountFor7Days() {
+        return ResponseEntity.ok(adminService.fetch7DaysOrderCount());
+    }
+
+    /* 카테고리별 판매량 */
+    @GetMapping("/category-sales")
+    public ResponseEntity<?> categorySales() {
+        return ResponseEntity.ok(adminService.fetchCategorySales());
+    }
+
 }

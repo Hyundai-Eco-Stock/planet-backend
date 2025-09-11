@@ -8,7 +8,7 @@ CREATE TABLE brand
     updated_at DATE,
     CONSTRAINT PK_BRAND PRIMARY KEY (brand_id)
 );
-DROP SEQUENCE seq_brand;
+-- DROP SEQUENCE seq_brand;
 CREATE SEQUENCE seq_brand START WITH 16 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 INSERT INTO brand (brand_id, name, image_url, created_at, updated_at)
@@ -68,7 +68,7 @@ CREATE TABLE product_category
     updated_at  DATE,
     CONSTRAINT PK_PRODUCT_CATEGORY PRIMARY KEY (category_id)
 );
-DROP SEQUENCE seq_product_category;
+-- DROP SEQUENCE seq_product_category;
 CREATE SEQUENCE seq_product_category START WITH 8 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 INSERT INTO product_category (category_id, name)
@@ -92,8 +92,6 @@ VALUES (6, '식기류');
 commit;
 
 -- 상품
--- TODO: 향후 NOT NULL로 수정
--- TODO: check 추가 필요
 CREATE TABLE product
 (
     product_id      NUMBER                 NOT NULL,
@@ -114,7 +112,7 @@ CREATE TABLE product
     CONSTRAINT fk_product_brand FOREIGN KEY (brand_id)
         REFERENCES brand (brand_id)
 );
-DROP SEQUENCE seq_product;
+-- DROP SEQUENCE seq_product;
 CREATE SEQUENCE seq_product START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 
@@ -132,7 +130,7 @@ CREATE TABLE product_image
         REFERENCES product (product_id),
     CONSTRAINT ux_product_image_order UNIQUE (product_id, sort_order)
 );
-DROP SEQUENCE seq_product_image;
+-- DROP SEQUENCE seq_product_image;
 CREATE SEQUENCE seq_product_image START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 
@@ -147,7 +145,7 @@ CREATE TABLE department_store
     updated_at          DATE,
     CONSTRAINT PK_DEPARTMENT_STORE PRIMARY KEY (department_store_id)
 );
-DROP SEQUENCE seq_department_store;
+-- DROP SEQUENCE seq_department_store;
 CREATE SEQUENCE seq_department_store START WITH 5 INCREMENT BY 1 NOCACHE NOCYCLE;
 INSERT INTO department_store (department_store_id, name, lat, lng, created_at, updated_at)
 VALUES (1, '압구정 본점', 37.52738396911794, 127.02744273952618, SYSDATE, NULL);
@@ -179,7 +177,7 @@ CREATE TABLE department_store_product
         REFERENCES product (product_id),
     CONSTRAINT ux_dsp_store_product UNIQUE (department_store_id, product_id)
 );
-DROP SEQUENCE seq_department_store_product;
+-- DROP SEQUENCE seq_department_store_product;
 CREATE SEQUENCE seq_department_store_product START WITH 5 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 INSERT INTO department_store_product (department_store_product_id, department_store_id, product_id)

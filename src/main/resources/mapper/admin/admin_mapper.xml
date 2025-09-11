@@ -3,7 +3,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.phoenix.planet.mapper.AdminMapper">
-    
+
     <!-- 에코스톡 발급 비율 -->
     <select id="selectEcoStockIssuePercentageData"
         resultType="org.phoenix.planet.dto.admin.eco_stock.IssueItem">
@@ -17,7 +17,7 @@
         GROUP BY e.name
         ORDER BY count DESC
     </select>
-    
+
     <!-- 사용자별 에코스톡 보유 현황 -->
     <select id="selectEcoStockHoldingAmountDataGroupByMember"
         resultType="org.phoenix.planet.dto.admin.eco_stock.HoldingItem">
@@ -38,7 +38,7 @@
         GROUP BY range
         ORDER BY range
     </select>
-    
+
     <!-- 일별 주문/매출 -->
     <select id="selectProductOrderDataGroupByDay"
         resultType="org.phoenix.planet.dto.admin.order_product.DayItem">
@@ -51,7 +51,7 @@
         GROUP BY TO_CHAR(o.created_at, 'YYYY-MM-DD')
         ORDER BY order_date
     </select>
-    
+
     <!-- 카테고리별 판매 비율 -->
     <select id="selectProductOrderDataGroupByCategory"
         resultType="org.phoenix.planet.dto.admin.order_product.CategoryItem">
@@ -65,7 +65,7 @@
         GROUP BY pc.name
         ORDER BY value DESC
     </select>
-    
+
     <!-- PHTI 사용자 분포 -->
     <select id="selectMemberPercentageByPhti"
         resultType="org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiItem">
@@ -76,7 +76,7 @@
         GROUP BY primary_phti
         ORDER BY users DESC
     </select>
-    
+
     <!-- PHTI 주문/교환 패턴 -->
     <select id="selectIssueAndOrderPatternsByPhti"
         resultType="org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiItem">
@@ -98,7 +98,7 @@
         GROUP BY mp.primary_phti
         ORDER BY type
     </select>
-    
+
     <!-- 날짜별 기부 금액 추이 -->
     <select id="selectDonationAmountsByDay"
         resultType="org.phoenix.planet.dto.admin.donation.DonationAmountsByDayItem">
@@ -110,7 +110,7 @@
         GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
         ORDER BY order_date
     </select>
-    
+
     <!-- 사용자별 기부 참여율 -->
     <select id="selectDonatorPercentage"
         resultType="org.phoenix.planet.dto.admin.donation.DonatorPercentageItem">
@@ -119,13 +119,37 @@
         '#10B981' AS color
         FROM order_history
         WHERE donation_price > 0
-        
+
         UNION ALL
-        
+
         SELECT '미참여' AS name,
         (SELECT COUNT(*) FROM member) -
         (SELECT COUNT(DISTINCT member_id) FROM order_history WHERE donation_price > 0) AS users,
         '#EF4444' AS color
         FROM dual
+    </select>
+
+    <!--    최근 7일간 일별 주문 수-->
+    <select id="select7DaysOrderCount"
+        resultType="org.phoenix.planet.dto.admin.response.OrderCountResponse">
+        select TO_CHAR(CREATED_AT, 'YYYY-MM-DD') as ORDER_DATE,
+        COUNT(*) as ORDER_COUNT
+        from ORDER_HISTORY
+        where CREATED_AT >= sysdate - 7
+        group by TO_CHAR(CREATED_AT, 'YYYY-MM-DD')
+    </select>
+
+
+    <!--    카테고리별 매출-->
+    <select id="selectCategorySales"
+        resultType="org.phoenix.planet.dto.admin.response.CategorySalesResponse">
+        select
+        PC.NAME,
+        count(*) AS ORDER_COUNT
+        from ORDER_PRODUCT OP
+        join PRODUCT P on OP.PRODUCT_ID = P.PRODUCT_ID
+        right join PRODUCT_CATEGORY PC on P.CATEGORY_ID = PC.CATEGORY_ID
+        group by PC.CATEGORY_ID, PC.NAME
+        order by PC.CATEGORY_ID
     </select>
 </mapper>

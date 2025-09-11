@@ -32,7 +32,7 @@ public class DummyTradeScheduler {
     private static final int BURST_CAP_PER_MIN = 3;               // 분당 최대 실행 한도
     private static final double SELL_RATIO = 0.55;
     private static final int MIN_QTY = 6, MAX_QTY = 12;
-    private static final int ACTIVE_START = 9, ACTIVE_END = 23;   // 9~23시만
+//    private static final int ACTIVE_START = 9, ACTIVE_END = 23;   // 9~23시만
 
     private static List<Long> memberList = List.of(1000001L, 1000002L, 1000003L);
 
@@ -41,7 +41,7 @@ public class DummyTradeScheduler {
     public void orchestrateOneMinute() {
         var now = java.time.LocalDateTime.now();
         int h = now.getHour();
-        if (h < ACTIVE_START || h > ACTIVE_END) return;
+//        if (h < ACTIVE_START || h > ACTIVE_END) return;
 
         // 분당 기대 거래수 (포아송)
         double lambda = HOURLY_TARGET / 60.0;

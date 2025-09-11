@@ -15,6 +15,7 @@ import org.phoenix.planet.repository.ChartDataRedisRepository;
 import org.phoenix.planet.repository.ChartDataSecondRedisRepository;
 import org.phoenix.planet.util.ecoStock.StockChartUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -94,8 +95,13 @@ public class EcoStockPriceHistoryServiceImpl implements EcoStockPriceHistoryServ
                 .build();
     }
 
+    @Transactional
     @Override
     public void saveBatch(List<RedisStockPriceHistory> historyList) {
-        ecoStockPriceHistoryMapper.insertBatch(historyList);
+        int insertedCount = ecoStockPriceHistoryMapper.insertBatch(historyList);
+        if (insertedCount != historyList.size()) {
+            log.warn("벌크 인서트 부분 실패: 예상={}, 실제={}",
+                historyList.size(), insertedCount);
+        }
     }
 }

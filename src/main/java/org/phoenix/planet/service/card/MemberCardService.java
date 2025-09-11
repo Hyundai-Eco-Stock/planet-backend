@@ -5,7 +5,7 @@ import org.phoenix.planet.dto.member_card.MemberCardsInfoResponse;
 
 public interface MemberCardService {
 
-    Long searchByCardCompanyIdAndCardNumber(Long cardCompanyId, String cardNumber);
+    Long searchByCardCompanyIdAndCardNumber(String cardNumber);
 
     MemberCardsInfoResponse getInfoByMemberId(long memberId);
 

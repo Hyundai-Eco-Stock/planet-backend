@@ -1,5 +1,4 @@
-DROP TABLE member_car;
-
+-- DROP TABLE member_car;
 CREATE TABLE member_car
 (
     member_car_id NUMBER PRIMARY KEY,
@@ -12,7 +11,3 @@ CREATE TABLE member_car
 );
 
 CREATE SEQUENCE SEQ_MEMBER_CAR START WITH 2 INCREMENT BY 1 NOCACHE NOCYCLE;
-
-INSERT INTO member_car(MEMBER_CAR_ID, MEMBER_ID, CAR_NUMBER)
-VALUES (1, 1, '157더6629');
-commit;

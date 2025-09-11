@@ -17,17 +17,16 @@ public class MemberCardServiceImpl implements MemberCardService {
     private final MemberCardMapper memberCardMapper;
 
     @Override
-    public Long searchByCardCompanyIdAndCardNumber(Long cardCompanyId, String cardNumber) {
+    public Long searchByCardCompanyIdAndCardNumber(String cardNumber) {
 
-        return memberCardMapper.selectMemberIdByCardCompanyIdAndCardNumber(cardCompanyId,
-            cardNumber);
+        return memberCardMapper.selectMemberIdByCardCompanyIdAndCardNumber(cardNumber);
     }
 
     @Override
     public MemberCardsInfoResponse getInfoByMemberId(long memberId) {
 
         List<MemberCardInfoItem> items = memberCardMapper.findByMemberId(memberId);
-        
+
         return MemberCardsInfoResponse.builder()
             .memberCardInfoList(items)
             .build();
@@ -38,7 +37,6 @@ public class MemberCardServiceImpl implements MemberCardService {
 
         memberCardMapper.insertCardInfo(
             memberId,
-            request.cardCompanyId(),
             request.cardNumber());
     }
 

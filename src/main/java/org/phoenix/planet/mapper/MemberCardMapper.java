@@ -10,7 +10,6 @@ public interface MemberCardMapper {
 
     void insertCardInfo(
         @Param("memberId") long memberId,
-        @Param("cardCompanyId") long cardCompanyId,
         @Param("cardNumber") String cardNumber);
 
     void deleteByMemberIdAndMemberCardId(
@@ -18,7 +17,6 @@ public interface MemberCardMapper {
         @Param("memberCardId") long memberCardId);
 
     Long selectMemberIdByCardCompanyIdAndCardNumber(
-        @Param("cardCompanyId") Long cardCompanyId,
         @Param("cardNumber") String cardNumber
     );
 

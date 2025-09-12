@@ -20,6 +20,10 @@ public interface MemberStockInfoMapper {
         @Param("quantity") Integer quantity,
         @Param("amount") Double amount
     );
+    void updateOrInsert(
+        @Param("memberId") long memberId,
+        @Param("ecoStockId") long ecoStockId,
+        @Param("quantity") int quantity);
 
     void updateMemberStockInfo(
         @Param("memberStockInfoId") Long memberStockInfoId,
@@ -29,10 +33,6 @@ public interface MemberStockInfoMapper {
 
     List<MemberStockInfoWithDetail> findAllPersonalStockInfoByMemberId(Long memberId);
 
-    void updateOrInsert(
-        @Param("memberId") long memberId,
-        @Param("ecoStockId") long ecoStockId,
-        @Param("quantity") int quantity);
 
     List<EcoStockPriceResponse> findAllEcoStockPrice();
 

@@ -144,7 +144,7 @@
         SELECT
         product_id,
         P.image_url,
-        category_id,
+        PC.category_id,
         P.brand_id,
         p.NAME as product_name,
         price,
@@ -154,12 +154,13 @@
         B.NAME as brand_name
         FROM PRODUCT P
         JOIN BRAND B on P.BRAND_ID = B.BRAND_ID
+        JOIN PRODUCT_CATEGORY PC on P.CATEGORY_ID = PC.CATEGORY_ID
         <where>
             <if test="categoryId != null">
                 category_id = #{categoryId}
             </if>
         </where>
-        ORDER BY product_id
+        ORDER BY PC.SORT_ORDER, P.PRODUCT_ID
     </select>
 
     <select id="findAllCategories"

@@ -128,7 +128,38 @@
         '#EF4444' AS color
         FROM dual
     </select>
-
+    
+    <!-- 래플별 응보 수 통계 -->
+    <select id="selectRaffleParticipationByRaffle"
+        resultType="org.phoenix.planet.dto.admin.raffle.RaffleParticipationItem">
+        SELECT
+        r.raffle_id AS raffleId,
+        p.name AS productName,
+        COUNT(rh.raffle_history_id) AS participants
+        FROM raffle r
+        LEFT JOIN raffle_history rh ON r.raffle_id = rh.raffle_id
+        LEFT JOIN product p ON r.product_id = p.product_id
+        GROUP BY r.raffle_id, p.name
+        ORDER BY participants DESC
+    </select>
+    
+    <!-- 일자별 래플 응모 추이 (최근 30일) -->
+    <select id="selectRaffleParticipationByDay"
+        resultType="org.phoenix.planet.dto.admin.raffle.RaffleParticipationByDayItem">
+        SELECT
+        d.ymd AS raffleOpenDate,
+        NVL(COUNT(rh.raffle_history_id), 0) AS dailyParticipants
+        FROM (
+        SELECT TO_CHAR(TRUNC(SYSDATE) - LEVEL + 1, 'YYYY-MM-DD') AS ymd
+        FROM dual
+        CONNECT BY LEVEL &lt;= 30
+        ) d
+        LEFT JOIN raffle_history rh
+        ON TO_CHAR(rh.created_at, 'YYYY-MM-DD') = d.ymd
+        GROUP BY d.ymd
+        ORDER BY d.ymd
+    </select>
+    
     <!--    최근 7일간 일별 주문 수-->
     <select id="select7DaysOrderCount"
         resultType="org.phoenix.planet.dto.admin.response.OrderCountResponse">
@@ -138,8 +169,8 @@
         where CREATED_AT >= sysdate - 7
         group by TO_CHAR(CREATED_AT, 'YYYY-MM-DD')
     </select>
-
-
+    
+    
     <!--    카테고리별 매출-->
     <select id="selectCategorySales"
         resultType="org.phoenix.planet.dto.admin.response.CategorySalesResponse">
@@ -152,4 +183,5 @@
         group by PC.CATEGORY_ID, PC.NAME
         order by PC.CATEGORY_ID
     </select>
+
 </mapper>

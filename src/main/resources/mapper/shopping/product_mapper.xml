@@ -157,7 +157,7 @@
         JOIN PRODUCT_CATEGORY PC on P.CATEGORY_ID = PC.CATEGORY_ID
         <where>
             <if test="categoryId != null">
-                category_id = #{categoryId}
+                P.category_id = #{categoryId}
             </if>
         </where>
         ORDER BY PC.SORT_ORDER, P.PRODUCT_ID

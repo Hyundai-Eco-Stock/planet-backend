@@ -51,16 +51,13 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
         for (int i = 0; i < amount; i++) {
             ecoStockIssueMapper.insert(memberId, ecoStockId);
         }
-
-        //todo redis 저장 로직
-        stockTradeProcessor.executeIssueTradeAndBroadcast(ecoStockId,1);
+        // 유저의 에코스톡 보유 정보 수정
+        memberStockInfoService.updateOrInsert(memberId, ecoStockId, amount);
 
         // FCM 토큰 목록 가져와 푸시 알람 전송
         List<String> tokens = memberDeviceTokenService.getTokens(memberId);
         String fcmMessage = createFcmMessage(ecoStockId, amount);
         fcmService.SendEcoStockIssueNotification(tokens, fcmMessage);
-        // 유저의 에코스톡 보유 정보 수정
-        memberStockInfoService.updateOrInsert(memberId, ecoStockId, amount);
         log.info("에코스톡 발급 완료");
     }
 
@@ -176,8 +173,9 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
         // 현재 기부 스톡 보유량 조회
         MemberStockInfo stockInfo = memberStockInfoMapper.findPersonalStockInfoById(memberId, stockId);
         log.trace("{}",stockInfo); ;
+
         // stock_issue에 발급 기록 저장
-        ecoStockIssueMapper.insert(memberId, stockId);
+        issueStock(memberId,stockId, 1);
 
         //todo redis 저장 로직
         UnifiedUpdateResult result = stockTradeProcessor.executeIssueTradeAndBroadcast(stockId,1);

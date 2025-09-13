@@ -95,7 +95,7 @@ public class AuthController {
 
         String newAccessToken = authService.regenerateAccessToken(refreshToken);
         response.setHeader(TokenKey.X_ERROR_CODE.getValue(),
-            AuthenticationError.REFRESH_TOKEN_REGENERATE_SUCCESS.name());
+            AuthenticationError.ACCESS_TOKEN_REGENERATE_SUCCESS.name());
         response.setHeader(TokenKey.AUTHORIZATION_HEADER.getValue(),
             TokenKey.AUTHENTICATION_PREFIX.getValue() + newAccessToken);
         return ResponseEntity.ok().build();

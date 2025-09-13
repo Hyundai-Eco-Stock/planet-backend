@@ -2,7 +2,6 @@ package org.phoenix.planet.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -10,6 +9,8 @@ import org.phoenix.planet.constant.KafkaTopic;
 import org.phoenix.planet.dto.car.response.MemberCarResponse;
 import org.phoenix.planet.event.EcoCarEnterEvent;
 import org.phoenix.planet.service.car.MemberCarService;
+import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
+import org.phoenix.planet.service.eco_stock.EcoStockService;
 import org.phoenix.planet.service.fcm.FcmService;
 import org.phoenix.planet.service.fcm.MemberDeviceTokenService;
 import org.springframework.kafka.annotation.DltHandler;
@@ -20,19 +21,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class EcoCarEnterDetectedConsumer {
+public class EcoCarExitDetectedConsumer {
 
     private final ObjectMapper objectMapper;
     // 차량 정보
     private final MemberCarService memberCarService;
     // 에코스톡
-    private final MemberDeviceTokenService memberDeviceTokenService;
-    private final FcmService fcmService;
+    private final EcoStockIssueService ecoStockIssueService;
 
 
     @Transactional
     @KafkaListener(
-        topics = "#{T(org.phoenix.planet.constant.KafkaTopic).ECO_CAR_ENTER_DETECTED.getTopicName()}"
+        topics = "#{T(org.phoenix.planet.constant.KafkaTopic).ECO_CAR_EXIT_DETECTED.getTopicName()}"
     )
     public void onMessage(String message) throws JsonProcessingException {
 
@@ -42,16 +42,13 @@ public class EcoCarEnterDetectedConsumer {
         log.info("Successfully deserialized event: {}", event);
 
         if (event == null) {
-            throw new IllegalArgumentException("ECO_CAR_ENTER_DETECTED event 정보가 없습니다.");
+            throw new IllegalArgumentException("ECO_CAR_EXIT_DETECTED event 정보가 없습니다.");
         }
         MemberCarResponse car = memberCarService.searchByCarNumber(event.carNumber());
 
-        // FCM 토큰 목록 가져와 입차 푸시 알림만 전송
-        List<String> tokens = memberDeviceTokenService.getTokens(car.memberId());
-        String title = "차량 입차 알림";
-        String fcmMessage = "고객님의 차량 입차가 감지되었습니다. 행복한 쇼핑되세요!";
-        String path = "/my-page/my-car";
-        fcmService.sendCustomNotification(tokens, title, fcmMessage, path);
+        // 친환경 차 에코스톡 발급
+        long ecoCarStockId = 3L;
+        ecoStockIssueService.issueStock(car.memberId(), ecoCarStockId, 1);
     }
 
     @DltHandler

@@ -20,10 +20,12 @@ import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.Role;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
 import org.phoenix.planet.dto.member.raw.Member;
+import org.phoenix.planet.dto.member.request.EmailExistCheckRequest;
 import org.phoenix.planet.dto.member.request.LoginRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
 import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
+import org.phoenix.planet.dto.member.response.EmailExistCheckResponse;
 import org.phoenix.planet.error.auth.TokenException;
 import org.phoenix.planet.mapper.MemberMapper;
 import org.phoenix.planet.repository.PasswordResetTokenRepository;
@@ -250,6 +252,13 @@ public class AuthServiceImpl implements AuthService {
         long memberId = passwordResetTokenRepository.findMemberIdByToken(request.token());
         memberService.updatePassword(memberId, request.password());
         passwordResetTokenRepository.deleteToken(request.token());
+    }
+
+    @Override
+    public EmailExistCheckResponse validateEmailExist(EmailExistCheckRequest request) {
+
+        boolean exist = memberMapper.findByEmail(request.email()).isPresent();
+        return EmailExistCheckResponse.builder().exist(exist).build();
     }
 
     /**

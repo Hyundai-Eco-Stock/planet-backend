@@ -142,14 +142,6 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/notification/test")
-    public ResponseEntity<Void> testNotification() {
-
-        List<String> tokens = memberDeviceTokenService.findAll();
-        fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.", "/login");
-        return ResponseEntity.ok().build();
-    }
-
     /* 7일간 주문량 */
     @GetMapping("/7days-order-count")
     public ResponseEntity<?> orderCountFor7Days() {
@@ -162,6 +154,23 @@ public class AdminController {
     public ResponseEntity<?> categorySales() {
 
         return ResponseEntity.ok(adminService.fetchCategorySales());
+    }
+
+    @PostMapping("/notification/test")
+    public ResponseEntity<Void> testNotification() {
+
+        List<String> tokens = memberDeviceTokenService.findAll();
+        fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.", "/home");
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/notification/food-deal")
+    public ResponseEntity<Void> sendFoodDealNotification() {
+
+        List<String> tokens = memberDeviceTokenService.findAll();
+        fcmService.sendCustomNotification(tokens, "푸드딜 알림", "새로운 푸드딜 상품들이 입고되었습니다.",
+            "/eco-deal/detail");
+        return ResponseEntity.ok().build();
     }
 
 }

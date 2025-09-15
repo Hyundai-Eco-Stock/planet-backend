@@ -11,12 +11,14 @@ import org.phoenix.planet.configuration.security.CookieProperties;
 import org.phoenix.planet.constant.AuthenticationError;
 import org.phoenix.planet.constant.TokenKey;
 import org.phoenix.planet.dto.auth.PrincipalDetails;
+import org.phoenix.planet.dto.member.request.EmailExistCheckRequest;
 import org.phoenix.planet.dto.member.request.KakaoSignUpRequest;
 import org.phoenix.planet.dto.member.request.LocalSignUpRequest;
 import org.phoenix.planet.dto.member.request.LoginRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
 import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
+import org.phoenix.planet.dto.member.response.EmailExistCheckResponse;
 import org.phoenix.planet.dto.member.response.LoginResponse;
 import org.phoenix.planet.dto.member.response.SignUpResponse;
 import org.phoenix.planet.service.auth.AuthService;
@@ -95,7 +97,7 @@ public class AuthController {
 
         String newAccessToken = authService.regenerateAccessToken(refreshToken);
         response.setHeader(TokenKey.X_ERROR_CODE.getValue(),
-            AuthenticationError.REFRESH_TOKEN_REGENERATE_SUCCESS.name());
+            AuthenticationError.ACCESS_TOKEN_REGENERATE_SUCCESS.name());
         response.setHeader(TokenKey.AUTHORIZATION_HEADER.getValue(),
             TokenKey.AUTHENTICATION_PREFIX.getValue() + newAccessToken);
         return ResponseEntity.ok().build();
@@ -176,6 +178,22 @@ public class AuthController {
         authService.changePassword(request);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 해당 이메일이 이미 존재하는지 체크
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/check-email-exist")
+    public ResponseEntity<EmailExistCheckResponse> checkEmailExist(
+        @RequestBody @Valid EmailExistCheckRequest request
+    ) {
+
+        EmailExistCheckResponse response = authService.validateEmailExist(request);
+        return ResponseEntity.ok(response);
+    }
+
 
     private String resolveRefreshTokenFromCookie(HttpServletRequest request) {
 

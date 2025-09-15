@@ -9,5 +9,5 @@ public interface EcoStockIssueService {
 
     EcoStockIssueResponse issueEcoStock(OrderConfirmResult orderConfirmResult, Long memberId);
 
-    void processIssue(Long memberId,Long stockId);
+    void processIssue(Long memberId, Long stockId);
 }

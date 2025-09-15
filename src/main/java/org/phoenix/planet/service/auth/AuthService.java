@@ -1,10 +1,13 @@
 package org.phoenix.planet.service.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.phoenix.planet.dto.member.request.EmailExistCheckRequest;
 import org.phoenix.planet.dto.member.request.LoginRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeRequest;
 import org.phoenix.planet.dto.member.request.PasswordChangeTokenRequest;
 import org.phoenix.planet.dto.member.request.SendPasswordChangeRequest;
+import org.phoenix.planet.dto.member.response.EmailExistCheckResponse;
 import org.springframework.security.core.Authentication;
 
 public interface AuthService {
@@ -52,4 +55,6 @@ public interface AuthService {
     void validatePasswordChangeToken(PasswordChangeTokenRequest request);
 
     void changePassword(PasswordChangeRequest request);
+
+    EmailExistCheckResponse validateEmailExist(@Valid EmailExistCheckRequest request);
 }

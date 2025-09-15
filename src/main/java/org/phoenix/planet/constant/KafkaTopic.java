@@ -8,6 +8,7 @@ import org.phoenix.planet.event.PayEvent;
 public enum KafkaTopic {
     OFFLINE_PAY_DETECTED("eco.offline-pay-detected", PayEvent.class),
     ECO_CAR_ENTER_DETECTED("eco.car-enter-detected", EcoCarEnterEvent.class),
+    ECO_CAR_EXIT_DETECTED("eco.car-exit-detected", EcoCarEnterEvent.class),
     DEAD_LETTER("eco.dead-letter", String.class);
 
     private final String value;

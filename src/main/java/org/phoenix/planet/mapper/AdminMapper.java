@@ -10,6 +10,8 @@ import org.phoenix.planet.dto.admin.order_product.CategoryItem;
 import org.phoenix.planet.dto.admin.order_product.DayItem;
 import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiItem;
 import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiItem;
+import org.phoenix.planet.dto.admin.raffle.RaffleParticipationByDayItem;
+import org.phoenix.planet.dto.admin.raffle.RaffleParticipationItem;
 import org.phoenix.planet.dto.admin.response.CategorySalesResponse;
 import org.phoenix.planet.dto.admin.response.OrderCountResponse;
 
@@ -32,7 +34,12 @@ public interface AdminMapper {
 
     List<DonatorPercentageItem> selectDonatorPercentage();
 
+    List<RaffleParticipationItem> selectRaffleParticipationByRaffle();
+
+    List<RaffleParticipationByDayItem> selectRaffleParticipationByDay();
+
     List<OrderCountResponse> select7DaysOrderCount();
 
     List<CategorySalesResponse> selectCategorySales();
+
 }

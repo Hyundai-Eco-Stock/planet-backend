@@ -51,6 +51,7 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
             ecoStockIssueMapper.insert(memberId, ecoStockId);
         }
         // 유저의 에코스톡 보유 정보 수정
+        stockTradeProcessor.executeSellTradeAndBroadcast(ecoStockId,-1);
         memberStockInfoService.updateOrInsert(memberId, ecoStockId, amount);
 
         // FCM 토큰 목록 가져와 푸시 알람 전송

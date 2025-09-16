@@ -160,7 +160,7 @@ public class AdminController {
     public ResponseEntity<Void> testNotification() {
 
         List<String> tokens = memberDeviceTokenService.findAll();
-        fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.", "/home");
+        fcmService.sendCustomNotification(tokens, "Test", "테스트 메시지 입니다.", "/home");
         return ResponseEntity.ok().build();
     }
 

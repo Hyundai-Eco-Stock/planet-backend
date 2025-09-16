@@ -3,6 +3,7 @@ package org.phoenix.planet.service.payment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.phoenix.planet.constant.*;
+import org.phoenix.planet.dto.order.raw.OrderConfirmResult;
 import org.phoenix.planet.dto.order.raw.OrderHistory;
 import org.phoenix.planet.dto.order.raw.OrderProduct;
 import org.phoenix.planet.dto.payment.raw.PartialCancelCalculation;
@@ -18,6 +19,7 @@ import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.error.payment.PaymentException;
 import org.phoenix.planet.mapper.*;
+import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final MemberMapper memberMapper;
     private final PointExchangeHistoryMapper pointExchangeHistoryMapper;
     private final QrCodeService qrCodeService;
+    private final EcoStockIssueService ecoStockIssueService;
 
     @Override
     @Transactional
@@ -82,6 +85,15 @@ public class PaymentServiceImpl implements PaymentService {
             qrCodeUrl = qrCodeService.generatePickupQRCode(orderHistoryId);
             orderHistoryMapper.updateQRCodeUrl(orderHistoryId, qrCodeUrl);
         }
+
+        OrderConfirmResult orderConfirmResult = OrderConfirmResult.builder()
+            .orderHistoryId(orderHistoryId)
+            .orderNumber(request.orderId())
+            .donationPrice((long) (request.donationAmount() != null ? request.donationAmount() : 0))
+            .confirmedAt(LocalDateTime.now())
+            .build();
+
+        ecoStockIssueService.issueEcoStock(orderConfirmResult, memberId);
 
         // 성공 응답 생성
         PaymentConfirmResponse.PaymentResultData resultData = createSuccessResponse(

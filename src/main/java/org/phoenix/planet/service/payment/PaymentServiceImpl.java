@@ -1,8 +1,17 @@
 package org.phoenix.planet.service.payment;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.constant.*;
+import org.phoenix.planet.constant.CancelStatus;
+import org.phoenix.planet.constant.OrderError;
+import org.phoenix.planet.constant.OrderStatus;
+import org.phoenix.planet.constant.OrderType;
+import org.phoenix.planet.constant.PaymentError;
+import org.phoenix.planet.constant.PaymentStatus;
 import org.phoenix.planet.dto.order.raw.OrderConfirmResult;
 import org.phoenix.planet.dto.order.raw.OrderHistory;
 import org.phoenix.planet.dto.order.raw.OrderProduct;
@@ -18,15 +27,17 @@ import org.phoenix.planet.dto.payment.response.TossPaymentResponse;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.error.order.OrderException;
 import org.phoenix.planet.error.payment.PaymentException;
-import org.phoenix.planet.mapper.*;
+import org.phoenix.planet.mapper.MemberMapper;
+import org.phoenix.planet.mapper.OrderHistoryMapper;
+import org.phoenix.planet.mapper.OrderProductMapper;
+import org.phoenix.planet.mapper.PaymentHistoryMapper;
+import org.phoenix.planet.mapper.PointExchangeHistoryMapper;
+import org.phoenix.planet.mapper.ProductMapper;
 import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
+import org.phoenix.planet.service.fcm.FcmService;
+import org.phoenix.planet.service.fcm.MemberDeviceTokenService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -42,6 +53,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final PointExchangeHistoryMapper pointExchangeHistoryMapper;
     private final QrCodeService qrCodeService;
     private final EcoStockIssueService ecoStockIssueService;
+    private final MemberDeviceTokenService memberDeviceTokenService;
+    private final FcmService fcmService;
 
     @Override
     @Transactional
@@ -102,6 +115,10 @@ public class PaymentServiceImpl implements PaymentService {
 
         log.info("결제 승인 완료: orderId={}, paymentKey={}", request.orderId(), request.paymentKey());
 
+        // FCM 토큰 목록 가져와 푸시 알람 전송
+        List<String> tokens = memberDeviceTokenService.getTokens(memberId);
+        String fcmMessage = "친환경 제품 구매로 에코템 에코스톡 1주가 발급되었습니다";
+        fcmService.SendEcoStockIssueNotification(tokens, fcmMessage);
         return new PaymentConfirmResponse(true, "결제가 성공적으로 완료되었습니다.", resultData);
     }
 
@@ -559,11 +576,13 @@ public class PaymentServiceImpl implements PaymentService {
     /**
      * 결제 상태 업데이트 (전체/부분 취소 공통)
      */
-    private void updatePaymentStatusWithBalance(Long paymentId, boolean isFullCancel, Long balanceAmount) {
+    private void updatePaymentStatusWithBalance(Long paymentId, boolean isFullCancel,
+        Long balanceAmount) {
 
         PaymentStatus paymentStatus =
             isFullCancel ? PaymentStatus.CANCELED : PaymentStatus.PARTIAL_CANCELED;
-        int result = paymentHistoryMapper.updatePaymentStatusWithBalance(paymentId, paymentStatus, balanceAmount);
+        int result = paymentHistoryMapper.updatePaymentStatusWithBalance(paymentId, paymentStatus,
+            balanceAmount);
 
         if (result == 0) {
             throw new PaymentException(PaymentError.PAYMENT_STATUS_UPDATE_FAILED);
@@ -735,8 +754,10 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // 활성 상품 개수
-        List<OrderProduct> activeProducts = orderProductMapper.findActiveOrderProducts(order.getOrderHistoryId());
-        List<OrderProduct> allOrderProducts = orderProductMapper.findOrderProductsByOrderHistoryId(order.getOrderHistoryId());
+        List<OrderProduct> activeProducts = orderProductMapper.findActiveOrderProducts(
+            order.getOrderHistoryId());
+        List<OrderProduct> allOrderProducts = orderProductMapper.findOrderProductsByOrderHistoryId(
+            order.getOrderHistoryId());
 
         int remainingProducts = activeProducts.size() - cancelTargets.size();
         int totalOriginalProducts = allOrderProducts.size();
@@ -746,8 +767,8 @@ public class PaymentServiceImpl implements PaymentService {
         Long refundedPoints = (originalPoints * cancelProductCount) / totalOriginalProducts;
 
         // 기부금 환불
-        Long refundedDonation = (refundDonation && order.getDonationPrice() != null) ? order.getDonationPrice() : 0;
-
+        Long refundedDonation =
+            (refundDonation && order.getDonationPrice() != null) ? order.getDonationPrice() : 0;
 
         if (remainingProducts == 0) {  // 마지막 취소 시에는 남은 포인트도 모두 환불
             return new PartialCancelCalculation(

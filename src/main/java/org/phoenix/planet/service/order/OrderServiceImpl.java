@@ -83,11 +83,6 @@ public class OrderServiceImpl implements OrderService {
         );
         orderDraftService.saveOrderDraft(orderDraft);
 
-        // FCM 토큰 목록 가져와 푸시 알람 전송
-        List<String> tokens = memberDeviceTokenService.getTokens(memberId);
-        String fcmMessage = "친환경 제품 구매로 에코템 에코스톡 1주가 발급되었습니다";
-        fcmService.SendEcoStockIssueNotification(tokens, fcmMessage);
-
         return new CreateOrderResponse(
             orderNumber,
             validationResult.totalAmount(), // 상품 금액만 반환

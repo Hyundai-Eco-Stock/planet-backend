@@ -169,7 +169,17 @@ public class AdminController {
 
         List<String> tokens = memberDeviceTokenService.findAll();
         fcmService.sendCustomNotification(tokens, "푸드딜 알림", "새로운 푸드딜 상품들이 입고되었습니다.",
-            "/eco-deal/detail");
+            "/eco-deal/main");
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/notification/tumbler-use")
+    public ResponseEntity<Void> sendTumblerUseNotification() {
+
+        List<String> tokens = memberDeviceTokenService.findAll();
+        fcmService.sendCustomNotification(tokens, "에코스톡 지급 완료! \uD83C\uDF89",
+            "텀블러 사용으로 에코스톡 1주가 발급되었습니다.",
+            "/my-page/eco-stock");
         return ResponseEntity.ok().build();
     }
 

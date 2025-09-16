@@ -35,6 +35,12 @@ public class StockTradeProcessor {
         return result;
     }
 
+    /**
+     * 가격 변동 후에 가져오는 함수
+     * @param ecoStockId
+     * @param tradCount
+     * @return
+     */
     public UnifiedUpdateResult executeIssueTradeAndBroadcast(Long ecoStockId, Integer tradCount) {
 
         LocalDateTime now = LocalDateTime.now();

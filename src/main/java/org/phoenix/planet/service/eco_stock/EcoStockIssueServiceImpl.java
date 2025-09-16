@@ -1,5 +1,6 @@
 package org.phoenix.planet.service.eco_stock;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,7 +34,7 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
     private final MemberDeviceTokenService memberDeviceTokenService;
     private final ChartDataSecondRedisRepository chartDataSecondRedisRepository;
     private final StockTradeProcessor stockTradeProcessor;
-  
+
     // 스톡 종류별 ID 상수
     private static final Long ECO_PRODUCT_STOCK_ID = 2L;  // 친환경 상품 스톡
     private static final Long DONATION_STOCK_ID = 6L;     // 기부 스톡
@@ -51,16 +50,13 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
         for (int i = 0; i < amount; i++) {
             ecoStockIssueMapper.insert(memberId, ecoStockId);
         }
-
-        //todo redis 저장 로직
-        stockTradeProcessor.executeIssueTradeAndBroadcast(ecoStockId,1);
+        // 유저의 에코스톡 보유 정보 수정
+        memberStockInfoService.updateOrInsert(memberId, ecoStockId, amount);
 
         // FCM 토큰 목록 가져와 푸시 알람 전송
         List<String> tokens = memberDeviceTokenService.getTokens(memberId);
         String fcmMessage = createFcmMessage(ecoStockId, amount);
         fcmService.SendEcoStockIssueNotification(tokens, fcmMessage);
-        // 유저의 에코스톡 보유 정보 수정
-        memberStockInfoService.updateOrInsert(memberId, ecoStockId, amount);
         log.info("에코스톡 발급 완료");
     }
 
@@ -87,8 +83,11 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public EcoStockIssueResponse issueEcoStock(OrderConfirmResult orderConfirmResult, Long memberId) {
-        log.info("구매 확정 에코스톡 발급 - orderHistoryId : {}, memberId : {}", orderConfirmResult.orderHistoryId(), memberId);
+    public EcoStockIssueResponse issueEcoStock(OrderConfirmResult orderConfirmResult,
+        Long memberId) {
+
+        log.info("구매 확정 에코스톡 발급 - orderHistoryId : {}, memberId : {}",
+            orderConfirmResult.orderHistoryId(), memberId);
 
         int totalIssuedCount = 0;
         int totalStockValue = 0;
@@ -114,34 +113,40 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
 
             // 친환경 상품 스톡 발급 (무조건 1주)
             // 현재 친환경 스톡 보유량 조회
-            process(memberId,ECO_PRODUCT_STOCK_ID,ecoProductPrice);
+            process(memberId, ECO_PRODUCT_STOCK_ID, ecoProductPrice);
 
             totalIssuedCount++;
             totalStockValue = totalStockValue + ecoProductPrice.getStockPrice().intValue();
-            log.info("친환경 상품 스톡 발급 완료 - memberId: {}, stockPrice: {}", memberId, ecoProductPrice.getStockPrice());
+            log.info("친환경 상품 스톡 발급 완료 - memberId: {}, stockPrice: {}", memberId,
+                ecoProductPrice.getStockPrice());
 
             // 기부 스톡 발급 (기부금이 있는 경우만)
-            if (orderConfirmResult.donationPrice() != null && orderConfirmResult.donationPrice() > 0) {
+            if (orderConfirmResult.donationPrice() != null
+                && orderConfirmResult.donationPrice() > 0) {
                 if (donationPrice == null) {
                     log.warn("기부 스톡 가격 정보를 찾을 수 없습니다. 기부 스톡 발급을 건너뜁니다.");
                 } else {
 
-                    process(memberId,DONATION_STOCK_ID,donationPrice);
+                    process(memberId, DONATION_STOCK_ID, donationPrice);
 
                     totalIssuedCount++;
                     totalStockValue += donationPrice.getStockPrice().intValue();
                     log.info("기부 스톡 발급 완료 - memberId: {}, donationAmount: {}, stockPrice: {}",
-                        memberId, orderConfirmResult.donationPrice(), donationPrice.getStockPrice());
+                        memberId, orderConfirmResult.donationPrice(),
+                        donationPrice.getStockPrice());
                 }
             }
         } catch (Exception e) {
-            log.error("에코스톡 발급 실패 - orderHistoryId: {}, memberId: {}", orderConfirmResult.orderHistoryId(), memberId, e);
+            log.error("에코스톡 발급 실패 - orderHistoryId: {}, memberId: {}",
+                orderConfirmResult.orderHistoryId(), memberId, e);
             throw new OrderException(OrderError.ECOSTOCK_ISSUE_FAILED);
         }
 
         // 발급 후 총 보유량 조회 (친환경 + 기부 스톡 합계)
-        MemberStockInfo finalEcoStock = memberStockInfoMapper.findPersonalStockInfoById(memberId, ECO_PRODUCT_STOCK_ID);
-        MemberStockInfo finalDonationStock = memberStockInfoMapper.findPersonalStockInfoById(memberId, DONATION_STOCK_ID);
+        MemberStockInfo finalEcoStock = memberStockInfoMapper.findPersonalStockInfoById(memberId,
+            ECO_PRODUCT_STOCK_ID);
+        MemberStockInfo finalDonationStock = memberStockInfoMapper.findPersonalStockInfoById(
+            memberId, DONATION_STOCK_ID);
 
         int newTotalStockCount = 0;
         int newTotalPurchaseAmount = 0;
@@ -172,42 +177,50 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
 
     @Override
     @Transactional
-    public void processIssue(Long memberId,Long stockId) {
+    public void processIssue(Long memberId, Long stockId) {
         // 현재 기부 스톡 보유량 조회
-        MemberStockInfo stockInfo = memberStockInfoMapper.findPersonalStockInfoById(memberId, stockId);
-        log.trace("{}",stockInfo); ;
+        MemberStockInfo stockInfo = memberStockInfoMapper.findPersonalStockInfoById(memberId,
+            stockId);
+        log.trace("{}", stockInfo);
+        ;
+
         // stock_issue에 발급 기록 저장
-        ecoStockIssueMapper.insert(memberId, stockId);
+        issueStock(memberId, stockId, 1);
 
         //todo redis 저장 로직
-        UnifiedUpdateResult result = stockTradeProcessor.executeIssueTradeAndBroadcast(stockId,1);
+        UnifiedUpdateResult result = stockTradeProcessor.executeIssueTradeAndBroadcast(stockId, 1);
 
         // MEMBER_STOCK_INFO 업데이트
-        if (stockInfo ==null || stockInfo.memberStockInfoId() == null) {
-            memberStockInfoMapper.insertMemberStockInfo(memberId, stockId, 1, result.getExecutedPrice());
+        if (stockInfo == null || stockInfo.memberStockInfoId() == null) {
+            memberStockInfoMapper.insertMemberStockInfo(memberId, stockId, 1,
+                result.getExecutedPrice());
         } else {
             int newQuantity = stockInfo.currentTotalQuantity() + 1;
-            Double newAmount = stockInfo.currentTotalAmount() +  result.getExecutedPrice();
-            memberStockInfoMapper.updateMemberStockInfo(stockInfo.memberStockInfoId(), newQuantity, newAmount);
+            Double newAmount = stockInfo.currentTotalAmount() + result.getExecutedPrice();
+            memberStockInfoMapper.updateMemberStockInfo(stockInfo.memberStockInfoId(), newQuantity,
+                newAmount);
         }
     }
 
-    public void process(Long memberId,Long stockId,StockData stockPrice) {
+    public void process(Long memberId, Long stockId, StockData stockPrice) {
         // 현재 기부 스톡 보유량 조회
-        MemberStockInfo stockInfo = memberStockInfoMapper.findPersonalStockInfoById(memberId, stockId);
+        MemberStockInfo stockInfo = memberStockInfoMapper.findPersonalStockInfoById(memberId,
+            stockId);
         // stock_issue에 발급 기록 저장
         ecoStockIssueMapper.insert(memberId, stockId);
 
         //todo redis 저장 로직
-        stockTradeProcessor.executeIssueTradeAndBroadcast(stockId,1);
+        stockTradeProcessor.executeIssueTradeAndBroadcast(stockId, 1);
 
         // MEMBER_STOCK_INFO 업데이트
         if (stockInfo.memberStockInfoId() == null) {
-            memberStockInfoMapper.insertMemberStockInfo(memberId, stockId, 1, stockPrice.getStockPrice());
+            memberStockInfoMapper.insertMemberStockInfo(memberId, stockId, 1,
+                stockPrice.getStockPrice());
         } else {
             int newQuantity = stockInfo.currentTotalQuantity() + 1;
             Double newAmount = stockInfo.currentTotalAmount() + stockPrice.getStockPrice();
-            memberStockInfoMapper.updateMemberStockInfo(stockInfo.memberStockInfoId(), newQuantity, newAmount);
+            memberStockInfoMapper.updateMemberStockInfo(stockInfo.memberStockInfoId(), newQuantity,
+                newAmount);
         }
     }
 }

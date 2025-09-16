@@ -3,7 +3,6 @@ package org.phoenix.planet.controller;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.phoenix.planet.annotation.LoginMemberId;
 import org.phoenix.planet.dto.admin.donation.DonationAmountsByDayResponse;
 import org.phoenix.planet.dto.admin.donation.DonatorPercentageResponse;
 import org.phoenix.planet.dto.admin.eco_stock.EcoStockHoldingAmountGroupByMemberResponse;
@@ -12,6 +11,8 @@ import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByCategor
 import org.phoenix.planet.dto.admin.order_product.ProductOrderDataGroupByDayResponse;
 import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiResponse;
 import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiResponse;
+import org.phoenix.planet.dto.admin.raffle.RaffleParticipationByDayResponse;
+import org.phoenix.planet.dto.admin.raffle.RaffleParticipationResponse;
 import org.phoenix.planet.service.admin.AdminService;
 import org.phoenix.planet.service.fcm.FcmService;
 import org.phoenix.planet.service.fcm.MemberDeviceTokenService;
@@ -127,24 +128,49 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/notification/test")
-    public ResponseEntity<Void> testNotification() {
+    @GetMapping("/raffles-participation-by-raffle")
+    public ResponseEntity<RaffleParticipationResponse> fetchParticipationByRaffle() {
 
-        List<String> tokens = memberDeviceTokenService.findAll();
-        fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.", "/login");
-        return ResponseEntity.ok().build();
+        RaffleParticipationResponse response = adminService.fetchRaffleParticipationByRaffle();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/raffle-participation-by-day")
+    public ResponseEntity<RaffleParticipationByDayResponse> fetchParticipationByDay() {
+
+        RaffleParticipationByDayResponse response = adminService.fetchRaffleParticipationByDay();
+        return ResponseEntity.ok(response);
     }
 
     /* 7일간 주문량 */
     @GetMapping("/7days-order-count")
     public ResponseEntity<?> orderCountFor7Days() {
+
         return ResponseEntity.ok(adminService.fetch7DaysOrderCount());
     }
 
     /* 카테고리별 판매량 */
     @GetMapping("/category-sales")
     public ResponseEntity<?> categorySales() {
+
         return ResponseEntity.ok(adminService.fetchCategorySales());
+    }
+
+    @PostMapping("/notification/test")
+    public ResponseEntity<Void> testNotification() {
+
+        List<String> tokens = memberDeviceTokenService.findAll();
+        fcmService.sendCustomNotification(tokens, "Test", "test 메시지 입니다.", "/home");
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/notification/food-deal")
+    public ResponseEntity<Void> sendFoodDealNotification() {
+
+        List<String> tokens = memberDeviceTokenService.findAll();
+        fcmService.sendCustomNotification(tokens, "푸드딜 알림", "새로운 푸드딜 상품들이 입고되었습니다.",
+            "/eco-deal/detail");
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -19,6 +19,8 @@ import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiItem;
 import org.phoenix.planet.dto.admin.phti.IssueAndOrderPatternsByPhtiResponse;
 import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiItem;
 import org.phoenix.planet.dto.admin.phti.MemberPercentageByPhtiResponse;
+import org.phoenix.planet.dto.admin.raffle.RaffleParticipationByDayResponse;
+import org.phoenix.planet.dto.admin.raffle.RaffleParticipationResponse;
 import org.phoenix.planet.dto.admin.response.CategorySalesResponse;
 import org.phoenix.planet.dto.admin.response.OrderCountResponse;
 import org.phoenix.planet.mapper.AdminMapper;
@@ -37,15 +39,18 @@ public class AdminServiceImpl implements AdminService {
         List<IssueItem> items = adminMapper.selectEcoStockIssuePercentageData();
 
         long totalIssued = items.stream()
-                .mapToLong(IssueItem::count)
-                .sum();
+            .mapToLong(IssueItem::count)
+            .sum();
         int ecoStockTypes = items.size();
 
+//        double avgHolding = totalUsers > 0 ? (double) totalIssued / totalUsers : 0;
+
         return EcoStockIssuePercentageResponse.builder()
-                .totalIssued(totalIssued)
-                .ecoStockTypes(ecoStockTypes)
-                .items(items)
-                .build();
+            .totalIssued(totalIssued)
+//            .avgHolding(avgHolding)
+            .ecoStockTypes(ecoStockTypes)
+            .items(items)
+            .build();
     }
 
     @Override
@@ -54,17 +59,13 @@ public class AdminServiceImpl implements AdminService {
         List<HoldingItem> items = adminMapper.selectEcoStockHoldingAmountDataGroupByMember();
 
         long totalUsers = items.stream()
-                .mapToLong(HoldingItem::userCount)
-                .sum();
-        long totalIssued = 0;
-        double avgHolding = totalUsers > 0 ? (double) totalIssued / totalUsers : 0;
+            .mapToLong(HoldingItem::userCount)
+            .sum();
 
         return EcoStockHoldingAmountGroupByMemberResponse.builder()
-                .totalUsers(totalUsers)
-                .totalIssued(totalIssued)
-                .avgHolding(avgHolding)
-                .items(items)
-                .build();
+            .totalUsers(totalUsers)
+            .items(items)
+            .build();
     }
 
     @Override
@@ -73,19 +74,19 @@ public class AdminServiceImpl implements AdminService {
         List<DayItem> items = adminMapper.selectProductOrderDataGroupByDay();
 
         long totalOrders = items.stream()
-                .mapToLong(DayItem::orders)
-                .sum();
+            .mapToLong(DayItem::orders)
+            .sum();
         long totalRevenue = items.stream()
-                .mapToLong(DayItem::revenue)
-                .sum();
+            .mapToLong(DayItem::revenue)
+            .sum();
         long avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
         return ProductOrderDataGroupByDayResponse.builder()
-                .totalOrders(totalOrders)
-                .totalRevenue(totalRevenue)
-                .avgOrderValue(avgOrderValue)
-                .items(items)
-                .build();
+            .totalOrders(totalOrders)
+            .totalRevenue(totalRevenue)
+            .avgOrderValue(avgOrderValue)
+            .items(items)
+            .build();
     }
 
     @Override
@@ -96,9 +97,9 @@ public class AdminServiceImpl implements AdminService {
         String topCategory = items.isEmpty() ? "" : items.getFirst().category();
 
         return ProductOrderDataGroupByCategoryResponse.builder()
-                .topCategory(topCategory)
-                .items(items)
-                .build();
+            .topCategory(topCategory)
+            .items(items)
+            .build();
     }
 
     @Override
@@ -107,16 +108,16 @@ public class AdminServiceImpl implements AdminService {
         List<MemberPercentageByPhtiItem> items = adminMapper.selectMemberPercentageByPhti();
 
         long totalUsers = items.stream()
-                .mapToLong(MemberPercentageByPhtiItem::users)
-                .sum();
+            .mapToLong(MemberPercentageByPhtiItem::users)
+            .sum();
 
         String topPhti = items.isEmpty() ? "" : items.get(0).type();
 
         return MemberPercentageByPhtiResponse.builder()
-                .totalUsers(totalUsers)
-                .topPhti(topPhti)
-                .items(items)
-                .build();
+            .totalUsers(totalUsers)
+            .topPhti(topPhti)
+            .items(items)
+            .build();
     }
 
     @Override
@@ -125,15 +126,15 @@ public class AdminServiceImpl implements AdminService {
         List<IssueAndOrderPatternsByPhtiItem> items = adminMapper.selectIssueAndOrderPatternsByPhti();
 
         long totalOrders = items.stream()
-                .mapToLong(IssueAndOrderPatternsByPhtiItem::orders)
-                .sum();
+            .mapToLong(IssueAndOrderPatternsByPhtiItem::orders)
+            .sum();
 
         long avgOrders = items.isEmpty() ? 0 : totalOrders / items.size();
 
         return IssueAndOrderPatternsByPhtiResponse.builder()
-                .avgOrders(avgOrders)
-                .items(items)
-                .build();
+            .avgOrders(avgOrders)
+            .items(items)
+            .build();
     }
 
     @Override
@@ -142,13 +143,13 @@ public class AdminServiceImpl implements AdminService {
         List<DonationAmountsByDayItem> items = adminMapper.selectDonationAmountsByDay();
 
         long totalDonation = items.stream()
-                .mapToLong(DonationAmountsByDayItem::donation)
-                .sum();
+            .mapToLong(DonationAmountsByDayItem::donation)
+            .sum();
 
         return DonationAmountsByDayResponse.builder()
-                .totalDonation(totalDonation)
-                .items(items)
-                .build();
+            .totalDonation(totalDonation)
+            .items(items)
+            .build();
     }
 
     @Override
@@ -157,31 +158,49 @@ public class AdminServiceImpl implements AdminService {
         List<DonatorPercentageItem> items = adminMapper.selectDonatorPercentage();
 
         long totalUsers = items.stream()
-                .mapToLong(DonatorPercentageItem::users)
-                .sum();
+            .mapToLong(DonatorPercentageItem::users)
+            .sum();
 
         long participation = items.stream()
-                .filter(i -> i.name().equals("참여"))
-                .mapToLong(DonatorPercentageItem::users)
-                .sum();
+            .filter(i -> i.name().equals("참여"))
+            .mapToLong(DonatorPercentageItem::users)
+            .sum();
 
         long participationRate =
-                totalUsers > 0 ? Math.round((participation * 100.0) / totalUsers) : 0;
+            totalUsers > 0 ? Math.round((participation * 100.0) / totalUsers) : 0;
 
         return DonatorPercentageResponse.builder()
-                .totalUsers(totalUsers)
-                .participationRate(participationRate)
-                .items(items)
-                .build();
+            .totalUsers(totalUsers)
+            .participationRate(participationRate)
+            .items(items)
+            .build();
+    }
+
+    @Override
+    public RaffleParticipationResponse fetchRaffleParticipationByRaffle() {
+
+        return RaffleParticipationResponse.builder()
+            .items(adminMapper.selectRaffleParticipationByRaffle())
+            .build();
+    }
+
+    @Override
+    public RaffleParticipationByDayResponse fetchRaffleParticipationByDay() {
+
+        return RaffleParticipationByDayResponse.builder()
+            .items(adminMapper.selectRaffleParticipationByDay())
+            .build();
     }
 
     @Override
     public List<OrderCountResponse> fetch7DaysOrderCount() {
+
         return adminMapper.select7DaysOrderCount();
     }
 
     @Override
     public List<CategorySalesResponse> fetchCategorySales() {
+
         return adminMapper.selectCategorySales();
     }
 }

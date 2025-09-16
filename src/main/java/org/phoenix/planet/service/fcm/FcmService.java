@@ -12,7 +12,7 @@ public class FcmService {
     public void SendEcoStockIssueNotification(List<String> fcmTokens, String body) {
 
         FcmUtil.sendNotificationToMany(fcmTokens, "에코스톡 지급 완료! \uD83C\uDF89", body,
-            "/eco-stock/main");
+            "/my-page/eco-stock");
     }
 
     public void sendRaffleWinNotification(List<String> fcmTokens, String body) {

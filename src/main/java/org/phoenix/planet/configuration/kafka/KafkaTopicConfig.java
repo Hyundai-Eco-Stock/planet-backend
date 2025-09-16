@@ -19,6 +19,8 @@ public class KafkaTopicConfig {
             new NewTopic(KafkaTopic.OFFLINE_PAY_DETECTED.getTopicName(), 3, (short) 1),
             // 친환경 차 입차 감지
             new NewTopic(KafkaTopic.ECO_CAR_ENTER_DETECTED.getTopicName(), 3, (short) 1),
+            // 친환경 차 출차 감지
+            new NewTopic(KafkaTopic.ECO_CAR_EXIT_DETECTED.getTopicName(), 3, (short) 1),
             // 실패한 메시지를 모아두는 DLT (DB insert 실패, JSON 파싱 실패 같은 경우)
             new NewTopic(KafkaTopic.DEAD_LETTER.getTopicName(), 3, (short) 1)
         );

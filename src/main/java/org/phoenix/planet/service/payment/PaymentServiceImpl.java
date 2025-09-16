@@ -117,8 +117,10 @@ public class PaymentServiceImpl implements PaymentService {
 
         // FCM 토큰 목록 가져와 푸시 알람 전송
         List<String> tokens = memberDeviceTokenService.getTokens(memberId);
-        String fcmMessage = "친환경 제품 구매로 에코템 에코스톡 1주가 발급되었습니다";
-        fcmService.SendEcoStockIssueNotification(tokens, fcmMessage);
+        String title = "푸드딜 QR 인증 완료!";
+        String fcmMessage = "푸드딜 QR 인증으로 에코템 에코스톡 1주가 발급되었습니다";
+        String path = "/my-page/eco-deal-reservation";
+        fcmService.sendCustomNotification(tokens, title, fcmMessage, path);
         return new PaymentConfirmResponse(true, "결제가 성공적으로 완료되었습니다.", resultData);
     }
 

@@ -13,7 +13,12 @@ import org.phoenix.planet.constant.OrderError;
 import org.phoenix.planet.constant.OrderStatus;
 import org.phoenix.planet.constant.OrderType;
 import org.phoenix.planet.dto.member.raw.Member;
-import org.phoenix.planet.dto.order.raw.*;
+import org.phoenix.planet.dto.order.raw.OrderConfirmResult;
+import org.phoenix.planet.dto.order.raw.OrderDraft;
+import org.phoenix.planet.dto.order.raw.OrderHistory;
+import org.phoenix.planet.dto.order.raw.OrderValidationResult;
+import org.phoenix.planet.dto.order.raw.PickupStoreInfo;
+import org.phoenix.planet.dto.order.raw.PickupStoreProductInfo;
 import org.phoenix.planet.dto.order.request.CreateOrderRequest;
 import org.phoenix.planet.dto.order.request.OrderProductRequest;
 import org.phoenix.planet.dto.order.response.CreateOrderResponse;
@@ -23,8 +28,14 @@ import org.phoenix.planet.dto.order.response.OrderDraftResponse;
 import org.phoenix.planet.dto.product.raw.Product;
 import org.phoenix.planet.error.auth.AuthException;
 import org.phoenix.planet.error.order.OrderException;
-import org.phoenix.planet.mapper.*;
+import org.phoenix.planet.mapper.DepartmentStoreMapper;
+import org.phoenix.planet.mapper.DepartmentStoreProductMapper;
+import org.phoenix.planet.mapper.MemberMapper;
+import org.phoenix.planet.mapper.OrderHistoryMapper;
+import org.phoenix.planet.mapper.ProductMapper;
 import org.phoenix.planet.service.eco_stock.EcoStockIssueService;
+import org.phoenix.planet.service.fcm.FcmService;
+import org.phoenix.planet.service.fcm.MemberDeviceTokenService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +52,8 @@ public class OrderServiceImpl implements OrderService {
     private final ProductMapper productMapper;
     private final OrderHistoryMapper orderHistoryMapper;
     private final EcoStockIssueService ecoStockIssueService;
+    private final MemberDeviceTokenService memberDeviceTokenService;
+    private final FcmService fcmService;
 
     @Override
     @Transactional
@@ -69,6 +82,11 @@ public class OrderServiceImpl implements OrderService {
             defaultDonationPrice
         );
         orderDraftService.saveOrderDraft(orderDraft);
+
+        // FCM 토큰 목록 가져와 푸시 알람 전송
+        List<String> tokens = memberDeviceTokenService.getTokens(memberId);
+        String fcmMessage = "친환경 제품 구매로 에코템 에코스톡 1주가 발급되었습니다";
+        fcmService.SendEcoStockIssueNotification(tokens, fcmMessage);
 
         return new CreateOrderResponse(
             orderNumber,

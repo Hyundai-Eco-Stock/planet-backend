@@ -64,17 +64,17 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
 
         String fcmMessage;
         if (ecoStockId == 1L) {
-            fcmMessage = "텀블러 사용으로 에코스톡 %d주가 발급되었습니다.".formatted(amount);
+            fcmMessage = "텀블러 사용으로 제로컵 에코스톡 %d주가 발급되었습니다.".formatted(amount);
         } else if (ecoStockId == 2L) {
-            fcmMessage = "친환경 제품 구매로 에코스톡 %d주가 발급되었습니다.".formatted(amount);
+            fcmMessage = "친환경 제품 구매로 에코템 에코스톡 %d주가 발급되었습니다.".formatted(amount);
         } else if (ecoStockId == 3L) {
-            fcmMessage = "친환경 차량 입차가 감지되어 에코스톡 %d주가 발급되었습니다.".formatted(amount);
+            fcmMessage = "친환경 차량 입차가 감지되어 EV 에코스톡 %d주가 발급되었습니다.".formatted(amount);
         } else if (ecoStockId == 4L) {
-            fcmMessage = "종이백 미사용으로 에코스톡 %d주가 발급되었습니다.".formatted(amount);
+            fcmMessage = "종이백 미사용으로 제로백 에코스톡 %d주가 발급되었습니다.".formatted(amount);
         } else if (ecoStockId == 5L) {
             fcmMessage = "봉시활동으로 에코스톡 %d주가 발급되었습니다.".formatted(amount);
         } else if (ecoStockId == 6L) {
-            fcmMessage = "고객님의 소중한 기부로 에코스톡 %d주가 발급되었습니다.".formatted(amount);
+            fcmMessage = "고객님의 소중한 기부로 기부온 에코스톡 %d주가 발급되었습니다.".formatted(amount);
         } else {
             throw new IllegalArgumentException("잘못된 eco stock id 입니다.");
         }

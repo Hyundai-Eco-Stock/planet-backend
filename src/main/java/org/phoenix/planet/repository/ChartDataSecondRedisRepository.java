@@ -380,7 +380,9 @@ public class ChartDataSecondRedisRepository {
             "last_updated", String.valueOf(System.currentTimeMillis())
         );
 
-        chartRedisTemplate.opsForHash().putAll(key, stockData);
+        stockData.forEach((field, value) -> {
+            chartRedisTemplate.opsForHash().putIfAbsent(key, field, value);
+        });
     }
 
     private String buildKey(String prefix, Long stockId, LocalDateTime now) {

@@ -51,11 +51,7 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
             ecoStockIssueMapper.insert(memberId, ecoStockId);
         }
         // 유저의 에코스톡 보유 정보 수정
-<<<<<<< HEAD
         stockTradeProcessor.executeIssueTradeAndBroadcast(ecoStockId,amount);
-=======
-        stockTradeProcessor.executeSellTradeAndBroadcast(ecoStockId, -1);
->>>>>>> 73e5578 (fix: 상품 구매시 알림 메시지 수정 및 푸드딜 QR 시 알림 수정)
         memberStockInfoService.updateOrInsert(memberId, ecoStockId, amount);
 
         // FCM 토큰 목록 가져와 푸시 알람 전송

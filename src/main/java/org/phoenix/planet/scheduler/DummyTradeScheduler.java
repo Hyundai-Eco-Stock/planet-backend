@@ -85,11 +85,11 @@ public class DummyTradeScheduler {
                 successCount++;
                 continue;
             }
-            boolean unitSell = rnd.nextDouble() < SELL_RATIO;
+//            boolean unitSell = rnd.nextDouble() < SELL_RATIO;
             try {
 //                UnifiedUpdateResult res = chartRepo.processTradeWithChart(stockId, 1, now);
 
-                if (unitSell) {
+                if (sell) {
                     SellStockRequest request = SellStockRequest.builder()
                         .sellCount(1)
                         .ecoStockId(stockId)
@@ -102,7 +102,7 @@ public class DummyTradeScheduler {
                 }
 
                 log.info("🧪 {} {}ea stockId={}",
-                    unitSell ? "SELL" : "BUY", qty, stockId);
+                    sell ? "SELL" : "BUY", qty, stockId);
                 successCount++;
             } catch (Exception e) {
                 log.warn("🧪 DummyTrade fail: stockId={}, q={}, err={}", stockId, tradeQuantity, e.getMessage());

@@ -94,7 +94,7 @@ public class DummyTradeScheduler {
                 successCount++;
             } catch (Exception e) {
                 log.warn("🧪 DummyTrade fail: stockId={}, q={}, err={}", stockId, tradeQuantity, e.getMessage());
-                ecoStockIssueService.processIssue(memberId,stockId);
+//                ecoStockIssueService.processIssue(memberId,stockId);
             }
         }
 

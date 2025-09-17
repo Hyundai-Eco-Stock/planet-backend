@@ -71,9 +71,13 @@ public class QrResolveServiceImpl implements QrResolveService {
         }
 
         List<String> tokens = memberDeviceTokenService.getTokens(header.memberId());
-        fcmService.SendEcoStockIssueNotification(
-            tokens,
-            "푸드딜 상품 구매로 에코템 에코스톡 1주가 발급되었습니다.");
+        String title = "푸드딜 QR 인증 완료";
+        String fcmMessage = "푸드딜 QR 인증으로 에코템 에코스톡 1주가 발급되었습니다";
+        String path = "/my-page/eco-deal-reservation";
+        fcmService.sendCustomNotification(tokens, title, fcmMessage, path);
+//        fcmService.SendEcoStockIssueNotification(
+//            tokens,
+//            "푸드딜 상품 구매로 에코템 에코스톡 1주가 발급되었습니다.");
 
         return new OrderQrInfo(
             header.orderId(),

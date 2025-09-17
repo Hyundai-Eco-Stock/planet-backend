@@ -30,7 +30,7 @@
 
     <update id="updateQuantityById">
         UPDATE ECO_STOCK
-        SET QUANTITY = #{updateQuantity},
+        SET QUANTITY = QUANTITY+ #{updateQuantity},
         UPDATED_AT = SYSDATE
         WHERE ECO_STOCK_ID = #{stockId}
     </update>

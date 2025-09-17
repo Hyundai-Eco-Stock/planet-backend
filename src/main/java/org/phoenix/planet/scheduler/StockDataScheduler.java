@@ -21,7 +21,6 @@ import org.phoenix.planet.repository.ChartDataSecondRedisRepository;
 import org.phoenix.planet.service.eco_stock.EcoStockMinutePriceHistoryService;
 import org.phoenix.planet.service.eco_stock.EcoStockPriceHistoryService;
 import org.phoenix.planet.service.eco_stock.EcoStockService;
-import org.phoenix.planet.service.eco_stock.StockTradeProcessor;
 import org.phoenix.planet.util.ecoStock.StockChartUtil;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -102,6 +101,11 @@ public class StockDataScheduler {
             if (!historyList.isEmpty()) {
                 ecoStockPriceHistoryService.saveBatch(historyList);
                 log.info("가격 히스토리 벌크 저장 완료: stockId={}, count={}", stockId, historyList.size());
+                int result = historyList.stream()
+                    .mapToInt(h -> (h.getBuyCount() != null ? h.getBuyCount() : 0)
+                                 - (h.getSellCount() != null ? h.getSellCount() : 0))
+                    .sum();
+                ecoStockService.updateQuantityById(stockId,result);
             }
 
             // Redis 데이터 클리어

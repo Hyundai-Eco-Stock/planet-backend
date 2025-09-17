@@ -27,7 +27,7 @@ public class DummyTradeScheduler {
 
     private final EcoStockService ecoStockService;
 
-    private static final List<Long> STOCK_IDS = java.util.List.of(1L,2L,3L,4L,6L);
+    private static final List<Long> STOCK_IDS = java.util.List.of(1L,2L,3L,4L,5L,6L);
     private static final double HOURLY_TARGET = 50.0;            // 시간당 목표
     private static final int BURST_CAP_PER_MIN = 3;               // 분당 최대 실행 한도
     private static final double SELL_RATIO = 0.55;
@@ -73,7 +73,7 @@ public class DummyTradeScheduler {
         for (int i = 0; i < reply; i++) {
             Long stockId = STOCK_IDS.get(rnd.nextInt(STOCK_IDS.size()));
             Long memberId =  memberList.get(rnd.nextInt(memberList.size()));
-
+            if(stockId==5L) continue;
             try {
 //                UnifiedUpdateResult res = chartRepo.processTradeWithChart(stockId, 1, now);
 

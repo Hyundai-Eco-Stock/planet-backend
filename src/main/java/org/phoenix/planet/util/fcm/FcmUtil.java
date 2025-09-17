@@ -22,9 +22,9 @@ public class FcmUtil {
                 .build();
 
             BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
-            log.info("Sent messages: {} success, {} failed",
-                response.getSuccessCount(),
-                response.getFailureCount());
+//            log.info("Sent messages: {} success, {} failed",
+//                response.getSuccessCount(),
+//                response.getFailureCount());
 
         } catch (Exception e) {
             log.warn("Error sending multicast message: {}", e.getMessage());

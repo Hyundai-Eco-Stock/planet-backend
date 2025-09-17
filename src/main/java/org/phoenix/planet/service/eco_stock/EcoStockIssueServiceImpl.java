@@ -186,7 +186,7 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
         ;
 
         // stock_issue에 발급 기록 저장
-        issueStock(memberId, stockId, 1);
+        ecoStockIssueMapper.insert(memberId, stockId);
 
         //todo redis 저장 로직
         UnifiedUpdateResult result = stockTradeProcessor.executeIssueTradeAndBroadcast(stockId, 1);
@@ -224,4 +224,5 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
                 newAmount);
         }
     }
+
 }

@@ -58,7 +58,7 @@ public class QrResolveServiceImpl implements QrResolveService {
                 .confirmedAt(LocalDateTime.now())
                 .build();
 
-            ecoStockIssueService.issueEcoStock(orderConfirmResult, header.memberId());
+            ecoStockIssueService.issueStock(header.memberId(),7L, 1);
         } else {
             log.info("이미 완료 상태 - orderHistoryId={}", orderHistoryId);
             throw new OrderException(OrderError.ORDER_ALREADY_COMPLETED);
@@ -70,11 +70,11 @@ public class QrResolveServiceImpl implements QrResolveService {
             throw new OrderException(OrderError.ORDER_STATUS_UPDATE_FAILED);
         }
 
-        List<String> tokens = memberDeviceTokenService.getTokens(header.memberId());
-        String title = "푸드딜 QR 인증 완료";
-        String fcmMessage = "푸드딜 QR 인증으로 제로웨이스트 에코스톡 1주가 발급되었습니다";
-        String path = "/my-page/eco-deal-reservation";
-        fcmService.sendCustomNotification(tokens, title, fcmMessage, path);
+//        List<String> tokens = memberDeviceTokenService.getTokens(header.memberId());
+//        String title = "푸드딜 QR 인증 완료";
+//        String fcmMessage = "푸드딜 QR 인증으로 제로웨이스트 에코스톡 1주가 발급되었습니다";
+//        String path = "/my-page/eco-deal-reservation";
+//        fcmService.sendCustomNotification(tokens, title, fcmMessage, path);
 
         return new OrderQrInfo(
             header.orderId(),

@@ -32,6 +32,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final CloudFrontFileUtil cloudFrontFileUtil;
 
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieRepo;
+
     @Override
     public void onAuthenticationSuccess(
         HttpServletRequest request,
@@ -73,6 +75,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             .build(true)
             .toUriString();
         CookieUtil.addRefreshTokenCookie(response, refreshToken, cookieProps);
+
+        cookieRepo.removeAuthorizationRequestCookies(response);
+
         response.sendRedirect(redirectUrl);
 
 

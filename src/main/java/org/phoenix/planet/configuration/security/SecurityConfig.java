@@ -50,6 +50,10 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    @Bean
+    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -81,12 +85,14 @@ public class SecurityConfig {
             )
 
             // OAuth2 로그인 기능에 대한 여러 설정의 진입점
-            .oauth2Login(oauth ->
-                // OAuth2 로그인 성공 이후 사용자 정보를 가져올 때의 설정을 담당
-                oauth.userInfoEndpoint(c -> c.userService(oAuth2UserService))
-                    .successHandler(oAuth2SuccessHandler) // 로그인 성공 시 핸들러
+            .oauth2Login(oauth -> oauth
+                .authorizationEndpoint(a -> a
+                    // 세션 대신 쿠키에 AuthorizationRequest/state 저장
+                    .authorizationRequestRepository(cookieAuthRequestRepository())
+                )
+                .userInfoEndpoint(c -> c.userService(oAuth2UserService))
+                .successHandler(oAuth2SuccessHandler) // 아래에서 쿠키 정리
             )
-
             // JWT 관련 설정
             .addFilterBefore(tokenExceptionFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(tokenAuthenticationFilter,

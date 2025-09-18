@@ -72,8 +72,8 @@ public class EcoStockIssueServiceImpl implements EcoStockIssueService {
             fcmMessage = "친환경 차량 입차가 감지되어 EV 에코스톡 %d주가 발급되었습니다".formatted(amount);
         } else if (ecoStockId == 4L) {
             fcmMessage = "종이백 미사용으로 제로백 에코스톡 %d주가 발급되었습니다".formatted(amount);
-        } else if (ecoStockId == 5L) {
-            fcmMessage = "봉시활동으로 에코스톡 %d주가 발급되었습니다".formatted(amount);
+        } else if (ecoStockId == 7L) {
+            fcmMessage = "제로웨이스트로 에코스톡 %d주가 발급되었습니다".formatted(amount);
         } else if (ecoStockId == 6L) {
             fcmMessage = "고객님의 소중한 기부로 기부온 에코스톡 %d주가 발급되었습니다".formatted(amount);
         } else {

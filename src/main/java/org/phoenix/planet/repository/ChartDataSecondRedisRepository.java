@@ -144,7 +144,7 @@ public class ChartDataSecondRedisRepository {
             
                 new_ohlc_json = string.format(
                     '{"stockPriceHistoryId":%d,"time":%d,"open":%f,"high":%f,"low":%f,"close":%f,"isEmpty":false}',
-                    0, epoch_time, open_price, price, price, price
+                    0, epoch_time, open_price, new_price, new_price, new_price
                 )
             end
             

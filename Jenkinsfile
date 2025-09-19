@@ -21,7 +21,7 @@ pipeline {
     LT_ID          = 'lt-0247d3f1f9751c069'
     VPC_ID         = 'vpc-0078d01ffe1b985f2'
     SUBNETS        = 'subnet-01277620756a7119c,subnet-03112ab72dbbebdc2,subnet-04d05f52b13a598b6,subnet-0d9c1cab2bf65b242'
-    LISTENER_ARN   = 'arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-lb/e80a8f6a74350f0e/81806b45e3367515'
+    LISTENER_ARN   = 'arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:listener/app/planet-alb/6995da993b653fb5/282f725c6dbf77bd'
     BLUE_TG        = 'arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:targetgroup/planet-back/d17dc02beb3cf8f3'
     GREEN_TG       = 'arn:aws:elasticloadbalancing:ap-northeast-2:958948421852:targetgroup/planet-second/31753c9206519568'
   }

@@ -77,36 +77,36 @@ pipeline {
         }
       }
 
-    stage('Build') {
-      steps {
-        sh '''
-          echo "[INFO] Building with Gradle (skipping tests)..."
-          gradle build -x test --no-daemon --build-cache
+    // stage('Build') {
+    //   steps {
+    //     sh '''
+    //       echo "[INFO] Building with Gradle (skipping tests)..."
+    //       gradle build -x test --no-daemon --build-cache
 
-          echo "[INFO] Build artifacts:"
-          ls -la build/libs/
-        '''
-      }
-    }
+    //       echo "[INFO] Build artifacts:"
+    //       ls -la build/libs/
+    //     '''
+    //   }
+    // }
 
-    stage('Docker Build & Push') {
-      steps {
-        withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
-          sh '''
-            echo "[DEBUG] AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
-            echo "[DEBUG] ECR_REPO=${ECR_REPO}"
-            echo "[DEBUG] IMAGE_TAG=${IMAGE_TAG}"
+    // stage('Docker Build & Push') {
+    //   steps {
+    //     withAWS(region: "${env.AWS_REGION}", credentials: 'aws-credentials-id') {
+    //       sh '''
+    //         echo "[DEBUG] AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
+    //         echo "[DEBUG] ECR_REPO=${ECR_REPO}"
+    //         echo "[DEBUG] IMAGE_TAG=${IMAGE_TAG}"
 
-            echo "[INFO] Login to ECR..."
-            aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
+    //         echo "[INFO] Login to ECR..."
+    //         aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
 
-            echo "[INFO] Build & push Docker image..."
-            docker build -t ${ECR_REPO}:${IMAGE_TAG} .
-            docker push ${ECR_REPO}:${IMAGE_TAG}
-          '''
-        }
-      }
-    }
+    //         echo "[INFO] Build & push Docker image..."
+    //         docker build -t ${ECR_REPO}:${IMAGE_TAG} .
+    //         docker push ${ECR_REPO}:${IMAGE_TAG}
+    //       '''
+    //     }
+    //   }
+    // }
 
     stage('Deploy to Idle Stack') {
       steps {
